@@ -8,11 +8,11 @@
 pthread_mutex_t lock;
 
 typedef enum {
-    NETOS_LOG_TYPE_VERBOSE = 1,
-    NETOS_LOG_TYPE_INFO    = 2,
-    NETOS_LOG_TYPE_DEBUG   = 3,
-    NETOS_LOG_TYPE_WARNING = 4,
-    NETOS_LOG_TYPE_ERROR   = 5,
+    NETOS_LOG_TYPE_VERBOSE = 0,
+    NETOS_LOG_TYPE_INFO    = 1,
+    NETOS_LOG_TYPE_DEBUG   = 2,
+    NETOS_LOG_TYPE_WARNING = 3,
+    NETOS_LOG_TYPE_ERROR   = 4,
 } netos_log_type_t;
 
 const char *log_msg_type_list[] = {
@@ -44,7 +44,7 @@ static void netos_log_msg(netos_log_type_t type, const char *fmt, va_list ap)
                             t->tm_min,
                             t->tm_sec,
                             tp.tv_nsec / 1000000ULL,
-                            log_msg_type_list[type + 1]);
+                            log_msg_type_list[type]);
     ret += vsnprintf(buf + ret, sizeof(buf) - ret, fmt, ap);
     fprintf(stderr, "%s\n", buf);
     pthread_mutex_unlock(&lock);
