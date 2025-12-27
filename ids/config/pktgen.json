@@ -1,0 +1,65 @@
+{
+    "interface": "dummy0",
+    "eth": {
+        "enable": true,
+        "src_mac": "00:11:22:33:44:44",
+        "dst_mac": "01:01:02:03:03:04",
+        "ethertype": "0x0800",
+        "randomize": false,
+        "repeat": true,
+        "count": 100,
+        "pkt_intvl_nsec": 1000000
+    },
+    "arp": {
+        "enable": true,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "hw_type": 1,
+        "protocol_type": "0x0800",
+        "ha_len": 6,
+        "protocol_addr_len": 4,
+        "op": 1,
+        "sender_hwaddr": "00:11:22:33:44:12",
+        "sender_protocol_addr": "192.168.1.1",
+        "target_hwaddr": "00:11:22:23:33:41",
+        "target_protocol_addr": "192.168.1.2",
+        "randomize": false,
+        "repeat": true,
+        "count": 100,
+        "pkt_intvl_nsec": 1000000
+    },
+    "vlan": {
+        "enable": false,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "randomize": false,
+        "multi_vlan_tag": [
+            {
+                "vid": 1
+            }
+        ],
+        "repeat": true,
+        "pkt_intvl_nsec": 1
+    },
+    "ipv4": {
+        "enable": false,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "vlan": {
+            "enable": false,
+            "multi_vlan_tag": [
+                {
+                    "vid": 1
+                }
+            ]
+        },
+        "repeat": true,
+        "pkt_intvl_nsec": 1
+    }
+}

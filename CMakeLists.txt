@@ -14,7 +14,14 @@ set(LOGGER_SRC
 
 set(IDS_COMMON_SRC
 	ids/src/packet_buf.cc
-	ids/src/protocols/l2/eth.cc)
+	ids/src/protocols/l2/eth.cc
+	ids/src/protocols/l2/arp.cc
+	ids/src/protocols/l3/ipv4.cc
+	ids/src/event/event_mgr.cc)
+
+set(IDS_SRV_SRC
+	${IDS_COMMON_SRC}
+	ids/src/core/ids_main.cc)
 
 set(IDS_PKT_GEN_SRC
 	${IDS_COMMON_SRC}
@@ -28,8 +35,10 @@ include_directories(
 	platform/lib/logging/
 	ids/src/
 	ids/src/macros/
+	ids/src/core/
 	ids/src/protocols/
-	ids/src/protocols/l2/)
+	ids/src/protocols/l2/
+	ids/src/event/)
 
 set(CMAKE_C_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
@@ -38,6 +47,9 @@ add_library(netos_platform ${PLATFORM_SRC})
 
 add_executable(netos_logger ${LOGGER_SRC})
 target_link_libraries(netos_logger netos_platform pthread)
+
+add_executable(netos_ids ${IDS_SRV_SRC})
+target_link_libraries(netos_ids netos_platform pthread jsoncpp)
 
 add_executable(netos_pktgen ${IDS_PKT_GEN_SRC})
 target_link_libraries(netos_pktgen netos_platform pthread jsoncpp)
