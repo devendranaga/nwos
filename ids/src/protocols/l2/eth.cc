@@ -20,6 +20,10 @@ netos_status eth_hdr::serialize(std::shared_ptr<packet_buf> &buf)
 
 netos_status eth_hdr::deserialize(std::shared_ptr<packet_buf> &buf)
 {
+    if ((buf->len_ - buf->offset_) < NETOS_IDS_ETH_ALEN) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     buf->deserialize_mac(this->dst_mac);
     buf->deserialize_mac(this->src_mac);
     buf->deserialize_2_bytes(&this->ethertype);

@@ -15,11 +15,14 @@ enum class event_protocol_level : uint32_t {
     EVENT_PROTOCOL_NONE     = 0x00000000,
     EVENT_PROTOCOL_L2_ETH   = 0x00000001,
     EVENT_PROTOCOL_L2_ARP   = 0x00000002,
+    EVENT_PROTOCOL_L3_IPV4  = 0x00000003,
 };
 
 enum class event_description : uint32_t {
     EVENT_DESC_NONE                 = 0x00000000,
     EVENT_DESC_INVAL_ARP_HW_TYPE    = 0x00002001,
+    EVENT_DESC_INVAL_IPV4_VERSION   = 0x00002200,
+    EVENT_DESC_INVAL_IPV4_CHECKSUM  = 0x00002201,
 };
 
 struct event_info {

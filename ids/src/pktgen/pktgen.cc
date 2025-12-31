@@ -76,7 +76,7 @@ void pktgen::run(int argc, char **argv)
         }
     }
 
-    config->parse(argv[1]);
+    config->parse(config_file);
     config->print();
 
     raw_fd_ = std::make_shared<netos::lib::raw_socket>(config->interface, 0);

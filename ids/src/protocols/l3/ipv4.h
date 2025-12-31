@@ -11,30 +11,70 @@ namespace netos {
 
 namespace ids {
 
+#define NETOS_IPV4_VERSION 4
+#define NETOS_IPV4_IHL_DEFAULT 5
+
 struct ipv4_flags {
-    uint32_t reserved:1;
-    uint32_t df:1;
-    uint32_t mf:1;
-    uint32_t reserved_bits:5;
+    uint32_t            reserved:1;
+    uint32_t            df:1;
+    uint32_t            mf:1;
+    uint32_t            reserved_bits:5;
+
+    explicit ipv4_flags() : reserved(0),
+                            df(0),
+                            mf(0),
+                            reserved_bits(0)
+    {
+    }
+    ~ipv4_flags()
+    {
+    }
 } __attribute__ ((__packed__));
 
 struct ipv4_hdr {
-    uint8_t version;
-    uint8_t ihl;
-    uint8_t dscp;
-    uint8_t ecn;
-    uint16_t total_len;
-    uint16_t id;
-    ipv4_flags flags;
-    uint32_t frag_off;
-    uint8_t ttl;
-    uint8_t protocol;
-    uint16_t hdr_chksum;
-    uint32_t src_addr;
-    uint32_t dst_addr;
+    uint8_t             version;
+    uint8_t             ihl;
+    uint8_t             dscp;
+    uint8_t             ecn;
+    uint16_t            total_len;
+    uint16_t            id;
+    ipv4_flags          flags;
+    uint32_t            frag_off;
+    uint8_t             ttl;
+    uint8_t             protocol;
+    uint16_t            hdr_chksum;
+    uint32_t            src_addr;
+    uint32_t            dst_addr;
+
+    uint16_t            start_off;
+    uint16_t            end_off;
+    uint16_t            checksum_off;
+
+    explicit ipv4_hdr() : version(0),
+                          ihl(0),
+                          dscp(0),
+                          ecn(0),
+                          total_len(0),
+                          id(0),
+                          frag_off(0),
+                          ttl(0),
+                          protocol(0),
+                          hdr_chksum(0),
+                          src_addr(0),
+                          dst_addr(0),
+                          start_off(0),
+                          end_off(0),
+                          checksum_off(0)
+    {
+    }
+
+    ~ipv4_hdr()
+    {
+    }
 
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
+    uint16_t checksum(std::shared_ptr<packet_buf> &buf);
 };
 
 }

@@ -42,6 +42,11 @@ struct packet_buf {
         this->offset_ = 0;
     }
 
+    void serialize_bit(uint8_t bit_pos)
+    {
+        this->buf_[this->offset_] |= (1 << bit_pos);
+    }
+
     void serialize_byte(uint8_t val)
     {
         if ((this->offset_ + sizeof(uint8_t)) >= this->len_) {

@@ -17,7 +17,7 @@
             "dst_mac": "01:01:02:03:03:04"
         },
         "hw_type": 1,
-        "protocol_type": "0x0800",
+        "protocol": "0x0800",
         "ha_len": 6,
         "protocol_addr_len": 4,
         "op": 1,
@@ -40,6 +40,9 @@
         "multi_vlan_tag": [
             {
                 "vid": 1
+            },
+            {
+                "vid": 2
             }
         ],
         "repeat": true,
@@ -59,6 +62,24 @@
                 }
             ]
         },
+        "version": 4,
+        "ihl": 5,
+        "dscp": 10,
+        "ecn": 2,
+        "total_len": 100,
+        "id": "0x1022",
+        "flags": {
+            "reserved": 0,
+            "df": 0,
+            "mf": 0
+        },
+        "frag_off": 0,
+        "ttl": 1,
+        "protocol": 6,
+        "hdr_chksum_autogen": true,
+        "hdr_chksum": "0x1022",
+        "src_addr": "192.168.0.1",
+        "dst_addr": "192.168.0.12",
         "repeat": true,
         "pkt_intvl_nsec": 1
     }
