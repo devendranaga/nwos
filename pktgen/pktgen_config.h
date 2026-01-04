@@ -52,9 +52,11 @@ struct pktgen_vlan_config {
     bool                        enable;
     uint8_t                     eth_src_mac[NETOS_IDS_MACADDR_LEN];
     uint8_t                     eth_dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint16_t                    ethertype;
     bool                        randomize;
     std::vector<uint16_t>       vlan_ids;
     bool                        repeat;
+    uint32_t                    count;
     uint64_t                    pkt_intvl_nsec;
 
     int parse(const Json::Value &r);
@@ -84,6 +86,7 @@ struct pktgen_ipv4_config {
     uint32_t        src_addr;
     uint32_t        dst_addr;
     bool            repeat;
+    uint32_t        count;
     uint64_t        pkt_intvl_nsec;
 
     int parse(const Json::Value &r);

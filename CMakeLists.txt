@@ -13,10 +13,16 @@ set(LOGGER_SRC
 	logger/src/logger.cc)
 
 set(IDS_COMMON_SRC
-	ids/src/packet_buf.cc
-	ids/src/protocols/l2/eth.cc
-	ids/src/protocols/l2/arp.cc
-	ids/src/protocols/l3/ipv4.cc
+	pkt/packet_buf.cc
+	protocols/l2/eth.cc
+	protocols/l2/arp.cc
+	protocols/l2/vlan.cc
+	protocols/l2/macsec.cc
+	protocols/l2/mka.cc
+	protocols/l3/ipv4.cc
+	protocols/l3/ipv6.cc
+	protocols/l4/udp.cc
+	protocols/l4/tcp.cc
 	ids/src/event/event_mgr.cc)
 
 set(IDS_SRV_SRC
@@ -25,8 +31,8 @@ set(IDS_SRV_SRC
 
 set(IDS_PKT_GEN_SRC
 	${IDS_COMMON_SRC}
-	ids/src/pktgen/pktgen.cc
-	ids/src/pktgen/pktgen_config.cc)
+	pktgen/pktgen.cc
+	pktgen/pktgen_config.cc)
 
 include_directories(
 	platform/lib/helpers/
@@ -34,10 +40,13 @@ include_directories(
 	platform/lib/error/
 	platform/lib/logging/
 	ids/src/
-	ids/src/macros/
+	pkt/
+	protocols/
+	protocols/macros/
+	protocols/l2/
+	protocols/l3/
+	protocols/l4/
 	ids/src/core/
-	ids/src/protocols/
-	ids/src/protocols/l2/
 	ids/src/event/)
 
 set(CMAKE_C_FLAGS "-Wall -Wextra")

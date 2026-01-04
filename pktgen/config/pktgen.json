@@ -1,7 +1,7 @@
 {
     "interface": "dummy0",
     "eth": {
-        "enable": true,
+        "enable": false,
         "src_mac": "00:11:22:33:44:44",
         "dst_mac": "01:01:02:03:03:04",
         "ethertype": "0x0800",
@@ -11,7 +11,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "arp": {
-        "enable": true,
+        "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -34,28 +34,27 @@
         "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
-            "dst_mac": "01:01:02:03:03:04"
+            "dst_mac": "01:01:02:03:03:04",
+            "ethertype": "0x0800"
         },
         "randomize": false,
         "multi_vlan_tag": [
             {
-                "vid": 1
-            },
-            {
-                "vid": 2
+                "vid": 10
             }
         ],
         "repeat": true,
+        "count": 1,
         "pkt_intvl_nsec": 1
     },
     "ipv4": {
-        "enable": false,
+        "enable": true,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
         },
         "vlan": {
-            "enable": false,
+            "enable": true,
             "multi_vlan_tag": [
                 {
                     "vid": 1
@@ -66,7 +65,7 @@
         "ihl": 5,
         "dscp": 10,
         "ecn": 2,
-        "total_len": 100,
+        "total_len": 0,
         "id": "0x1022",
         "flags": {
             "reserved": 0,
@@ -81,6 +80,7 @@
         "src_addr": "192.168.0.1",
         "dst_addr": "192.168.0.12",
         "repeat": true,
+        "count": 1,
         "pkt_intvl_nsec": 1
     }
 }

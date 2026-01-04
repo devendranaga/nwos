@@ -15,7 +15,10 @@ uint16_t ipv4_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf)
         chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
     }
 
-    chksum = ((chksum32 >> 16) | (chksum32));
+    printf("%x %x %x\n", chksum32, chksum32 >> 16, chksum32 & 0x00FFFF);
+
+    chksum = ((chksum32 >> 16) + (chksum32 & 0x0000FFFF));
+    printf("%x %x\n", chksum, ~chksum);
 
     return ~chksum;
 }
@@ -44,7 +47,7 @@ netos_status ipv4_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     if (this->flags.mf) {
         pkt_buf->buf_[pkt_buf->offset_] |= 0x20;
     }
-    pkt_buf->buf_[pkt_buf->offset_] |= (this->frag_off & 0x0F00) >> 8;
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->frag_off & 0x1F00) >> 8;
     pkt_buf->buf_[pkt_buf->offset_ + 1] = this->frag_off & 0x00FF;
     pkt_buf->offset_ += 2;
 
@@ -93,6 +96,8 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 
     pkt_buf->deserialize_byte(&this->ttl);
     pkt_buf->deserialize_byte(&this->protocol);
+
+    this->checksum_off = pkt_buf->offset_;
     pkt_buf->deserialize_2_bytes(&this->hdr_chksum);
     pkt_buf->deserialize_4_bytes(&this->src_addr);
     pkt_buf->deserialize_4_bytes(&this->dst_addr);

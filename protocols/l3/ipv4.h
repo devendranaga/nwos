@@ -11,8 +11,8 @@ namespace netos {
 
 namespace ids {
 
-#define NETOS_IPV4_VERSION 4
-#define NETOS_IPV4_IHL_DEFAULT 5
+#define NETOS_IPV4_VERSION          4
+#define NETOS_IPV4_IHL_DEFAULT      5
 
 struct ipv4_flags {
     uint32_t            reserved:1;

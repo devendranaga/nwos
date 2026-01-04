@@ -60,11 +60,13 @@ int pktgen_vlan_config::parse(const Json::Value &r)
     this->enable = r["enable"].asBool();
     netos::lib::str_to_mac(r["eth"]["src_mac"].asString(), this->eth_src_mac);
     netos::lib::str_to_mac(r["eth"]["dst_mac"].asString(), this->eth_dst_mac);
+    this->ethertype = std::stoi(r["eth"]["ethertype"].asString(), nullptr, 16);
     this->randomize = r["randomize"].asBool();
     for (auto it : r["multi_vlan_tag"]) {
         this->vlan_ids.push_back(it["vid"].asUInt());
     }
     this->repeat = r["repeat"].asBool();
+    this->count = r["count"].asUInt();
     this->pkt_intvl_nsec = r["pkt_intvl_nsec"].asUInt64();
 
     return 0;
@@ -96,10 +98,11 @@ int pktgen_ipv4_config::parse(const Json::Value &r)
     auto hdr_chksum_str = r["hdr_chksum"].asString();
     netos::lib::str_hex_to_int(hdr_chksum_str, &this->hdr_checksum);
     auto s_addr_str = r["src_addr"].asString();
-    this->src_addr = inet_addr(s_addr_str.c_str());
+    netos::lib::ipaddr_str_to_uint(s_addr_str, &this->src_addr);
     auto d_addr_str = r["dst_addr"].asString();
-    this->dst_addr = inet_addr(d_addr_str.c_str());
+    netos::lib::ipaddr_str_to_uint(d_addr_str, &this->dst_addr);
     this->repeat = r["repeat"].asBool();
+    this->count = r["count"].asUInt();
     this->pkt_intvl_nsec = r["pkt_intvl_nsec"].asUInt64();
 
     return 0;
