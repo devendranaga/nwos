@@ -3,7 +3,10 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string>
+#include <memory>
 
+#include "packet_buf.h"
 #include "eth.h"
 #include "vlan.h"
 #include "arp.h"
@@ -26,19 +29,17 @@ struct parsed_pkt_types {
 } __attribute__ ((__packed__));
 
 struct parsed_pkt {
-    char                *ingress_intf;
-    parsed_pkt_types    pkt_types_present;
-    eth_hdr             eh;
-    vlan_hdr            vh;
-    union {
-        arp_hdr         ah;
-    } l2;
-    union {
-        ipv4_hdr        ipv4_h;
-    } l3;
-    union {
-        udp_hdr         udp_h;
-    } l4;
+    std::shared_ptr<packet_buf> pkt_buf;
+    std::string                 ifname;
+    parsed_pkt_types            pkt_types_present;
+    eth_hdr                     eh;
+    vlan_hdr                    vh;
+    arp_hdr                     ah;
+    ipv4_hdr                    ipv4_h;
+    udp_hdr                     udp_h;
+
+    explicit parsed_pkt() {}
+    ~parsed_pkt() {}
 };
 
 }

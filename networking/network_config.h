@@ -1,0 +1,37 @@
+#ifndef NETOS_NETWORK_CONFIG_H
+#define NETOS_NETWORK_CONFIg_H
+
+#include <vector>
+#include <jsoncpp/json/json.h>
+
+#include "error_codes.h"
+
+using namespace netos::lib;
+
+namespace netos {
+
+struct network_if_config {
+    std::string ifname;
+
+    netos_status parse(Json::Value &root);
+};
+
+struct network_config {
+    public:
+        std::vector<network_if_config> if_config_list_;
+
+        ~network_config() { }
+        static network_config *instance() {
+            static network_config netw_config;
+            return &netw_config;
+        }
+
+        netos_status parse(const std::string &config);
+    private:
+        explicit network_config() { }
+};
+
+}
+
+#endif
+

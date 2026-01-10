@@ -107,7 +107,16 @@ struct pkt_pool {
         }
     }
 
+    static pkt_pool *instance()
+    {
+        static pkt_pool pool;
+        return &pool;
+    }
+
+    ~pkt_pool() { }
+
     private:
+        explicit pkt_pool() { }
         netos_status prepare_pkt_buf()
         {
             netos_status ret;

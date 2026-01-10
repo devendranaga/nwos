@@ -1,0 +1,8 @@
+{
+    "network_config": [
+        {
+            "interface_name": "dummy0"
+        }
+    ]
+}
+

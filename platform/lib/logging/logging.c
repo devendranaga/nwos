@@ -46,7 +46,7 @@ static void netos_log_msg(netos_log_type_t type, const char *fmt, va_list ap)
                             tp.tv_nsec / 1000000ULL,
                             log_msg_type_list[type]);
     ret += vsnprintf(buf + ret, sizeof(buf) - ret, fmt, ap);
-    fprintf(stderr, "%s\n", buf);
+    fprintf(stderr, "%s", buf);
     pthread_mutex_unlock(&lock);
 }
 

@@ -37,6 +37,9 @@ struct arp_hdr {
     uint8_t                 target_hwaddr[NETOS_IDS_MACADDR_LEN];
     uint32_t                target_protocol_addr;
 
+    explicit arp_hdr() { }
+    ~arp_hdr() { }
+
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
 };

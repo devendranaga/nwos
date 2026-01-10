@@ -34,6 +34,10 @@ set(IDS_PKT_GEN_SRC
 	pktgen/pktgen.cc
 	pktgen/pktgen_config.cc)
 
+set(NETWORKING_SRC
+	networking/network_main.cc
+	networking/network_config.cc)
+
 include_directories(
 	platform/lib/helpers/
 	platform/lib/linux/
@@ -47,12 +51,16 @@ include_directories(
 	protocols/l3/
 	protocols/l4/
 	ids/src/core/
-	ids/src/event/)
+	ids/src/event/
+	networking/)
 
 set(CMAKE_C_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
 add_library(netos_platform ${PLATFORM_SRC})
+
+add_executable(netos_netwd ${NETWORKING_SRC})
+target_link_libraries(netos_netwd netos_platform pthread jsoncpp)
 
 add_executable(netos_logger ${LOGGER_SRC})
 target_link_libraries(netos_logger netos_platform pthread)
