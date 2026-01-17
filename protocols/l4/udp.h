@@ -9,8 +9,6 @@
 
 namespace netos {
 
-namespace ids {
-
 #define NETOS_UDP_HDR_LEN_DEFAULT 8
 
 struct udp_hdr {
@@ -34,8 +32,6 @@ struct udp_hdr {
     netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
     uint16_t calc_checksum(std::shared_ptr<packet_buf> &pkt_buf);
 };
-
-}
 
 }
 

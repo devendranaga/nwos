@@ -24,8 +24,6 @@
 
 namespace netos {
 
-namespace ids {
-
 struct arp_hdr {
     uint16_t                hw_type;
     uint16_t                protocol_type;
@@ -43,8 +41,6 @@ struct arp_hdr {
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
 };
-
-}
 
 }
 

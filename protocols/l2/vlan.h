@@ -9,8 +9,6 @@
 
 namespace netos {
 
-namespace ids {
-
 #define NETOS_IDS_VLAN_HDR_LEN 4
 
 struct vlan_hdr {
@@ -33,8 +31,6 @@ struct vlan_hdr {
     netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
 };
-
-}
 
 }
 

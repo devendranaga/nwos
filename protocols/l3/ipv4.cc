@@ -1,9 +1,10 @@
 #include "ipv4.h"
 #include "event_mgr.h"
+#include "logging.h"
+
+using namespace netos::ids;
 
 namespace netos {
-
-namespace ids {
 
 uint16_t ipv4_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf)
 {
@@ -15,12 +16,9 @@ uint16_t ipv4_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf)
         chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
     }
 
-    printf("%x %x %x\n", chksum32, chksum32 >> 16, chksum32 & 0x00FFFF);
-
     chksum = ((chksum32 >> 16) + (chksum32 & 0x0000FFFF));
-    printf("%x %x\n", chksum, ~chksum);
 
-    return ~chksum;
+    return chksum;
 }
 
 netos_status ipv4_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
@@ -88,7 +86,6 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     this->flags.reserved = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x80);
     this->flags.df = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x40);
     this->flags.mf = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x20);
-    pkt_buf->offset_ ++;
 
     this->frag_off = ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 4);
     this->frag_off |= pkt_buf->buf_[pkt_buf->offset_];
@@ -106,9 +103,36 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
+    this->print();
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+void ipv4_flags::print()
+{
+    netos_log_info("\tipv4_flags:\n");
+    netos_log_info("\t\t reserved: %d\n", this->reserved);
+    netos_log_info("\t\t df: %d\n", this->df);
+    netos_log_info("\t\t mf: %d\n", this->mf);
+    netos_log_info("\t\t reserved_bits: %d\n", this->reserved_bits);
+}
+
+void ipv4_hdr::print()
+{
+    netos_log_info("ipv4_hdr:\n");
+    netos_log_info("\t version: %d\n", this->version);
+    netos_log_info("\t ihl: %d\n", this->ihl);
+    netos_log_info("\t dscp: %d\n", this->dscp);
+    netos_log_info("\t ecn: %d\n", this->ecn);
+    netos_log_info("\t total_len: %d\n", this->total_len);
+    netos_log_info("\t id: %d\n", this->id);
+    this->flags.print();
+    netos_log_info("\t frag_off: %d\n", this->frag_off);
+    netos_log_info("\t ttl: %d\n", this->ttl);
+    netos_log_info("\t protocol: %d\n", this->protocol);
+    netos_log_info("\t checksum_off: %d\n", this->checksum_off);
+    netos_log_info("\t hdr_chksum: 0x%04x\n", this->hdr_chksum);
+    netos_log_info("\t src_addr: 0x%x\n", this->src_addr);
+    netos_log_info("\t dst_addr: 0x%x\n", this->dst_addr);
 }
 
 }

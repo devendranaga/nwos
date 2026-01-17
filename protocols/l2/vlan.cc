@@ -1,9 +1,9 @@
 #include "vlan.h"
 #include "event_mgr.h"
 
-namespace netos {
+using namespace netos::ids;
 
-namespace ids {
+namespace netos {
 
 netos_status vlan_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
@@ -38,8 +38,6 @@ netos_status vlan_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_2_bytes(&this->ethertype);
 
     return netos_status::NETOS_STATUS_SUCCESS;
-}
-
 }
 
 }

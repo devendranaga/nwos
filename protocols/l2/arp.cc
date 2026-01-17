@@ -3,9 +3,9 @@
 #include "ethertypes.h"
 #include "event_mgr.h"
 
-namespace netos {
+using namespace netos::ids;
 
-namespace ids {
+namespace netos {
 
 netos_status arp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
@@ -73,8 +73,6 @@ netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_4_bytes(&this->target_protocol_addr);
 
     return netos_status::NETOS_STATUS_SUCCESS;
-}
-
 }
 
 }

@@ -9,8 +9,6 @@
 
 namespace netos {
 
-namespace ids {
-
 #define NETOS_IPV4_VERSION          4
 #define NETOS_IPV4_IHL_DEFAULT      5
 
@@ -29,6 +27,8 @@ struct ipv4_flags {
     ~ipv4_flags()
     {
     }
+
+    void print();
 } __attribute__ ((__packed__));
 
 struct ipv4_hdr {
@@ -75,11 +75,11 @@ struct ipv4_hdr {
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
     uint16_t checksum(std::shared_ptr<packet_buf> &buf);
+    void print();
 };
 
 }
 
-}
 
 #endif
 

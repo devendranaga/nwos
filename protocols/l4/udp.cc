@@ -1,9 +1,9 @@
 #include "udp.h"
 #include "event_mgr.h"
 
-namespace netos {
+using namespace netos::ids;
 
-namespace ids {
+namespace netos {
 
 netos_status udp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
@@ -31,8 +31,6 @@ netos_status udp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_2_bytes(&this->checksum);
 
     return netos_status::NETOS_STATUS_SUCCESS;
-}
-
 }
 
 }

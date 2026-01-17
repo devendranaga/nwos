@@ -1,4 +1,4 @@
-#ifndef IDS_PROTOOCLS_ETH_H
+#ifndef IDS_PROTOCOLS_ETH_H
 #define IDS_PROTOCOLS_ETH_H
 
 #include <stdint.h>
@@ -9,8 +9,6 @@
 #include "error_codes.h"
 
 namespace netos {
-
-namespace ids {
 
 #define NETOS_IDS_ETH_ALEN 14
 
@@ -24,9 +22,8 @@ struct eth_hdr {
 
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
+    void print();
 };
-
-}
 
 }
 
