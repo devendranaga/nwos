@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <getopt.h>
 
+#include "ethertypes.h"
 #include "logging.h"
 #include "pool.h"
 #include "network_main.h"
@@ -61,20 +62,47 @@ void network_interface::tx_thread()
     netos_log_info("create tx thread ok\n");
 
     while (1) {
-
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
 void network_interface::rx_thread()
 {
-    uint8_t buf[2048];
+    netos_status res;
     int ret;
 
     netos_log_info("create rx thread ok\n");
 
     while (1) {
-        ret = this->raw_->recv_msg(buf, sizeof(buf));
-        netos_log_info("ret %d\n", ret);
+        std::shared_ptr<parsed_pkt> pkt;
+
+        pkt = std::make_shared<parsed_pkt>();
+        pkt->pkt_buf = std::make_shared<packet_buf>();
+        res = pkt->pkt_buf->allocate();
+        if (res != netos_status::NETOS_STATUS_SUCCESS) {
+            continue;
+        }
+
+        ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
+        if (ret > 0) {
+            std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
+            this->rx_pkt_pool_.push(pkt);
+            rx_pkt_pool_cond_.notify_one();
+        }
+    }
+}
+
+void network_interface::parse_thread()
+{
+    netos_status ret;
+
+    while (1) {
+        std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
+        rx_pkt_pool_cond_.wait(l);
+        std::shared_ptr<parsed_pkt> pkt = this->rx_pkt_pool_.front();
+        this->rx_pkt_pool_.pop();
+
+        ret = pkt->parse_frame();
     }
 }
 
@@ -86,6 +114,7 @@ netos_status network_interface::initialize(network_if_config &if_config)
 
     netos_log_info("created raw socket on <%s>\n", if_config.ifname.c_str());
 
+    this->parse_thr_ = std::make_shared<std::thread>(&network_interface::parse_thread, this);
     this->tx_thr_ = std::make_shared<std::thread>(&network_interface::tx_thread, this);
     this->rx_thr_ = std::make_shared<std::thread>(&network_interface::rx_thread, this);
 

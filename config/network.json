@@ -1,7 +1,7 @@
 {
     "network_config": [
         {
-            "interface_name": "dummy0"
+            "interface_name": "enp0s1"
         }
     ]
 }

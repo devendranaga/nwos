@@ -35,8 +35,10 @@ set(IDS_PKT_GEN_SRC
 	pktgen/pktgen_config.cc)
 
 set(NETWORKING_SRC
+	${IDS_COMMON_SRC}
 	networking/network_main.cc
-	networking/network_config.cc)
+	networking/network_config.cc
+	networking/pkt_parser.cc)
 
 include_directories(
 	platform/lib/helpers/

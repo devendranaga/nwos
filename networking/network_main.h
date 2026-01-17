@@ -3,11 +3,13 @@
 
 #include <vector>
 #include <memory>
+#include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 
 #include "raw_socket.h"
+#include "parsed_pkt.h"
 #include "network_config.h"
 
 using namespace netos::lib;
@@ -18,14 +20,20 @@ class network_interface {
     public:
         explicit network_interface() { }
         netos_status initialize(network_if_config &if_config);
-        void tx_thread();
-        void rx_thread();
 
         ~network_interface() { }
 
     private:
+        void tx_thread();
+        void rx_thread();
+        void parse_thread();
+
+        std::queue<std::shared_ptr<parsed_pkt>> rx_pkt_pool_;
+        std::condition_variable rx_pkt_pool_cond_;
+        std::mutex rx_pkt_pool_lock_;
         std::shared_ptr<std::thread> tx_thr_;
         std::shared_ptr<std::thread> rx_thr_;
+        std::shared_ptr<std::thread> parse_thr_;
         std::string ifname_;
         std::shared_ptr<raw_socket> raw_;
 };

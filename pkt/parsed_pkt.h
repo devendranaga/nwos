@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 
+#include "error_codes.h"
 #include "packet_buf.h"
 #include "eth.h"
 #include "vlan.h"
@@ -16,8 +17,6 @@
 #include "tcp.h"
 
 namespace netos {
-
-namespace ids {
 
 struct parsed_pkt_types {
     uint32_t has_vlan   :1;
@@ -32,17 +31,57 @@ struct parsed_pkt {
     std::shared_ptr<packet_buf> pkt_buf;
     std::string                 ifname;
     parsed_pkt_types            pkt_types_present;
+    uint16_t                    ethertype;
     eth_hdr                     eh;
     vlan_hdr                    vh;
     arp_hdr                     ah;
     ipv4_hdr                    ipv4_h;
+    ipv6_hdr                    ipv6_h;
     udp_hdr                     udp_h;
+    tcp_hdr                     tcp_h;
 
     explicit parsed_pkt() {}
     ~parsed_pkt() {}
-};
 
-}
+    netos_status parse_l4_frame();
+    netos_status parse_l3_frame();
+    netos_status parse_l2_frame();
+    netos_status parse_frame();
+
+    uint32_t get_protocol()
+    {
+        if (this->pkt_types_present.has_ipv4) {
+            return this->ipv4_h.protocol;
+        }
+        if (this->pkt_types_present.has_ipv6) {
+            return this->ipv6_h.nh;
+        }
+        return 0xFFFFFFFF;
+    }
+
+    private:
+        netos_status is_an_l3_frame()
+        {
+            if ((ethertype == NETOS_ETHERTYPE_IPV4) ||
+                (ethertype == NETOS_ETHERTYPE_IPV6)) {
+                return netos_status::NETOS_STATUS_SUCCESS;
+            }
+
+            return netos_status::NETOS_STATUS_GENERIC_ERROR;
+        }
+
+        netos_status is_an_l2_frame()
+        {
+            if ((ethertype == NETOS_ETHERTYPE_VLAN) ||
+                (ethertype == NETOS_ETHERTYPE_ARP) ||
+                (ethertype == NETOS_ETHERTYPE_NONSTD_VLAN) ||
+                (ethertype == NETOS_ETHERTYPE_IEEE_802AD)) {
+                return netos_status::NETOS_STATUS_SUCCESS;
+            }
+
+            return netos_status::NETOS_STATUS_GENERIC_ERROR;
+        }
+};
 
 }
 

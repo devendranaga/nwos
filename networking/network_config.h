@@ -1,5 +1,5 @@
 #ifndef NETOS_NETWORK_CONFIG_H
-#define NETOS_NETWORK_CONFIg_H
+#define NETOS_NETWORK_CONFIG_H
 
 #include <vector>
 #include <jsoncpp/json/json.h>

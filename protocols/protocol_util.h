@@ -5,8 +5,6 @@
 
 namespace netos {
 
-namespace ids {
-
 bool is_broadcast_mac(uint8_t *mac)
 {
     uint8_t bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -24,8 +22,6 @@ bool is_zero_mac(uint8_t *mac)
     uint8_t zmac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     return memcmp(mac, zmac, sizeof(zmac)) == 0;
-}
-
 }
 
 }
