@@ -87,6 +87,7 @@ class arp_context {
 
         void arp_process_thread();
         void arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame);
+        void arp_frame_prepare(std::shared_ptr<parsed_pkt> rx_frame, uint8_t *mac, uint32_t ipaddr);
 };
 
 }

@@ -11,6 +11,7 @@
 #include "raw_socket.h"
 #include "parsed_pkt.h"
 #include "network_config.h"
+#include "network_egress_intf.h"
 
 using namespace netos::lib;
 

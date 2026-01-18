@@ -17,6 +17,11 @@ struct network_egress_intf {
     std::string ifname;
     std::shared_ptr<packet_buf> pkt;
     std::shared_ptr<raw_socket> raw_fd_;
+
+    explicit network_egress_intf() : ifname(""),
+                                     pkt(nullptr),
+                                     raw_fd_(nullptr) {}
+    ~network_egress_intf() {}
 };
 
 class network_egress {
@@ -28,16 +33,17 @@ class network_egress {
             return &egress;
         }
 
-        void egress_enque(network_egress_intf &intf);
+        void initialize();
+        void egress_enque(std::shared_ptr<network_egress_intf> intf);
 
     private:
-        std::queue<network_egress_intf> egress_queue_;
+        std::queue<std::shared_ptr<network_egress_intf>> egress_queue_;
         std::shared_ptr<std::thread> egress_thr_;
         std::mutex egress_queue_lock_;
         std::condition_variable egress_queue_cond_;
 
         explicit network_egress() {}
-        void egres_thread();
+        void egress_tx_thread();
 };
 
 }

@@ -44,6 +44,7 @@ void network_manager::run(int argc, char **argv)
         return;
     }
 
+    network_egress::instance()->initialize();
     arp_context::instance()->init();
 
     conf = network_config::instance();
@@ -88,6 +89,7 @@ void network_interface::rx_thread()
         }
 
         pkt->ifname = this->ifname_;
+        pkt->raw = this->raw_;
 
         ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
         if (ret > 0) {

@@ -24,6 +24,7 @@ int netos_get_macaddr(const char *ifname, uint8_t *macaddr)
     strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) {
         close(fd);
+        perror("ioctl");
         return -1;
     }
 

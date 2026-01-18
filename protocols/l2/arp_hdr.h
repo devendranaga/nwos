@@ -5,11 +5,16 @@
 #include <iostream>
 #include <memory>
 
+#include "ethertypes.h"
 #include "ids_macro_defs.h"
 #include "error_codes.h"
 #include "packet_buf.h"
 
 using namespace netos::lib;
+
+#define ARP_HW_TYPE_ETHERNET 1
+#define ARP_HA_LEN 6
+#define ARP_PROTOCOL_LEN 4
 
 // ARP operations
 #define ARP_OP_ARP_REQUEST  1

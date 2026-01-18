@@ -2,11 +2,13 @@
 #include <arpa/inet.h>
 #include "logging.h"
 #include "ioctl_nw.h"
+#include "eth.h"
 #include "arp_hdr.h"
 #include "arp.h"
 #include "protocol_util.h"
 #include "ethertypes.h"
 #include "event_mgr.h"
+#include "network_egress_intf.h"
 
 using namespace netos::ids;
 
@@ -167,17 +169,65 @@ void arp_context::add_rx_frame(std::shared_ptr<parsed_pkt> rx_frame)
     this->process_cond_lock_.notify_one();
 }
 
+void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
+                                    uint8_t *macaddr,
+                                    uint32_t ipaddr)
+{
+    std::shared_ptr<network_egress_intf> intf;
+    eth_hdr eh;
+    arp_hdr ah;
+
+    intf = std::make_shared<network_egress_intf>();
+    intf->raw_fd_ = frame->raw;
+    intf->pkt = std::make_shared<packet_buf>();
+    intf->pkt->allocate();
+
+    memcpy(eh.dst_mac, frame->eh.src_mac, NETOS_MACADDR_LEN);
+    memcpy(eh.src_mac, macaddr, NETOS_MACADDR_LEN);
+    eh.ethertype = NETOS_ETHERTYPE_ARP;
+    eh.serialize(intf->pkt);
+
+    ah.hw_type = ARP_HW_TYPE_ETHERNET;
+    ah.protocol_type = NETOS_ETHERTYPE_IPV4;
+    ah.ha_len = ARP_HA_LEN;
+    ah.proto_len = ARP_PROTOCOL_LEN;
+    memcpy(ah.sender_hwaddr, macaddr, NETOS_MACADDR_LEN);
+    ah.sender_protocol_addr = ntohl(ipaddr);
+    memcpy(ah.target_hwaddr, frame->eh.src_mac, NETOS_MACADDR_LEN);
+    ah.target_protocol_addr = frame->ah.sender_protocol_addr;
+    ah.op = ARP_OP_ARP_REPLY;
+    ah.serialize(intf->pkt);
+
+    uint32_t i;
+
+    printf("arp: \n");
+    for (i = 0; i < intf->pkt->offset_; i ++) {
+        printf("%02x ", intf->pkt->buf_[i]);
+    }
+    printf("\n");
+
+    network_egress::instance()->egress_enque(intf);
+}
+
 void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
 {
+    uint8_t mac[6] = {0};
     uint32_t ipaddr = 0;
     void *res;
     int ret;
+
+    printf("process packet\n");
+    ret = netos_get_macaddr(rx_frame->ifname.c_str(), mac);
+    if (ret != 0) {
+        return;
+    }
 
     ret = netos_get_ipaddr(rx_frame->ifname.c_str(), &ipaddr);
     if (ret != 0) {
         return;
     }
 
+    printf("op %d\n", rx_frame->ah.op);
     // Packet is directed to us.. do not drop it.
     if ((rx_frame->ah.op == ARP_OP_ARP_REQUEST) &&
         (ntohl(ipaddr) == rx_frame->ah.target_protocol_addr)) {
@@ -193,6 +243,8 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
             // Add the entry.
             this->cache_.update(rx_frame->ifname, (uint8_t *)&rx_frame->ah.sender_protocol_addr);
         }
+        printf("send out egress frame %s\n", rx_frame->ifname.c_str());
+        this->arp_frame_prepare(rx_frame, mac, ipaddr);
     } else {
         // Drop the frame and cleanup.
     }

@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 
+#include "raw_socket.h"
 #include "error_codes.h"
 #include "packet_buf.h"
 #include "ethertypes.h"
@@ -30,6 +31,7 @@ struct parsed_pkt_types {
 
 struct parsed_pkt {
     std::shared_ptr<packet_buf> pkt_buf;
+    std::shared_ptr<raw_socket> raw;
     std::string                 ifname;
     parsed_pkt_types            pkt_types_present;
     uint16_t                    ethertype;

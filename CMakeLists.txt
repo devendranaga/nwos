@@ -24,7 +24,8 @@ set(IDS_COMMON_SRC
 	protocols/l3/ipv6.cc
 	protocols/l4/udp.cc
 	protocols/l4/tcp.cc
-	ids/src/event/event_mgr.cc)
+	ids/src/event/event_mgr.cc
+	networking/network_egress_intf.cc)
 
 set(STATISTICS_SRC
 	statistics/statistics.cc)
@@ -76,9 +77,6 @@ target_link_libraries(netos_netwd netos_platform pthread jsoncpp)
 
 add_executable(netos_logger ${LOGGER_SRC})
 target_link_libraries(netos_logger netos_platform pthread)
-
-add_executable(netos_ids ${IDS_SRV_SRC})
-target_link_libraries(netos_ids netos_platform pthread jsoncpp)
 
 add_executable(netos_pktgen ${IDS_PKT_GEN_SRC})
 target_link_libraries(netos_pktgen netos_platform pthread jsoncpp)
