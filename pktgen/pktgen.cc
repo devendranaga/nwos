@@ -11,6 +11,7 @@
 #include "packet_buf.h"
 #include "ethertypes.h"
 #include "eth.h"
+#include "arp_hdr.h"
 #include "vlan.h"
 #include "ipv4.h"
 #include "pktgen_config.h"
@@ -95,7 +96,38 @@ void pktgen::gen_vlan()
 
 void pktgen::gen_arp()
 {
+    std::shared_ptr<packet_buf> pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i = 0;
 
+    for (i = 0; i < config->arp_config.count; i ++) {
+        pktbuf = std::make_shared<packet_buf>();
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        memcpy(eh.src_mac, config->arp_config.eth_src_mac, NETOS_IDS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->arp_config.eth_dst_mac, NETOS_IDS_MACADDR_LEN);
+        eh.ethertype = NETOS_ETHERTYPE_ARP;
+        eh.serialize(pktbuf);
+
+        arp_hdr ah;
+        ah.hw_type = config->arp_config.hw_type;
+        ah.protocol_type = config->arp_config.protocol;
+        ah.ha_len = config->arp_config.ha_len;
+        ah.proto_len = config->arp_config.protocol_addr_len;
+        ah.op = config->arp_config.arp_op;
+        memcpy(ah.sender_hwaddr, config->arp_config.sender_hwaddr, NETOS_IDS_MACADDR_LEN);
+        ah.sender_protocol_addr = config->arp_config.sender_protocol_addr;
+        memcpy(ah.target_hwaddr, config->arp_config.target_hwaddr, NETOS_IDS_MACADDR_LEN);
+        ah.target_protocol_addr = config->arp_config.target_protocol_addr;
+        ah.serialize(pktbuf);
+
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(config->arp_config.pkt_intvl_nsec));
+
+        pktbuf->free_ptr();
+    }
 }
 
 void pktgen::gen_ipv4()
@@ -202,6 +234,9 @@ void pktgen::run(int argc, char **argv)
     raw_fd_ = std::make_shared<netos::lib::raw_socket>(config->interface, 0);
     if (config->eth_config.enable) {
         this->gen_eth();
+    }
+    if (config->arp_config.enable) {
+        this->gen_arp();
     }
     if (config->vlan_config.enable) {
         this->gen_vlan();
