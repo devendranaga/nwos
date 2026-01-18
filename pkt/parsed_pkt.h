@@ -8,9 +8,10 @@
 
 #include "error_codes.h"
 #include "packet_buf.h"
+#include "ethertypes.h"
 #include "eth.h"
 #include "vlan.h"
-#include "arp.h"
+#include "arp_hdr.h"
 #include "ipv4.h"
 #include "ipv6.h"
 #include "udp.h"
@@ -72,10 +73,7 @@ struct parsed_pkt {
 
         netos_status is_an_l2_frame()
         {
-            if ((ethertype == NETOS_ETHERTYPE_VLAN) ||
-                (ethertype == NETOS_ETHERTYPE_ARP) ||
-                (ethertype == NETOS_ETHERTYPE_NONSTD_VLAN) ||
-                (ethertype == NETOS_ETHERTYPE_IEEE_802AD)) {
+            if (ethertype == NETOS_ETHERTYPE_ARP) {
                 return netos_status::NETOS_STATUS_SUCCESS;
             }
 

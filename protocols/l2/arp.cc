@@ -1,3 +1,5 @@
+#include "logging.h"
+#include "arp_hdr.h"
 #include "arp.h"
 #include "protocol_util.h"
 #include "ethertypes.h"
@@ -71,6 +73,49 @@ netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_4_bytes(&this->sender_protocol_addr);
     pkt_buf->deserialize_mac(this->target_hwaddr);
     pkt_buf->deserialize_4_bytes(&this->target_protocol_addr);
+
+    this->print();
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+#if defined(NETOS_DEBUG_PKT_DECODE)
+void arp_hdr::print()
+{
+    netos_log_info("arp_hdr:\n");
+    netos_log_info("\t hw_type: %d\n", this->hw_type);
+    netos_log_info("\t protocol_type: %d\n", this->protocol_type);
+    netos_log_info("\t ha_len: %d\n", this->ha_len);
+    netos_log_info("\t proto_len: %d\n", this->proto_len);
+    netos_log_info("\t op: %d\n", this->op);
+    netos_log_info("\t sender_hwaddr: %s\n", this->sender_hwaddr);
+    netos_log_info("\t sender_protocol_addr: %s\n", this->sender_protocol_addr);
+    netos_log_info("\t target_hwaddr: %s\n", this->target_hwaddr);
+    netos_log_info("\t target_protocol_addr: %s\n", this->target_protocol_addr);
+}
+#else
+void arp_hdr::print() { }
+#endif
+
+void arp_context::add_rx_frame(std::shared_ptr<parsed_pkt> rx_frame)
+{
+    std::unique_lock<std::mutex> l(this->process_thr_lock_);
+    rx_queue_.push(rx_frame);
+    this->process_cond_lock_.notify_one();
+}
+
+void arp_context::arp_process_thread()
+{
+    while (1) {
+        std::unique_lock<std::mutex> l(this->process_thr_lock_);
+        this->process_cond_lock_.wait(l);
+        printf("got arp proess thread event\n");
+    }
+}
+
+netos_status arp_context::init()
+{
+    rx_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
+    rx_thr_->detach();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

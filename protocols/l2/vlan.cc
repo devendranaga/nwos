@@ -1,3 +1,4 @@
+#include "logging.h"
 #include "vlan.h"
 #include "event_mgr.h"
 
@@ -37,7 +38,21 @@ netos_status vlan_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 
     pkt_buf->deserialize_2_bytes(&this->ethertype);
 
+    this->print();
     return netos_status::NETOS_STATUS_SUCCESS;
 }
+
+#if defined(NETOS_DEBUG_PKT_DECODE)
+void vlan_hdr::print()
+{
+    netos_log_info("vlan_hdr: ");
+    netos_log_info("\t priority: %d\n", this->priority);
+    netos_log_info("\t dei: %d\n", this->dei);
+    netos_log_info("\t vid: %d\n", this->vid);
+    netos_log_info("\t ethertype: 0x%04x\n", this->ethertype);
+}
+#else
+void vlan_hdr::print() { }
+#endif
 
 }

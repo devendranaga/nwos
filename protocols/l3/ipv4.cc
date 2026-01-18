@@ -116,6 +116,7 @@ void ipv4_flags::print()
     netos_log_info("\t\t reserved_bits: %d\n", this->reserved_bits);
 }
 
+#if defined(NETOS_DEBUG_PKT_DECODE)
 void ipv4_hdr::print()
 {
     netos_log_info("ipv4_hdr:\n");
@@ -134,5 +135,8 @@ void ipv4_hdr::print()
     netos_log_info("\t src_addr: 0x%x\n", this->src_addr);
     netos_log_info("\t dst_addr: 0x%x\n", this->dst_addr);
 }
+#else
+void ipv4_hdr::print() { }
+#endif
 
 }

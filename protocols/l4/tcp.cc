@@ -129,7 +129,7 @@ netos_status tcp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 
 void tcp_flags::print()
 {
-    netos_log_info("\t flags:");
+    netos_log_info("\t flags:\n");
     netos_log_info("\t\t urg: %d\n", this->urg);
     netos_log_info("\t\t ack: %d\n", this->ack);
     netos_log_info("\t\t psh: %d\n", this->psh);
@@ -142,18 +142,21 @@ void tcp_flags::print()
     netos_log_info("\t\t ece: %d\n", this->ece);
 }
 
+#if defined(NETOS_DEBUG_PKT_DECODE)
 void tcp_hdr::print()
 {
     netos_log_info("tcp_hdr:\n");
     netos_log_info("\t src_port: %d\n", this->src_port);
     netos_log_info("\t dst_port: %d\n", this->dst_port);
-    netos_log_info("\t seq_num: %d\n", this->seq_num);
-    netos_log_info("\t ack_num: %d\n", this->ack_num);
+    netos_log_info("\t seq_num: %u\n", this->seq_num);
+    netos_log_info("\t ack_num: %u\n", this->ack_num);
     netos_log_info("\t win_size: %d\n", this->win_size);
     netos_log_info("\t urg_ptr: %d\n", this->urg_ptr);
-    netos_log_info("\t chksum: %d\n", this->chksum);
-    netos_log_info("\t flags: ");
+    netos_log_info("\t chksum: 0x%04x\n", this->chksum);
     this->flags.print();
 }
+#else
+void tcp_hdr::print() { }
+#endif
 
 }

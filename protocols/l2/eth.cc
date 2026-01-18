@@ -31,6 +31,7 @@ netos_status eth_hdr::deserialize(std::shared_ptr<packet_buf> &buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+#if defined(NETOS_DEBUG_PKT_DECODE)
 void eth_hdr::print()
 {
     netos_log_info("eth_hdr:\n");
@@ -42,6 +43,9 @@ void eth_hdr::print()
                             this->src_mac[3], this->src_mac[4], this->src_mac[5]);
     netos_log_info("\t ethertype: 0x%04x\n", this->ethertype);
 }
+#else
+void eth_hdr::print() { }
+#endif
 
 }
 

@@ -5,6 +5,7 @@
 #include "ethertypes.h"
 #include "logging.h"
 #include "pool.h"
+#include "arp.h"
 #include "network_main.h"
 
 namespace netos {
@@ -41,6 +42,8 @@ void network_manager::run(int argc, char **argv)
     if (res != netos_status::NETOS_STATUS_SUCCESS) {
         return;
     }
+
+    arp_context::instance()->init();
 
     conf = network_config::instance();
 
@@ -92,6 +95,13 @@ void network_interface::rx_thread()
     }
 }
 
+void network_interface::dispatch_pkt(std::shared_ptr<parsed_pkt> pkt)
+{
+    if (pkt->pkt_types_present.has_arp) {
+        arp_context::instance()->add_rx_frame(pkt);
+    }
+}
+
 void network_interface::parse_thread()
 {
     netos_status ret;
@@ -103,6 +113,9 @@ void network_interface::parse_thread()
         this->rx_pkt_pool_.pop();
 
         ret = pkt->parse_frame();
+        if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+            this->dispatch_pkt(pkt);
+        }
     }
 }
 
