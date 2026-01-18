@@ -11,10 +11,10 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include <vector>
 
 #include "ids_macro_defs.h"
 #include "packet_buf.h"
+#include "hash_table.h"
 #include "error_codes.h"
 #include "eth.h"
 #include "arp_hdr.h"
@@ -36,21 +36,31 @@
 
 namespace netos {
 
-    struct arp_entry {
+enum class arp_state : uint32_t {
+    ARP_STATE_INIT = 1,
+    ARP_STATE_RESOLVED,
+};
+
+struct arp_entry {
+    arp_state state;
     std::string ifname;
-    uint8_t macaddr[NETOS_IDS_MACADDR_LEN];
+    uint8_t macaddr[NETOS_MACADDR_LEN];
     time_t last_updated;
+
+    explicit arp_entry() : state(arp_state::ARP_STATE_INIT) { }
+    ~arp_entry() { }
 };
 
 class arp_cache {
     public:
-        explicit arp_cache() { }
-        ~arp_cache() { }
+        explicit arp_cache();
+        ~arp_cache();
 
         void update(const std::string &ifname, uint8_t *macaddr);
+        netos_hash_table *get() { return arp_cache_; }
 
     private:
-        std::vector<arp_entry> entries_;
+        netos_hash_table *arp_cache_;
 };
 
 class arp_context {
@@ -76,6 +86,7 @@ class arp_context {
         std::queue<std::shared_ptr<parsed_pkt>> rx_queue_;
 
         void arp_process_thread();
+        void arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame);
 };
 
 }

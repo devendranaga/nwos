@@ -49,8 +49,8 @@ void pktgen::gen_eth()
         pktbuf = std::make_shared<packet_buf>();
         pktbuf->allocate();
 
-        memcpy(eh.src_mac, config->eth_config.src_mac, NETOS_IDS_MACADDR_LEN);
-        memcpy(eh.dst_mac, config->eth_config.dst_mac, NETOS_IDS_MACADDR_LEN);
+        memcpy(eh.src_mac, config->eth_config.src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->eth_config.dst_mac, NETOS_MACADDR_LEN);
         eh.ethertype = config->eth_config.ethertype;
 
         eh.serialize(pktbuf);
@@ -74,8 +74,8 @@ void pktgen::gen_vlan()
         pktbuf->allocate();
 
         eth_hdr eh;
-        memcpy(eh.src_mac, config->eth_config.src_mac, NETOS_IDS_MACADDR_LEN);
-        memcpy(eh.dst_mac, config->eth_config.dst_mac, NETOS_IDS_MACADDR_LEN);
+        memcpy(eh.src_mac, config->vlan_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->vlan_config.eth_dst_mac, NETOS_MACADDR_LEN);
         eh.ethertype = NETOS_ETHERTYPE_VLAN;
         eh.serialize(pktbuf);
 
@@ -106,8 +106,8 @@ void pktgen::gen_arp()
         pktbuf->allocate();
 
         eth_hdr eh;
-        memcpy(eh.src_mac, config->arp_config.eth_src_mac, NETOS_IDS_MACADDR_LEN);
-        memcpy(eh.dst_mac, config->arp_config.eth_dst_mac, NETOS_IDS_MACADDR_LEN);
+        memcpy(eh.src_mac, config->arp_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->arp_config.eth_dst_mac, NETOS_MACADDR_LEN);
         eh.ethertype = NETOS_ETHERTYPE_ARP;
         eh.serialize(pktbuf);
 
@@ -117,9 +117,9 @@ void pktgen::gen_arp()
         ah.ha_len = config->arp_config.ha_len;
         ah.proto_len = config->arp_config.protocol_addr_len;
         ah.op = config->arp_config.arp_op;
-        memcpy(ah.sender_hwaddr, config->arp_config.sender_hwaddr, NETOS_IDS_MACADDR_LEN);
+        memcpy(ah.sender_hwaddr, config->arp_config.sender_hwaddr, NETOS_MACADDR_LEN);
         ah.sender_protocol_addr = config->arp_config.sender_protocol_addr;
-        memcpy(ah.target_hwaddr, config->arp_config.target_hwaddr, NETOS_IDS_MACADDR_LEN);
+        memcpy(ah.target_hwaddr, config->arp_config.target_hwaddr, NETOS_MACADDR_LEN);
         ah.target_protocol_addr = config->arp_config.target_protocol_addr;
         ah.serialize(pktbuf);
 
@@ -153,8 +153,8 @@ void pktgen::gen_ipv4()
         ipv4_hdr ipv4_h;
         uint16_t chksum;
 
-        memcpy(eh.src_mac, config->ipv4_config.eth_src_mac, NETOS_IDS_MACADDR_LEN);
-        memcpy(eh.dst_mac, config->ipv4_config.eth_dst_mac, NETOS_IDS_MACADDR_LEN);
+        memcpy(eh.src_mac, config->ipv4_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->ipv4_config.eth_dst_mac, NETOS_MACADDR_LEN);
         eh.ethertype = NETOS_ETHERTYPE_IPV4;
         if (config->ipv4_config.vlan_enable) {
             eh.ethertype = NETOS_ETHERTYPE_VLAN;

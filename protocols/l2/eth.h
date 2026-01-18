@@ -13,8 +13,8 @@ namespace netos {
 #define NETOS_IDS_ETH_ALEN 14
 
 struct eth_hdr {
-    uint8_t         src_mac[NETOS_IDS_MACADDR_LEN];
-    uint8_t         dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint8_t         src_mac[NETOS_MACADDR_LEN];
+    uint8_t         dst_mac[NETOS_MACADDR_LEN];
     uint16_t        ethertype;
 
     explicit eth_hdr() { }

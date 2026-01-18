@@ -30,7 +30,7 @@ netos_status parsed_pkt::parse_frame()
 
     // Parse the L2 frame
     if (this->is_an_l2_frame() == netos_status::NETOS_STATUS_SUCCESS) {
-        ret = this->parse_l2_frame();
+        return this->parse_l2_frame();
     } else {
         ret = this->parse_l3_frame();
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {

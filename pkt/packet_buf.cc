@@ -53,7 +53,7 @@ void packet_buf::serialize_bytes(uint8_t *bytes, uint32_t len)
 
 void packet_buf::serialize_mac(uint8_t *mac)
 {
-    this->serialize_bytes(mac, NETOS_IDS_MACADDR_LEN);
+    this->serialize_bytes(mac, NETOS_MACADDR_LEN);
 }
 
 void packet_buf::serialize_2_bytes(uint16_t val)
@@ -96,7 +96,7 @@ void packet_buf::deserialize_bytes(uint8_t *bytes, uint32_t len)
 
 void packet_buf::deserialize_mac(uint8_t *mac)
 {
-    this->deserialize_bytes(mac, NETOS_IDS_MACADDR_LEN);
+    this->deserialize_bytes(mac, NETOS_MACADDR_LEN);
 }
 
 void packet_buf::deserialize_2_bytes(uint16_t *val)

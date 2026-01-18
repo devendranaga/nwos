@@ -7,6 +7,7 @@
 #include "pool.h"
 #include "arp.h"
 #include "network_main.h"
+#include "statistics.h"
 
 namespace netos {
 
@@ -86,12 +87,16 @@ void network_interface::rx_thread()
             continue;
         }
 
+        pkt->ifname = this->ifname_;
+
         ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
         if (ret > 0) {
+            statistics::instance()->inc_rx_count(this->ifname_);
             std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
             this->rx_pkt_pool_.push(pkt);
             rx_pkt_pool_cond_.notify_one();
         }
+        statistics::instance()->print();
     }
 }
 
@@ -127,6 +132,7 @@ netos_status network_interface::initialize(network_if_config &if_config)
 
     netos_log_info("created raw socket on <%s>\n", if_config.ifname.c_str());
 
+    this->ifname_ = if_config.ifname;
     this->parse_thr_ = std::make_shared<std::thread>(&network_interface::parse_thread, this);
     this->tx_thr_ = std::make_shared<std::thread>(&network_interface::tx_thread, this);
     this->rx_thr_ = std::make_shared<std::thread>(&network_interface::rx_thread, this);

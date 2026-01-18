@@ -7,7 +7,8 @@ set(PLATFORM_SRC
 	platform/lib/linux/rng_linux.c
 	platform/lib/linux/ioctl_nw.c
 	platform/lib/logging/logging.c
-	platform/lib/helpers/conversion.cc)
+	platform/lib/helpers/conversion.cc
+	platform/lib/algorithms/hash_table.c)
 
 set(LOGGER_SRC
 	logger/src/logger.cc)
@@ -25,6 +26,9 @@ set(IDS_COMMON_SRC
 	protocols/l4/tcp.cc
 	ids/src/event/event_mgr.cc)
 
+set(STATISTICS_SRC
+	statistics/statistics.cc)
+
 set(IDS_SRV_SRC
 	${IDS_COMMON_SRC}
 	ids/src/core/ids_main.cc)
@@ -38,11 +42,14 @@ set(NETWORKING_SRC
 	${IDS_COMMON_SRC}
 	networking/network_main.cc
 	networking/network_config.cc
-	networking/pkt_parser.cc)
+	networking/pkt_parser.cc
+	networking/network_egress_intf.cc
+	${STATISTICS_SRC})
 
 include_directories(
 	platform/lib/helpers/
 	platform/lib/linux/
+	platform/lib/algorithms/
 	platform/lib/error/
 	platform/lib/logging/
 	ids/src/
@@ -54,10 +61,13 @@ include_directories(
 	protocols/l4/
 	ids/src/core/
 	ids/src/event/
-	networking/)
+	networking/
+	statistics/)
 
+## command line options
+#  -D NETOS_DEBUG_PKT_DECODE
 set(CMAKE_C_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -DNETOS_DEBUG_PKT_DECODE")
 
 add_library(netos_platform ${PLATFORM_SRC})
 

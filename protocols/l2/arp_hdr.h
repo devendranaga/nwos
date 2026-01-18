@@ -11,6 +11,10 @@
 
 using namespace netos::lib;
 
+// ARP operations
+#define ARP_OP_ARP_REQUEST  1
+#define ARP_OP_ARP_REPLY    2
+
 namespace netos {
 
 struct arp_hdr {
@@ -19,9 +23,9 @@ struct arp_hdr {
     uint8_t                 ha_len;
     uint8_t                 proto_len;
     uint16_t                op;
-    uint8_t                 sender_hwaddr[NETOS_IDS_MACADDR_LEN];
+    uint8_t                 sender_hwaddr[NETOS_MACADDR_LEN];
     uint32_t                sender_protocol_addr;
-    uint8_t                 target_hwaddr[NETOS_IDS_MACADDR_LEN];
+    uint8_t                 target_hwaddr[NETOS_MACADDR_LEN];
     uint32_t                target_protocol_addr;
 
     explicit arp_hdr() { }

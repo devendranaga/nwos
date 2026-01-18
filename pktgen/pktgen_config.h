@@ -14,8 +14,8 @@ namespace ids {
 
 struct pktgen_eth_config {
     bool            enable;
-    uint8_t         src_mac[NETOS_IDS_MACADDR_LEN];
-    uint8_t         dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint8_t         src_mac[NETOS_MACADDR_LEN];
+    uint8_t         dst_mac[NETOS_MACADDR_LEN];
     uint16_t        ethertype;
     bool            randomize;
     bool            repeat;
@@ -28,16 +28,16 @@ struct pktgen_eth_config {
 
 struct pktgen_arp_config {
     bool            enable;
-    uint8_t         eth_src_mac[NETOS_IDS_MACADDR_LEN];
-    uint8_t         eth_dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint8_t         eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t         eth_dst_mac[NETOS_MACADDR_LEN];
     uint8_t         hw_type;
     uint32_t        protocol;
     uint8_t         ha_len;
     uint8_t         protocol_addr_len;
     uint8_t         arp_op;
-    uint8_t         sender_hwaddr[NETOS_IDS_MACADDR_LEN];
+    uint8_t         sender_hwaddr[NETOS_MACADDR_LEN];
     uint32_t        sender_protocol_addr;
-    uint8_t         target_hwaddr[NETOS_IDS_MACADDR_LEN];
+    uint8_t         target_hwaddr[NETOS_MACADDR_LEN];
     uint32_t        target_protocol_addr;
     bool            randomize;
     bool            repeat;
@@ -50,8 +50,8 @@ struct pktgen_arp_config {
 
 struct pktgen_vlan_config {
     bool                        enable;
-    uint8_t                     eth_src_mac[NETOS_IDS_MACADDR_LEN];
-    uint8_t                     eth_dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint8_t                     eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t                     eth_dst_mac[NETOS_MACADDR_LEN];
     uint16_t                    ethertype;
     bool                        randomize;
     std::vector<uint16_t>       vlan_ids;
@@ -65,8 +65,8 @@ struct pktgen_vlan_config {
 
 struct pktgen_ipv4_config {
     bool            enable;
-    uint8_t         eth_src_mac[NETOS_IDS_MACADDR_LEN];
-    uint8_t         eth_dst_mac[NETOS_IDS_MACADDR_LEN];
+    uint8_t         eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t         eth_dst_mac[NETOS_MACADDR_LEN];
     bool            vlan_enable;
     std::vector<uint16_t>   vlan_ids;
     uint8_t         version;
@@ -93,6 +93,29 @@ struct pktgen_ipv4_config {
     void print();
 };
 
+struct pktgen_ipv6_config {
+    bool            enable;
+    uint8_t         eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t         eth_dst_mac[NETOS_MACADDR_LEN];
+    bool            vlan_enable;
+    std::vector<uint16_t>   vlan_ids;
+    uint8_t         version;
+    uint8_t         traffic_class;
+    uint32_t        flow_label;
+    uint16_t        payload_len;
+    uint8_t         nh;
+    uint8_t         hop_limit;
+    uint8_t         src_addr[NETOS_IPV6_ADDR_LEN];
+    uint8_t         dst_addr[NETOS_IPV6_ADDR_LEN];
+    bool            randomize;
+    bool            repeat;
+    uint32_t        count;
+    uint64_t        pkt_intvl_nsec;
+
+    int parse(const Json::Value &r);
+    void print();
+};
+
 struct pktgen_config {
     ~pktgen_config() = default;
 
@@ -106,6 +129,7 @@ struct pktgen_config {
     pktgen_arp_config arp_config;
     pktgen_vlan_config vlan_config;
     pktgen_ipv4_config ipv4_config;
+    pktgen_ipv6_config ipv6_config;
     int parse(const std::string &filename);
     void print();
 

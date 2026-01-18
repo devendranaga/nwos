@@ -11,7 +11,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "arp": {
-        "enable": false,
+        "enable": true,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -23,11 +23,11 @@
         "op": 1,
         "sender_hwaddr": "00:11:22:33:44:12",
         "sender_protocol_addr": "192.168.1.1",
-        "target_hwaddr": "00:11:22:23:33:41",
+        "target_hwaddr": "ff:ff:ff:ff:ff:ff",
         "target_protocol_addr": "192.168.1.2",
         "randomize": false,
         "repeat": true,
-        "count": 100,
+        "count": 2,
         "pkt_intvl_nsec": 1000000
     },
     "vlan": {
@@ -48,7 +48,7 @@
         "pkt_intvl_nsec": 1
     },
     "ipv4": {
-        "enable": true,
+        "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -79,6 +79,33 @@
         "hdr_chksum": "0x1022",
         "src_addr": "192.168.0.1",
         "dst_addr": "192.168.0.12",
+        "repeat": true,
+        "count": 1,
+        "pkt_intvl_nsec": 1
+    },
+    "ipv6": {
+        "enable": false,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "vlan": {
+            "enable": true,
+            "multi_vlan_tag": [
+                {
+                    "vid": 1
+                }
+            ]
+        },
+        "version": 6,
+        "traffic_class": 10,
+        "flow_label": 1024,
+        "payload_len": 0,
+        "nh": 6,
+        "hop_limit": 1,
+        "src_addr": "2001::1",
+        "dst_addr": "2001::2",
+        "randomize": false,
         "repeat": true,
         "count": 1,
         "pkt_intvl_nsec": 1
