@@ -1,6 +1,10 @@
 {
     "network_config": {
         "interface_name": "dummy0",
+        "logging": {
+            "debug_log_server_ip": "127.0.0.1",
+            "debug_log_server_port": 12000
+        },
         "arp_config": {
             "arp_table_len": 64
         }

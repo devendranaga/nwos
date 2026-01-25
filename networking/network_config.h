@@ -22,10 +22,18 @@ struct network_if_config {
     netos_status parse(Json::Value &root);
 };
 
+struct network_log_config {
+    std::string debug_log_server_ip;
+    uint16_t debug_log_server_port;
+
+    netos_status parse(Json::Value &root);
+};
+
 struct network_config {
     public:
         network_if_config if_config_;
         network_arp_config arp_config_;
+        network_log_config log_config_;
 
         ~network_config() { }
         static network_config *instance() {

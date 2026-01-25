@@ -34,17 +34,20 @@ void network_manager::run(int argc, char **argv)
     netos_status res;
     int ret;
 
-    netos_log_init("127.0.0.1", 12000);
-
     ret = this->parse_cmdargs(argc, argv);
     if (ret != 0) {
         return;
     }
 
-    res = network_config::instance()->parse(this->cmdargs_.config_file);
+    conf = network_config::instance();
+    res = conf->parse(this->cmdargs_.config_file);
     if (res != netos_status::NETOS_STATUS_SUCCESS) {
         return;
     }
+
+    netos_log_init(
+            conf->log_config_.debug_log_server_ip.c_str(),
+            conf->log_config_.debug_log_server_port);
 
     network_egress::instance()->initialize();
     arp_context::instance()->init();

@@ -24,6 +24,14 @@ netos_status network_arp_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status network_log_config::parse(Json::Value &root)
+{
+    this->debug_log_server_ip = root["debug_log_server_ip"].asString();
+    this->debug_log_server_port = root["debug_log_server_port"].asUInt();
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status network_config::parse(const std::string &config)
 {
     netos_status ret;
@@ -38,6 +46,9 @@ netos_status network_config::parse(const std::string &config)
     }
     auto arp_config = root["network_config"]["arp_config"];
     this->arp_config_.parse(arp_config);
+
+    auto log_config = root["network_config"]["logging"];
+    this->log_config_.parse(log_config);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
