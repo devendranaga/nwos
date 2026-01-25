@@ -20,6 +20,7 @@ namespace netos {
 class network_interface {
     public:
         explicit network_interface() { }
+        std::shared_ptr<raw_socket> get_raw_fd() { return this->raw_; }
         netos_status initialize(const std::string &ifname);
 
         ~network_interface() { }

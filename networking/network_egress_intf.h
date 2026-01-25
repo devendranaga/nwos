@@ -11,6 +11,8 @@
 #include "packet_buf.h"
 #include "raw_socket.h"
 
+using namespace netos::lib;
+
 namespace netos {
 
 struct network_egress_intf {
@@ -24,6 +26,24 @@ struct network_egress_intf {
     ~network_egress_intf() {}
 };
 
+struct network_egress_interface_ctx {
+    std::queue<network_egress_intf> egress_queue_;
+    std::condition_variable egress_queue_cond_;
+    std::shared_ptr<std::thread> egress_thr_;
+    std::shared_ptr<raw_socket> raw_fd_;
+    std::mutex egress_queue_lock_;
+    std::string ifname_;
+
+    explicit network_egress_interface_ctx() : raw_fd_(nullptr),
+                                              ifname_("") {}
+    ~network_egress_interface_ctx() {}
+
+    void initialize();
+
+    private:
+        void egress_tx_thread();
+};
+
 class network_egress {
     public:
         ~network_egress() {}
@@ -33,17 +53,14 @@ class network_egress {
             return &egress;
         }
 
-        void initialize();
+        void add_interface_ctx(std::shared_ptr<raw_socket> raw,
+                               std::string ifname);
         void egress_enque(network_egress_intf &intf);
 
     private:
-        std::queue<network_egress_intf> egress_queue_;
-        std::shared_ptr<std::thread> egress_thr_;
-        std::mutex egress_queue_lock_;
-        std::condition_variable egress_queue_cond_;
+        std::vector<std::shared_ptr<network_egress_interface_ctx>> interface_ctx_list_;
 
         explicit network_egress() {}
-        void egress_tx_thread();
 };
 
 }

@@ -12,7 +12,9 @@ namespace netos {
 
 netos_status network_if_config::parse(Json::Value &root)
 {
-    this->ifname = root["interface_name"].asString();
+    for (auto ifname_ptr : root["interface_list"]) {
+        this->ifname.push_back(ifname_ptr.asString());
+    }
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

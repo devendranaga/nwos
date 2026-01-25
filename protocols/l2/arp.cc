@@ -174,6 +174,7 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
     eth_hdr eh;
     arp_hdr ah;
 
+    intf.ifname = frame->ifname;
     intf.raw_fd_ = frame->raw;
     intf.pkt = std::make_shared<packet_buf>();
     intf.pkt->allocate();

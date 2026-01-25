@@ -17,7 +17,7 @@ struct network_arp_config {
 };
 
 struct network_if_config {
-    std::string ifname;
+    std::vector<std::string> ifname;
 
     netos_status parse(Json::Value &root);
 };

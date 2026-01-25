@@ -34,31 +34,45 @@ void network_manager::run(int argc, char **argv)
     netos_status res;
     int ret;
 
+    // parse command line arguments
     ret = this->parse_cmdargs(argc, argv);
     if (ret != 0) {
         return;
     }
 
+    // parse configuration file
     conf = network_config::instance();
     res = conf->parse(this->cmdargs_.config_file);
     if (res != netos_status::NETOS_STATUS_SUCCESS) {
         return;
     }
 
+    // initialize logging
     netos_log_init(
             conf->log_config_.debug_log_server_ip.c_str(),
             conf->log_config_.debug_log_server_port);
 
-    network_egress::instance()->initialize();
     arp_context::instance()->init();
 
+    // initialize network interface
     conf = network_config::instance();
 
-    std::shared_ptr<network_interface> netif;
+    for (auto ifname : conf->if_config_.ifname) {
+        network_egress *egress;
+        std::shared_ptr<network_interface> netif;
 
-    netif = std::make_shared<network_interface>();
-    netif->initialize(conf->if_config_.ifname);
-    this->iflist_.push_back(netif);
+        netif = std::make_shared<network_interface>();
+        res = netif->initialize(ifname);
+        if (res != netos_status::NETOS_STATUS_SUCCESS) {
+            netos_log_error("failed to initialize interface <%s>\n", ifname.c_str());
+            continue;
+        }
+
+        egress = network_egress::instance();
+        egress->add_interface_ctx(netif->get_raw_fd(), ifname);
+
+        this->iflist_.push_back(netif);
+    }
 
     while (1) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
