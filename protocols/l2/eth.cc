@@ -19,7 +19,7 @@ netos_status eth_hdr::serialize(std::shared_ptr<packet_buf> &buf)
 
 netos_status eth_hdr::deserialize(std::shared_ptr<packet_buf> &buf)
 {
-    if ((buf->len_ - buf->offset_) < NETOS_IDS_ETH_ALEN) {
+    if ((buf->len_ - buf->offset_) < NETOS_ETH_ALEN) {
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 

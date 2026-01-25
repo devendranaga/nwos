@@ -1,11 +1,15 @@
+#include <stdint.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-pthread_mutex_t lock;
+#include "logging_protocol.h"
 
 typedef enum {
     NETOS_LOG_TYPE_VERBOSE = 0,
@@ -15,39 +19,39 @@ typedef enum {
     NETOS_LOG_TYPE_ERROR   = 4,
 } netos_log_type_t;
 
-const char *log_msg_type_list[] = {
-    "verbose",
-    "info",
-    "debug",
-    "warning",
-    "error",
+struct logging_context {
+    int server_fd;
+    struct sockaddr_in server_addr;
+    pthread_mutex_t lock;
 };
+
+static struct logging_context ctx;
 
 static void netos_log_msg(netos_log_type_t type, const char *fmt, va_list ap)
 {
-    struct timespec tp;
-    char buf[4096];
-    struct tm *t;
-    time_t now;
+    struct netos_log_info *log_info;
+    struct timespec tp = {0};
+    char buf[4096] = {0};
+    uint32_t data_len;
     int ret;
 
-    now = time(0);
-    t = gmtime(&now);
+    // data length is without the header length
+    data_len = sizeof(buf) - sizeof(struct netos_log_info);
+    log_info = (struct netos_log_info *)buf;
+
     clock_gettime(CLOCK_REALTIME, &tp);
 
-    pthread_mutex_lock(&lock);
-    ret = snprintf(buf, sizeof(buf), "[%04d-%02d-%02d %02d-%02d-%02d.%04lld] <%s> ",
-                            t->tm_year + 1900,
-                            t->tm_mon + 1,
-                            t->tm_mday,
-                            t->tm_hour,
-                            t->tm_min,
-                            t->tm_sec,
-                            tp.tv_nsec / 1000000ULL,
-                            log_msg_type_list[type]);
-    ret += vsnprintf(buf + ret, sizeof(buf) - ret, fmt, ap);
-    fprintf(stderr, "%s", buf);
-    pthread_mutex_unlock(&lock);
+    pthread_mutex_lock(&ctx.lock);
+    // write to the data portion after the header fields.
+    ret = vsnprintf((char *)(log_info->data), data_len, fmt, ap);
+    LOG_MSG_PREPARE(log_info, type, tp.tv_sec, tp.tv_nsec, ret);
+    sendto(ctx.server_fd,
+           buf,
+           sizeof(struct netos_log_info) + ret,
+           0,
+           (struct sockaddr *)&ctx.server_addr,
+           sizeof(ctx.server_addr));
+    pthread_mutex_unlock(&ctx.lock);
 }
 
 void netos_log_verbose(const char *fmt, ...)
@@ -95,3 +99,28 @@ void netos_log_error(const char *fmt, ...)
     va_end(ap);
 }
 
+int netos_log_init(const char *server_ip, uint16_t server_port)
+{
+    int ret;
+
+    ctx.server_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (ctx.server_fd < 0) {
+        return -1;
+    }
+
+    ctx.server_addr.sin_family = AF_INET;
+    ctx.server_addr.sin_port = htons(server_port);
+    ret = inet_pton(AF_INET, server_ip, &ctx.server_addr.sin_addr);
+    if (ret <= 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+void netos_log_deinit()
+{
+    if (ctx.server_fd > 0) {
+        close(ctx.server_fd);
+    }
+}

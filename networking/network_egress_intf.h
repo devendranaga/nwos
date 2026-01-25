@@ -34,10 +34,10 @@ class network_egress {
         }
 
         void initialize();
-        void egress_enque(std::shared_ptr<network_egress_intf> intf);
+        void egress_enque(network_egress_intf &intf);
 
     private:
-        std::queue<std::shared_ptr<network_egress_intf>> egress_queue_;
+        std::queue<network_egress_intf> egress_queue_;
         std::shared_ptr<std::thread> egress_thr_;
         std::mutex egress_queue_lock_;
         std::condition_variable egress_queue_cond_;

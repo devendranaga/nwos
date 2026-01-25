@@ -1,8 +1,9 @@
 {
-    "network_config": [
-        {
-            "interface_name": "dummy0"
+    "network_config": {
+        "interface_name": "dummy0",
+        "arp_config": {
+            "arp_table_len": 64
         }
-    ]
+    }
 }
 

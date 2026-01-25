@@ -20,7 +20,7 @@ namespace netos {
 class network_interface {
     public:
         explicit network_interface() { }
-        netos_status initialize(network_if_config &if_config);
+        netos_status initialize(const std::string &ifname);
 
         ~network_interface() { }
 

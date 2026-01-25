@@ -9,6 +9,7 @@
 #include "ethertypes.h"
 #include "event_mgr.h"
 #include "network_egress_intf.h"
+#include "network_config.h"
 
 using namespace netos::ids;
 
@@ -24,20 +25,11 @@ static uint32_t arp_macaddr_hash(void *macaddr_ptr)
     return hash_val;
 }
 
-static bool arp_macaddr_compare(void *mac1, void *mac2)
-{
-    uint8_t *mac_1 = (uint8_t *)mac1;
-    uint8_t *mac_2 = (uint8_t *)mac2;
-
-    return (memcmp(mac_1, mac_2, NETOS_MACADDR_LEN) == 0);
-}
-
 static bool arp_ipaddr_compare(void *ip1, void *ip2)
 {
     uint32_t *ip_1 = (uint32_t *)ip1;
     uint32_t *ip_2 = (uint32_t *)ip2;
 
-    printf("ip_1 %x ip_2 %x\n", *ip_1, *ip_2);
     return (*ip_1 == *ip_2);
 }
 
@@ -138,7 +130,10 @@ void arp_hdr::print() { }
 
 arp_cache::arp_cache()
 {
-    arp_cache_ = netos_hash_table_init(100);
+    network_config *config = network_config::instance();
+
+    printf("%d\n", config->arp_config_.arp_table_len);
+    arp_cache_ = netos_hash_table_init(config->arp_config_.arp_table_len);
 }
 
 arp_cache::~arp_cache()
@@ -146,7 +141,7 @@ arp_cache::~arp_cache()
     netos_hash_table_free(arp_cache_, nullptr);
 }
 
-void arp_cache::update(const std::string &ifname, uint8_t *macaddr)
+void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr)
 {
     arp_entry *entry;
 
@@ -156,7 +151,9 @@ void arp_cache::update(const std::string &ifname, uint8_t *macaddr)
     }
 
     entry->ifname = ifname;
+    entry->state = state;
     memcpy(entry->macaddr, macaddr, NETOS_MACADDR_LEN);
+    entry->ipaddr = ipaddr;
     entry->last_updated = time(0);
 
     netos_hash_table_add_item(arp_cache_, entry, macaddr, arp_macaddr_hash);
@@ -173,19 +170,18 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
                                     uint8_t *macaddr,
                                     uint32_t ipaddr)
 {
-    std::shared_ptr<network_egress_intf> intf;
+    network_egress_intf intf;
     eth_hdr eh;
     arp_hdr ah;
 
-    intf = std::make_shared<network_egress_intf>();
-    intf->raw_fd_ = frame->raw;
-    intf->pkt = std::make_shared<packet_buf>();
-    intf->pkt->allocate();
+    intf.raw_fd_ = frame->raw;
+    intf.pkt = std::make_shared<packet_buf>();
+    intf.pkt->allocate();
 
     memcpy(eh.dst_mac, frame->eh.src_mac, NETOS_MACADDR_LEN);
     memcpy(eh.src_mac, macaddr, NETOS_MACADDR_LEN);
     eh.ethertype = NETOS_ETHERTYPE_ARP;
-    eh.serialize(intf->pkt);
+    eh.serialize(intf.pkt);
 
     ah.hw_type = ARP_HW_TYPE_ETHERNET;
     ah.protocol_type = NETOS_ETHERTYPE_IPV4;
@@ -196,15 +192,7 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
     memcpy(ah.target_hwaddr, frame->eh.src_mac, NETOS_MACADDR_LEN);
     ah.target_protocol_addr = frame->ah.sender_protocol_addr;
     ah.op = ARP_OP_ARP_REPLY;
-    ah.serialize(intf->pkt);
-
-    uint32_t i;
-
-    printf("arp: \n");
-    for (i = 0; i < intf->pkt->offset_; i ++) {
-        printf("%02x ", intf->pkt->buf_[i]);
-    }
-    printf("\n");
+    ah.serialize(intf.pkt);
 
     network_egress::instance()->egress_enque(intf);
 }
@@ -241,7 +229,10 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
             entry->last_updated = time(0);
         } else {
             // Add the entry.
-            this->cache_.update(rx_frame->ifname, (uint8_t *)&rx_frame->ah.sender_protocol_addr);
+            this->cache_.update(rx_frame->ifname,
+                            arp_state::ARP_STATE_RESOLVED,
+                            rx_frame->ah.sender_hwaddr,
+                            rx_frame->ah.sender_protocol_addr);
         }
         printf("send out egress frame %s\n", rx_frame->ifname.c_str());
         this->arp_frame_prepare(rx_frame, mac, ipaddr);

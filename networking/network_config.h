@@ -10,6 +10,12 @@ using namespace netos::lib;
 
 namespace netos {
 
+struct network_arp_config {
+    uint32_t arp_table_len;
+
+    netos_status parse(Json::Value &root);
+};
+
 struct network_if_config {
     std::string ifname;
 
@@ -18,7 +24,8 @@ struct network_if_config {
 
 struct network_config {
     public:
-        std::vector<network_if_config> if_config_list_;
+        network_if_config if_config_;
+        network_arp_config arp_config_;
 
         ~network_config() { }
         static network_config *instance() {

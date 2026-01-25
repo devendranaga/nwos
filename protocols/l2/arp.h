@@ -42,10 +42,11 @@ enum class arp_state : uint32_t {
 };
 
 struct arp_entry {
-    arp_state state;
+    arp_state   state;
     std::string ifname;
-    uint8_t macaddr[NETOS_MACADDR_LEN];
-    time_t last_updated;
+    uint8_t     macaddr[NETOS_MACADDR_LEN];
+    uint32_t    ipaddr;
+    time_t      last_updated;
 
     explicit arp_entry() : state(arp_state::ARP_STATE_INIT) { }
     ~arp_entry() { }
@@ -56,7 +57,7 @@ class arp_cache {
         explicit arp_cache();
         ~arp_cache();
 
-        void update(const std::string &ifname, uint8_t *macaddr);
+        void update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr);
         netos_hash_table *get() { return arp_cache_; }
 
     private:

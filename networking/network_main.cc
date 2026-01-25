@@ -34,6 +34,8 @@ void network_manager::run(int argc, char **argv)
     netos_status res;
     int ret;
 
+    netos_log_init("127.0.0.1", 12000);
+
     ret = this->parse_cmdargs(argc, argv);
     if (ret != 0) {
         return;
@@ -49,13 +51,11 @@ void network_manager::run(int argc, char **argv)
 
     conf = network_config::instance();
 
-    for (auto if_config : conf->if_config_list_) {
-        std::shared_ptr<network_interface> netif;
+    std::shared_ptr<network_interface> netif;
 
-        netif = std::make_shared<network_interface>();
-        netif->initialize(if_config);
-        this->iflist_.push_back(netif);
-    }
+    netif = std::make_shared<network_interface>();
+    netif->initialize(conf->if_config_.ifname);
+    this->iflist_.push_back(netif);
 
     while (1) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -126,15 +126,15 @@ void network_interface::parse_thread()
     }
 }
 
-netos_status network_interface::initialize(network_if_config &if_config)
+netos_status network_interface::initialize(const std::string &ifname)
 {
-    netos_log_info("initialize interface <%s>\n", if_config.ifname.c_str());
+    netos_log_info("initialize interface <%s>\n", ifname.c_str());
 
-    this->raw_ = std::make_shared<raw_socket>(if_config.ifname, 0);
+    this->raw_ = std::make_shared<raw_socket>(ifname, 0);
 
-    netos_log_info("created raw socket on <%s>\n", if_config.ifname.c_str());
+    netos_log_info("created raw socket on <%s>\n", ifname.c_str());
 
-    this->ifname_ = if_config.ifname;
+    this->ifname_ = ifname;
     this->parse_thr_ = std::make_shared<std::thread>(&network_interface::parse_thread, this);
     this->tx_thr_ = std::make_shared<std::thread>(&network_interface::tx_thread, this);
     this->rx_thr_ = std::make_shared<std::thread>(&network_interface::rx_thread, this);

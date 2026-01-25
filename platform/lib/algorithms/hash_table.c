@@ -8,7 +8,7 @@
 struct netos_hash_table* netos_hash_table_init(uint32_t size)
 {
     struct netos_hash_table *ht;
-    
+
     ht = calloc(1, sizeof(struct netos_hash_table));
     if (ht == NULL) {
         return NULL;

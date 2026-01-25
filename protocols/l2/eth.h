@@ -10,7 +10,7 @@
 
 namespace netos {
 
-#define NETOS_IDS_ETH_ALEN 14
+#define NETOS_ETH_ALEN 14
 
 struct eth_hdr {
     uint8_t         src_mac[NETOS_MACADDR_LEN];
