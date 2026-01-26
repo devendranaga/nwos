@@ -17,9 +17,13 @@
 #include "ipv6.h"
 #include "udp.h"
 #include "tcp.h"
+#include "icmp.h"
 
 namespace netos {
 
+/**
+ * Holds the bits that are present in the below parsed_pkt.
+ */
 struct parsed_pkt_types {
     uint32_t has_vlan   :1;
     uint32_t has_arp    :1;
@@ -27,8 +31,13 @@ struct parsed_pkt_types {
     uint32_t has_ipv6   :1;
     uint32_t has_udp    :1;
     uint32_t has_tcp    :1;
+    uint32_t has_icmp   :1;
 } __attribute__ ((__packed__));
 
+/**
+ * @brief - Holds the entire packet context along with the
+ *          parsed headers of the packet and the received buffer.
+ */
 struct parsed_pkt {
     std::shared_ptr<packet_buf> pkt_buf;
     std::shared_ptr<raw_socket> raw;
@@ -42,6 +51,7 @@ struct parsed_pkt {
     ipv6_hdr                    ipv6_h;
     udp_hdr                     udp_h;
     tcp_hdr                     tcp_h;
+    icmp_hdr                    icmp_h;
 
     explicit parsed_pkt() {}
     ~parsed_pkt() {}

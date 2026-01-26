@@ -132,7 +132,6 @@ arp_cache::arp_cache()
 {
     network_config *config = network_config::instance();
 
-    printf("%d\n", config->arp_config_.arp_table_len);
     arp_cache_ = netos_hash_table_init(config->arp_config_.arp_table_len);
 }
 
@@ -162,7 +161,7 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
 void arp_context::add_rx_frame(std::shared_ptr<parsed_pkt> rx_frame)
 {
     std::unique_lock<std::mutex> l(this->process_thr_lock_);
-    rx_queue_.push(rx_frame);
+    this->arp_rx_queue_.push(rx_frame);
     this->process_cond_lock_.notify_one();
 }
 
@@ -205,7 +204,6 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
     void *res;
     int ret;
 
-    printf("process packet\n");
     ret = netos_get_macaddr(rx_frame->ifname.c_str(), mac);
     if (ret != 0) {
         return;
@@ -216,7 +214,6 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
         return;
     }
 
-    printf("op %d\n", rx_frame->ah.op);
     // Packet is directed to us.. do not drop it.
     if ((rx_frame->ah.op == ARP_OP_ARP_REQUEST) &&
         (ntohl(ipaddr) == rx_frame->ah.target_protocol_addr)) {
@@ -235,7 +232,6 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
                             rx_frame->ah.sender_hwaddr,
                             rx_frame->ah.sender_protocol_addr);
         }
-        printf("send out egress frame %s\n", rx_frame->ifname.c_str());
         this->arp_frame_prepare(rx_frame, mac, ipaddr);
     } else {
         // Drop the frame and cleanup.
@@ -247,11 +243,11 @@ void arp_context::arp_process_thread()
     while (1) {
         std::unique_lock<std::mutex> l(this->process_thr_lock_);
         this->process_cond_lock_.wait(l);
-        while (!rx_queue_.empty()) {
-            std::shared_ptr<parsed_pkt> rx_frame = rx_queue_.front();
+        while (!arp_rx_queue_.empty()) {
+            std::shared_ptr<parsed_pkt> rx_frame = arp_rx_queue_.front();
 
             this->arp_process_packet(rx_frame);
-            rx_queue_.pop();
+            arp_rx_queue_.pop();
             l.unlock();
         }
     }
@@ -259,8 +255,8 @@ void arp_context::arp_process_thread()
 
 netos_status arp_context::init()
 {
-    rx_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
-    rx_thr_->detach();
+    monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
+    monitor_thr_->detach();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

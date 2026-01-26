@@ -30,6 +30,8 @@ netos_status network_log_config::parse(Json::Value &root)
 {
     this->debug_log_server_ip = root["debug_log_server_ip"].asString();
     this->debug_log_server_port = root["debug_log_server_port"].asUInt();
+    this->log_pcap = root["log_pcap"].asBool();
+    this->pcap_file_path = root["pcap_file_path"].asString();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

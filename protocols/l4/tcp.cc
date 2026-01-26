@@ -2,6 +2,8 @@
 #include "event_mgr.h"
 #include "logging.h"
 
+#include <arpa/inet.h>
+
 using namespace netos::ids;
 
 namespace netos {
@@ -13,23 +15,23 @@ uint16_t tcp_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf, uint32_t src_ip
 
     // Pseudo Header Calculation
     // Source IP
-    chksum32 += (src_ip & 0xFFFF);
     chksum32 += (src_ip >> 16);
+    chksum32 += (src_ip & 0xFFFF);
 
     // Dest IP
-    chksum32 += (dst_ip & 0xFFFF);
     chksum32 += (dst_ip >> 16);
+    chksum32 += (dst_ip & 0xFFFF);
 
     // Reserved (0) + Protocol (6)
-    chksum32 += (0x0006);
+    chksum32 += htons(0x0006);
 
     // TCP Length
-    uint32_t tcp_len = this->end_off - this->start_off;
-    chksum32 += tcp_len;
+    uint32_t tcp_len = pkt_buf->len_ - this->start_off;
+    chksum32 += htons(tcp_len);
 
     // Payload Checksum
     for (i = this->start_off; i < this->end_off; i += 2) {
-        if (i + 1 < this->end_off) {
+        if (i + 1 < pkt_buf->len_) {
             chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
         } else {
             // Odd byte padding

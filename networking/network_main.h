@@ -11,6 +11,7 @@
 #include "raw_socket.h"
 #include "parsed_pkt.h"
 #include "network_config.h"
+#include "pcap.h"
 #include "network_egress_intf.h"
 
 using namespace netos::lib;
@@ -34,11 +35,11 @@ class network_interface {
         std::queue<std::shared_ptr<parsed_pkt>> rx_pkt_pool_;
         std::condition_variable rx_pkt_pool_cond_;
         std::mutex rx_pkt_pool_lock_;
-        std::shared_ptr<std::thread> tx_thr_;
         std::shared_ptr<std::thread> rx_thr_;
         std::shared_ptr<std::thread> parse_thr_;
         std::string ifname_;
         std::shared_ptr<raw_socket> raw_;
+        std::shared_ptr<pcap_mod> pcap_;
 };
 
 struct network_cmdargs {

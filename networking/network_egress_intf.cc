@@ -11,12 +11,12 @@ void network_egress_interface_ctx::egress_tx_thread()
         std::unique_lock<std::mutex> l(this->egress_queue_lock_);
         this->egress_queue_cond_.wait(l);
 
-        printf("received egress frame for <%s>\n", this->ifname_.c_str());
+        netos_log_info("received egress frame for <%s>\n", this->ifname_.c_str());
         while (!this->egress_queue_.empty()) {
             network_egress_intf intf = this->egress_queue_.front();
             this->egress_queue_.pop();
 
-            printf("send egress frame %s %d\n", intf.ifname.c_str(), intf.pkt->offset_);
+            netos_log_info("send egress frame %s %d\n", intf.ifname.c_str(), intf.pkt->offset_);
             intf.raw_fd_->send_msg(dst, intf.pkt->buf_, intf.pkt->offset_);
         }
     }
@@ -45,7 +45,7 @@ void network_egress::add_interface_ctx(std::shared_ptr<raw_socket> raw,
 void network_egress::egress_enque(network_egress_intf &intf)
 {
     for (auto it : this->interface_ctx_list_) {
-        printf("trying enqueue <%s> <%s>\n", it->ifname_.c_str(), intf.ifname.c_str());
+        netos_log_info("trying enqueue <%s> <%s>\n", it->ifname_.c_str(), intf.ifname.c_str());
         if (it->ifname_ == intf.ifname) {
             std::unique_lock<std::mutex> l(it->egress_queue_lock_);
             it->egress_queue_.push(intf);

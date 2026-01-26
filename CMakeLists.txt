@@ -10,6 +10,7 @@ set(PLATFORM_SRC
 	platform/lib/logging/logging.c
 	platform/lib/helpers/conversion.cc
 	platform/lib/algorithms/hash_table.c
+	platform/lib/linux/pcap_lib.cc
 	platform/lib/gcd/gcd.cc)
 
 set(LOGGER_SRC
@@ -26,6 +27,8 @@ set(IDS_COMMON_SRC
 	protocols/l3/ipv6.cc
 	protocols/l4/udp.cc
 	protocols/l4/tcp.cc
+	protocols/l4/icmp.cc
+	protocols/l4/icmpv6.cc
 	ids/src/event/event_mgr.cc
 	networking/network_egress_intf.cc)
 
@@ -47,6 +50,7 @@ set(NETWORKING_SRC
 	networking/network_config.cc
 	networking/pkt_parser.cc
 	networking/network_egress_intf.cc
+	networking/pcap.cc
 	${STATISTICS_SRC})
 
 set(CRYPTOGRAPHY_SRC
@@ -78,8 +82,8 @@ include_directories(
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g")
 
 add_library(netos_platform ${PLATFORM_SRC})
 

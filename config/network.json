@@ -6,7 +6,9 @@
         ],
         "logging": {
             "debug_log_server_ip": "127.0.0.1",
-            "debug_log_server_port": 12000
+            "debug_log_server_port": 12000,
+            "log_pcap": true,
+            "pcap_file_path": "./netos_pcap"
         },
         "arp_config": {
             "arp_table_len": 64

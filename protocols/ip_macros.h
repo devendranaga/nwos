@@ -1,0 +1,7 @@
+#ifndef PROTOCOLS_IP_MACROS_H
+#define PROTOCOLS_IP_MACROS_H
+
+#define NETOS_IP_HDR_MIN_LEN 20u
+#define NETOS_IP_HDR_MAX_LEN 60u
+
+#endif

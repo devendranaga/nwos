@@ -122,4 +122,19 @@ void packet_buf::deserialize_4_bytes(uint32_t *val)
     this->offset_ += 4;
 }
 
+uint32_t packet_buf::get_remaining_len() const
+{
+    return this->len_ - this->offset_;
+}
+
+uint8_t *packet_buf::get_raw_buf() const
+{
+    return this->buf_;
+}
+
+uint32_t packet_buf::get_raw_buf_len() const
+{
+    return this->offset_;
+}
+
 }

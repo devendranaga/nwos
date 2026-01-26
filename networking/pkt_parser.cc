@@ -40,7 +40,6 @@ netos_status parsed_pkt::parse_frame()
 
     // we finished parsing at L3 itself, no need to do anything more
     if (this->is_an_l3_frame() == netos_status::NETOS_STATUS_SUCCESS) {
-    } else {
         ret = this->parse_l4_frame();
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
             return ret;
@@ -93,6 +92,13 @@ netos_status parsed_pkt::parse_l3_frame()
     return ret;
 }
 
+/**
+ * Parse the following L4 headers.
+ *
+ * 1. TCP.
+ * 2. UDP.
+ * 3. ICMP.
+ */
 netos_status parsed_pkt::parse_l4_frame()
 {
     netos_status ret = netos_status::NETOS_STATUS_SUCCESS;
@@ -110,11 +116,17 @@ netos_status parsed_pkt::parse_l4_frame()
                 this->pkt_types_present.has_udp = 1;
             }
         break;
+        case NETOS_IP_PROTOCOL_ICMP:
+            ret = this->icmp_h.deserialize(this->pkt_buf);
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->pkt_types_present.has_icmp = 1;
+            }
+        break;
         default:
             return netos_status::NETOS_STATUS_UNSUPPORTED_L4_PROTOCOL;
     }
 
-    return netos_status::NETOS_STATUS_SUCCESS;
+    return ret;
 }
 
 }

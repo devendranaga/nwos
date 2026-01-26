@@ -32,6 +32,10 @@ class statistics {
         std::unordered_map<std::string, stats_intf> stats_map_;
         std::mutex lock_;
         explicit statistics() { }
+        explicit statistics(const statistics &) = delete;
+        explicit statistics(statistics &&) = delete;
+        statistics &operator=(const statistics &) = delete;
+        statistics &operator=(statistics &&) = delete;
 };
 
 }

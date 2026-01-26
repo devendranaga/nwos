@@ -79,21 +79,12 @@ void network_manager::run(int argc, char **argv)
     }
 }
 
-void network_interface::tx_thread()
-{
-    netos_log_info("create tx thread ok\n");
-
-    while (1) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
-
 void network_interface::rx_thread()
 {
     netos_status res;
     int ret;
 
-    netos_log_info("create rx thread ok\n");
+    netos_log_info("create rx thread for <%s> ok\n", this->ifname_.c_str());
 
     while (1) {
         std::shared_ptr<parsed_pkt> pkt;
@@ -110,6 +101,7 @@ void network_interface::rx_thread()
 
         ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
         if (ret > 0) {
+            pkt->pkt_buf->len_ = ret;
             statistics::instance()->inc_rx_count(this->ifname_);
             std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
             this->rx_pkt_pool_.push(pkt);
@@ -133,18 +125,29 @@ void network_interface::parse_thread()
     while (1) {
         std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
         rx_pkt_pool_cond_.wait(l);
-        std::shared_ptr<parsed_pkt> pkt = this->rx_pkt_pool_.front();
-        this->rx_pkt_pool_.pop();
 
-        ret = pkt->parse_frame();
-        if (ret == netos_status::NETOS_STATUS_SUCCESS) {
-            this->dispatch_pkt(pkt);
+        // dequeue all the packets from the pool
+        while (!this->rx_pkt_pool_.empty()) {
+            std::shared_ptr<parsed_pkt> pkt = this->rx_pkt_pool_.front();
+            this->rx_pkt_pool_.pop();
+
+            // parse and dispatch them to the corresponding protocol layer
+            ret = pkt->parse_frame();
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->dispatch_pkt(pkt);
+            }
+
+            if (this->pcap_) {
+                this->pcap_->add_packet(pkt->pkt_buf);
+            }
         }
     }
 }
 
 netos_status network_interface::initialize(const std::string &ifname)
 {
+    network_config *conf = network_config::instance();
+
     netos_log_info("initialize interface <%s>\n", ifname.c_str());
 
     this->raw_ = std::make_shared<raw_socket>(ifname, 0);
@@ -152,9 +155,25 @@ netos_status network_interface::initialize(const std::string &ifname)
     netos_log_info("created raw socket on <%s>\n", ifname.c_str());
 
     this->ifname_ = ifname;
-    this->parse_thr_ = std::make_shared<std::thread>(&network_interface::parse_thread, this);
-    this->tx_thr_ = std::make_shared<std::thread>(&network_interface::tx_thread, this);
-    this->rx_thr_ = std::make_shared<std::thread>(&network_interface::rx_thread, this);
+
+    if (conf->log_config_.log_pcap) {
+        this->pcap_ = std::make_shared<pcap_mod>();
+        this->pcap_->initialize(ifname, conf->log_config_.pcap_file_path);
+    }
+
+    netos_log_info("initialize pcap log for the interface <%s>\n", ifname.c_str());
+
+    // create parser thread
+    this->parse_thr_ = std::make_shared<std::thread>(
+                                        &network_interface::parse_thread,
+                                        this);
+    this->parse_thr_->detach();
+
+    // create rx thread
+    this->rx_thr_ = std::make_shared<std::thread>(
+                                        &network_interface::rx_thread,
+                                        this);
+    this->rx_thr_->detach();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

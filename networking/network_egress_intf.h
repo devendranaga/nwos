@@ -10,6 +10,7 @@
 
 #include "packet_buf.h"
 #include "raw_socket.h"
+#include "logging.h"
 
 using namespace netos::lib;
 

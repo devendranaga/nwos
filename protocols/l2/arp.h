@@ -64,6 +64,11 @@ class arp_cache {
         netos_hash_table *arp_cache_;
 };
 
+/**
+ * @brief - ARP context class.
+ *          Provides the interface to instantiate a ARP context and
+ *          provides helpers to send and receive ARP frames.
+ */
 class arp_context {
     public:
         static arp_context *instance()
@@ -80,11 +85,11 @@ class arp_context {
 
     private:
         explicit arp_context() { }
-        std::shared_ptr<std::thread> rx_thr_;
+        std::shared_ptr<std::thread> monitor_thr_;
         std::mutex process_thr_lock_;
         std::condition_variable process_cond_lock_;
         arp_cache cache_;
-        std::queue<std::shared_ptr<parsed_pkt>> rx_queue_;
+        std::queue<std::shared_ptr<parsed_pkt>> arp_rx_queue_;
 
         void arp_process_thread();
         void arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame);
