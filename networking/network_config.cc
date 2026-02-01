@@ -36,6 +36,13 @@ netos_status network_log_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status network_filter_config::parse(Json::Value &root)
+{
+    this->drop_ipv4_fragments = root["drop_ipv4_fragments"].asBool();
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status network_config::parse(const std::string &config)
 {
     netos_status ret;
@@ -53,6 +60,9 @@ netos_status network_config::parse(const std::string &config)
 
     auto log_config = root["network_config"]["logging"];
     this->log_config_.parse(log_config);
+
+    auto filter_config = root["network_config"]["filter"];
+    this->filter_config_.parse(filter_config);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

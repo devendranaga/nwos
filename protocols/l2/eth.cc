@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "eth.h"
+#include "event_mgr.h"
 #include "logging.h"
 
 namespace netos {
@@ -20,6 +21,10 @@ netos_status eth_hdr::serialize(std::shared_ptr<packet_buf> &buf)
 netos_status eth_hdr::deserialize(std::shared_ptr<packet_buf> &buf)
 {
     if ((buf->len_ - buf->offset_) < NETOS_ETH_ALEN) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_SHORT_ETH_HDR_LEN,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ETH,
+                                            buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 

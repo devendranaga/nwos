@@ -2,8 +2,6 @@
 #include "event_mgr.h"
 #include <cstring>
 
-using namespace netos::ids;
-
 namespace netos {
 
 netos_status ipv6_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)

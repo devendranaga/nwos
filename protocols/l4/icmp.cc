@@ -4,6 +4,13 @@ namespace netos {
 
 netos_status icmp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
+    this->start_off = pkt_buf->offset_;
+
+    pkt_buf->serialize_2_bytes(this->type);
+    pkt_buf->serialize_2_bytes(this->code);
+
+    this->checksum_off = pkt_buf->offset_;
+
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
@@ -32,12 +39,35 @@ netos_status icmp_redirect::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status icmp_hdr::calc_checksum(std::shared_ptr<packet_buf> &pkt_buf)
+{
+    uint32_t checksum = 0;
+    uint32_t i = 0;
+    uint32_t pad = 0;
+
+    if ((this->end_off - this->start_off) % 2) {
+        pad = 1;
+    }
+
+    for (i = this->start_off; i <= this->end_off + pad; i += 2) {
+        checksum += (pkt_buf->buf_[i] << 8) | pkt_buf->buf_[i + 1];
+    }
+
+    if (checksum > 0xFFFFu) {
+        checksum = ((checksum & 0xFFFF0000) >> 16) + (checksum & 0xFFFF);
+    }
+
+    checksum = ~checksum;
+    if (checksum != 0) {
+    }
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status icmp_echo::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
     pkt_buf->deserialize_2_bytes(&this->identifier);
     pkt_buf->deserialize_2_bytes(&this->sequence_number);
-
-    this->icmp_data_len = pkt_buf->get_remaining_len();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -54,6 +84,9 @@ netos_status icmp_identification::deserialize(std::shared_ptr<packet_buf> &pkt_b
 
 netos_status icmp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
+    this->start_off = pkt_buf->offset_;
+    this->end_off = pkt_buf->len_;
+
     pkt_buf->deserialize_byte(&this->type);
     pkt_buf->deserialize_byte(&this->code);
     pkt_buf->deserialize_2_bytes(&this->checksum);
@@ -106,6 +139,8 @@ netos_status icmp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
         default:
             return netos_status::NETOS_STATUS_UNSUPPORTED_ICMP_TYPE;
     }
+
+    this->calc_checksum(pkt_buf);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

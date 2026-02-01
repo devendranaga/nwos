@@ -1,14 +1,14 @@
 #ifndef IDS_EVENT_EVENT_MGR_H
 #define IDS_EVENT_EVENT_MGR_H
 
+#include <thread>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 
 #include "event_info.h"
 
 namespace netos {
-
-namespace ids {
 
 class event_mgr {
     public:
@@ -28,8 +28,6 @@ class event_mgr {
         std::mutex evt_q_lock_;
         explicit event_mgr() = default;
 };
-
-}
 
 }
 

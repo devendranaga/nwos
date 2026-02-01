@@ -2,8 +2,6 @@
 
 namespace netos {
 
-namespace ids {
-
 void event_mgr::insert_event(uint8_t event_type,
                              event_description desc,
                              event_protocol_level proto_level,
@@ -16,11 +14,8 @@ void event_mgr::insert_event(uint8_t event_type,
     evt_info.protocol_level = proto_level;
     evt_info.pkt_len = pkt_len;
 
-    evt_q_lock_.lock();
+    std::unique_lock<std::mutex> l(this->evt_q_lock_);
     event_info_queue_.push(evt_info);
-    evt_q_lock_.unlock();
-}
-
 }
 
 }

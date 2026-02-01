@@ -4,44 +4,47 @@
 
 #include <arpa/inet.h>
 
-using namespace netos::ids;
-
 namespace netos {
 
-uint16_t tcp_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf, uint32_t src_ip, uint32_t dst_ip)
+uint16_t tcp_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf, uint8_t *src_ip, uint8_t *dst_ip)
 {
     uint32_t chksum32 = 0;
     uint32_t i = 0;
+    uint32_t pad = 0;
 
-    // Pseudo Header Calculation
-    // Source IP
-    chksum32 += (src_ip >> 16);
-    chksum32 += (src_ip & 0xFFFF);
+    if ((pkt_buf->len_ - this->start_off) % 2) {
+        pad = 1;
+    }
 
-    // Dest IP
-    chksum32 += (dst_ip >> 16);
-    chksum32 += (dst_ip & 0xFFFF);
+    for (i = 0; i < 4; i += 2) {
+        chksum32 += (src_ip[i + 1] << 8) + src_ip[i];
+    }
 
-    // Reserved (0) + Protocol (6)
-    chksum32 += htons(0x0006);
+    for (i = 0; i < 4; i += 2) {
+        chksum32 += (dst_ip[i + 1] << 8) + dst_ip[i];
+    }
 
     // TCP Length
     uint32_t tcp_len = pkt_buf->len_ - this->start_off;
-    chksum32 += htons(tcp_len);
+
+    chksum32 += (tcp_len & 0x0000FFFFu) + ((tcp_len & 0xFFFF0000u) >> 16);
+
+    // Reserved (0) + Protocol (6)
+    chksum32 += 0x0006;
 
     // Payload Checksum
-    for (i = this->start_off; i < this->end_off; i += 2) {
-        if (i + 1 < pkt_buf->len_) {
-            chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
+    for (i = this->start_off; i <= pkt_buf->len_ + pad; i += 2) {
+        if (i < pkt_buf->len_ - 1) {
+            chksum32 += ((pkt_buf->buf_[i] << 8) | (pkt_buf->buf_[i + 1]));
         } else {
             // Odd byte padding
-            chksum32 += pkt_buf->buf_[i];
+            chksum32 += pkt_buf->buf_[i] << 8;
         }
     }
 
     // Fold 32-bit sum to 16-bit
-    while (chksum32 >> 16) {
-        chksum32 = (chksum32 & 0xFFFF) + (chksum32 >> 16);
+    if (chksum32 > 0xFFFFu) {
+        chksum32 = ((chksum32 & 0xFFFF0000) >> 16) + (chksum32 & 0x0000FFFF);
     }
 
     return ~chksum32;
@@ -57,8 +60,7 @@ netos_status tcp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->serialize_4_bytes(this->ack_num);
 
     uint16_t wire_flags = 0;
-    wire_flags |= (this->flags.hl & 0xF) << 12;
-    wire_flags |= (this->flags.reserved & 0xF) << 8;
+    wire_flags |= (this->hl & 0xF) << 12;
     wire_flags |= (this->flags.cwr & 1) << 7;
     wire_flags |= (this->flags.ece & 1) << 6;
     wire_flags |= (this->flags.urg & 1) << 5;
@@ -102,23 +104,22 @@ netos_status tcp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_4_bytes(&this->seq_num);
     pkt_buf->deserialize_4_bytes(&this->ack_num);
 
-    uint16_t wire_flags = 0;
-    pkt_buf->deserialize_2_bytes(&wire_flags);
+    this->hl = (pkt_buf->buf_[pkt_buf->offset_] & 0xF0) >> 4;
+    this->flags.ecn = (pkt_buf->buf_[pkt_buf->offset_] & 0x01);
+    pkt_buf->offset_ ++;
 
-    this->flags.hl = (wire_flags >> 12) & 0xF;
-    this->flags.reserved = (wire_flags >> 8) & 0xF;
-    this->flags.cwr = (wire_flags >> 7) & 1;
-    this->flags.ece = (wire_flags >> 6) & 1;
-    this->flags.urg = (wire_flags >> 5) & 1;
-    this->flags.ack = (wire_flags >> 4) & 1;
-    this->flags.psh = (wire_flags >> 3) & 1;
-    this->flags.rst = (wire_flags >> 2) & 1;
-    this->flags.syn = (wire_flags >> 1) & 1;
-    this->flags.fin = (wire_flags >> 0) & 1;
+    this->flags.cwr = (pkt_buf->buf_[pkt_buf->offset_] & 0x80) >> 7;
+    this->flags.ece = (pkt_buf->buf_[pkt_buf->offset_] & 0x40) >> 6;
+    this->flags.urg = (pkt_buf->buf_[pkt_buf->offset_] & 0x20) >> 5;
+    this->flags.ack = (pkt_buf->buf_[pkt_buf->offset_] & 0x10) >> 4;
+    this->flags.psh = (pkt_buf->buf_[pkt_buf->offset_] & 0x08) >> 3;
+    this->flags.rst = (pkt_buf->buf_[pkt_buf->offset_] & 0x04) >> 2;
+    this->flags.syn = (pkt_buf->buf_[pkt_buf->offset_] & 0x02) >> 1;
+    this->flags.fin = (pkt_buf->buf_[pkt_buf->offset_] & 0x01) >> 0;
+    pkt_buf->offset_ ++;
 
     pkt_buf->deserialize_2_bytes(&this->win_size);
 
-    this->checksum_off = pkt_buf->offset_;
     pkt_buf->deserialize_2_bytes(&this->chksum);
 
     pkt_buf->deserialize_2_bytes(&this->urg_ptr);
@@ -138,10 +139,6 @@ void tcp_flags::print()
     netos_log_info("\t\t rst: %d\n", this->rst);
     netos_log_info("\t\t syn: %d\n", this->syn);
     netos_log_info("\t\t fin: %d\n", this->fin);
-    netos_log_info("\t\t hl: %d\n", this->hl);
-    netos_log_info("\t\t reserved: %d\n", this->reserved);
-    netos_log_info("\t\t cwr: %d\n", this->cwr);
-    netos_log_info("\t\t ece: %d\n", this->ece);
 }
 
 #if defined(NETOS_DEBUG_PKT_DECODE)
@@ -152,6 +149,7 @@ void tcp_hdr::print()
     netos_log_info("\t dst_port: %d\n", this->dst_port);
     netos_log_info("\t seq_num: %u\n", this->seq_num);
     netos_log_info("\t ack_num: %u\n", this->ack_num);
+    netos_log_info("\t hl: %d\n", this->hl);
     netos_log_info("\t win_size: %d\n", this->win_size);
     netos_log_info("\t urg_ptr: %d\n", this->urg_ptr);
     netos_log_info("\t chksum: 0x%04x\n", this->chksum);

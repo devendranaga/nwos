@@ -1,8 +1,7 @@
 {
     "network_config": {
         "interface_list": [
-            "dummy0",
-            "dummy1"
+            "wlp4s0"
         ],
         "logging": {
             "debug_log_server_ip": "127.0.0.1",
@@ -12,6 +11,9 @@
         },
         "arp_config": {
             "arp_table_len": 64
+        },
+        "filter": {
+            "drop_ipv4_fragments": true
         }
     }
 }

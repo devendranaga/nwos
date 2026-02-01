@@ -20,20 +20,6 @@
 #include "arp_hdr.h"
 #include "parsed_pkt.h"
 
-#define NETOS_ARP_HWTYPE                1
-#define NETOS_ARP_HW_ADDR_LEN           6
-#define NETOS_ARP_PROTOCOL_ADDR_LEN     4
-
-#define NETOS_ARP_OP_ARP_REQUEST        1
-#define NETOS_ARP_OP_ARP_REPLY          2
-#define NETOS_ARP_OP_RARP_REQ           3
-#define NETOS_ARP_OP_RARP_REPLY         4
-#define NETOS_ARP_OP_DRARP_REQ          5
-#define NETOS_ARP_OP_DRARP_REPLY        6
-#define NETOS_ARP_OP_DRARP_ERROR        7
-#define NETOS_ARP_OP_INARP_REQ          8
-#define NETOS_ARP_OP_INARP_REPLY        9
-
 namespace netos {
 
 enum class arp_state : uint32_t {

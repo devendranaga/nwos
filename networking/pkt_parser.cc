@@ -3,6 +3,7 @@
 #include "ethertypes.h"
 #include "parsed_pkt.h"
 #include "protocols.h"
+#include "event_mgr.h"
 #include "logging.h"
 
 namespace netos {
@@ -62,12 +63,22 @@ netos_status parsed_pkt::parse_l2_frame()
             return ret;
         break;
         default:
+            event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                                event_description::EVENT_DESC_INVAL_L2_PROTOCOL,
+                                                event_protocol_level::EVENT_PROTOCOL_L2,
+                                                this->pkt_buf->len_);
             return netos_status::NETOS_STATUS_UNSUPPORTED_L2_PROTOCOL;
     }
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * Parse the L3 headers.
+ *
+ * 1. IPV4.
+ * 2. IPV6.
+ */
 netos_status parsed_pkt::parse_l3_frame()
 {
     netos_status ret = netos_status::NETOS_STATUS_SUCCESS;
@@ -86,6 +97,10 @@ netos_status parsed_pkt::parse_l3_frame()
             }
         break;
         default:
+            event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                                event_description::EVENT_DESC_INVAL_L3_PROTOCOL,
+                                                event_protocol_level::EVENT_PROTOCOL_L3,
+                                                this->pkt_buf->len_);
             return netos_status::NETOS_STATUS_UNSUPPORTED_L3_PROTOCOL;
     }
 
@@ -109,6 +124,8 @@ netos_status parsed_pkt::parse_l4_frame()
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_tcp = 1;
             }
+
+            this->tcp_h.checksum(this->pkt_buf, (uint8_t *)&(this->ipv4_h.src_addr), (uint8_t *)&(this->ipv4_h.dst_addr));
         break;
         case NETOS_IP_PROTOCOL_UDP:
             ret = this->udp_h.deserialize(this->pkt_buf);

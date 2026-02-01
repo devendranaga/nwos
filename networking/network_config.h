@@ -41,6 +41,21 @@ struct network_if_config {
 };
 
 /**
+ * @brief - Network Filter configuration
+ */
+struct network_filter_config {
+    bool drop_ipv4_fragments;
+
+    /**
+     * @brief - Parse the Filter configuration
+     *
+     * @param root - Json root root["filter"]
+     * @return netos_status
+     */
+    netos_status parse(Json::Value &root);
+};
+
+/**
  * @brief - Network logging configuration
  */
 struct network_log_config {
@@ -66,6 +81,7 @@ struct network_config {
         network_if_config if_config_;
         network_arp_config arp_config_;
         network_log_config log_config_;
+        network_filter_config filter_config_;
 
         ~network_config() { }
 

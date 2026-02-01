@@ -1,8 +1,7 @@
+#include "network_config.h"
 #include "ipv4.h"
 #include "event_mgr.h"
 #include "logging.h"
-
-using namespace netos::ids;
 
 namespace netos {
 
@@ -65,7 +64,11 @@ netos_status ipv4_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
 
 netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 {
+    network_config *conf = network_config::instance();
+
     this->version = (pkt_buf->buf_[pkt_buf->offset_] & 0xF0) >> 4;
+
+    /* Invalid IPV4 version. */
     if (this->version != NETOS_IPV4_VERSION) {
         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
                                             event_description::EVENT_DESC_INVAL_IPV4_VERSION,
@@ -77,6 +80,15 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     this->ihl = (pkt_buf->buf_[pkt_buf->offset_] & 0x0F);
     pkt_buf->offset_ ++;
 
+    /* Invalid IHL. */
+    if (this->ihl < NETOS_IPV4_IHL_DEFAULT) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_SHORT_IPV4_IHL,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     this->dscp = (pkt_buf->buf_[pkt_buf->offset_] & 0xFC) >> 2;
     this->ecn = (pkt_buf->buf_[pkt_buf->offset_] & 0x03);
     pkt_buf->offset_ ++;
@@ -87,11 +99,46 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     this->flags.df = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x40);
     this->flags.mf = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x20);
 
+    /* Reserved bit is set. */
+    if (this->flags.reserved) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_IPV4_RESERVED_BIT_SET,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    /* Both DF and MF are set. */
+    if (this->flags.df && this->flags.mf) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_IPV4_BOTH_MF_DF_SET,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     this->frag_off = ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 4);
     this->frag_off |= pkt_buf->buf_[pkt_buf->offset_];
     pkt_buf->offset_ += 2;
 
+    /* Filter->drop_ipv4_fragment and IPv4 header contains fragments. */
+    if (conf->filter_config_.drop_ipv4_fragments && (this->frag_off != 0)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_IPV4_FRAGMENTED_FILTER,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT; 
+    }
+
     pkt_buf->deserialize_byte(&this->ttl);
+    if (this->ttl == 0) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_IPV4_TTL_ZERO,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_byte(&this->protocol);
 
     this->checksum_off = pkt_buf->offset_;
@@ -99,7 +146,12 @@ netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     pkt_buf->deserialize_4_bytes(&this->src_addr);
     pkt_buf->deserialize_4_bytes(&this->dst_addr);
 
+    /* Checksum is invalid. Malformed. */
     if (this->checksum(pkt_buf) != 0) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_IPV4_CHECKSUM,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 

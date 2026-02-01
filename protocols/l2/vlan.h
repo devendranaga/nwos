@@ -9,7 +9,10 @@
 
 namespace netos {
 
-#define NETOS_IDS_VLAN_HDR_LEN 4
+#define NETOS_VLAN_HDR_LEN 4
+
+#define NETOS_VLAN_ID_0         0
+#define NETOS_VLAN_ID_MAX       4095
 
 struct vlan_hdr {
     uint32_t priority:3;

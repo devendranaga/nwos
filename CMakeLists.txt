@@ -29,15 +29,11 @@ set(IDS_COMMON_SRC
 	protocols/l4/tcp.cc
 	protocols/l4/icmp.cc
 	protocols/l4/icmpv6.cc
-	ids/src/event/event_mgr.cc
+	event/event_mgr.cc
 	networking/network_egress_intf.cc)
 
 set(STATISTICS_SRC
 	statistics/statistics.cc)
-
-set(IDS_SRV_SRC
-	${IDS_COMMON_SRC}
-	ids/src/core/ids_main.cc)
 
 set(IDS_PKT_GEN_SRC
 	${IDS_COMMON_SRC}
@@ -64,15 +60,13 @@ include_directories(
 	platform/lib/algorithms/
 	platform/lib/error/
 	platform/lib/logging/
-	ids/src/
 	pkt/
 	protocols/
 	protocols/macros/
 	protocols/l2/
 	protocols/l3/
 	protocols/l4/
-	ids/src/core/
-	ids/src/event/
+	event/
 	networking/
 	statistics/
 	cryptography/interface/
@@ -82,7 +76,7 @@ include_directories(
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g -DNETOS_DEBUG_PKT_DECODE")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g")
 
 add_library(netos_platform ${PLATFORM_SRC})

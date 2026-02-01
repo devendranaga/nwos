@@ -1,6 +1,7 @@
 #ifndef PROTOCOLS_L4_ICMP_H
 #define PROTOCOLS_L4_ICMP_H
 
+#include <stdint.h>
 #include <memory>
 #include <error_codes.h>
 #include <packet_buf.h>
@@ -155,10 +156,16 @@ struct icmp_identification {
     void print();
 };
 
+/**
+ * @brief - Defines ICMP header.
+ */
 struct icmp_hdr {
     uint8_t type;
     uint8_t code;
     uint16_t checksum;
+    uint32_t start_off;
+    uint32_t end_off;
+    uint32_t checksum_off;
 
     std::shared_ptr<icmp_dest_unreachable> dest_unreachable;
     std::shared_ptr<icmp_time_exceeded> time_exceeded;
@@ -174,6 +181,7 @@ struct icmp_hdr {
 
     netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status calc_checksum(std::shared_ptr<packet_buf> &pkt_buf);
     void print();
 };
 

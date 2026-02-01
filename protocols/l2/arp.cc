@@ -11,8 +11,6 @@
 #include "network_egress_intf.h"
 #include "network_config.h"
 
-using namespace netos::ids;
-
 static uint32_t arp_macaddr_hash(void *macaddr_ptr)
 {
     uint8_t *macaddr = (uint8_t *)macaddr_ptr;
@@ -63,16 +61,28 @@ netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 
     pkt_buf->deserialize_2_bytes(&this->protocol_type);
     if (this->protocol_type != NETOS_ETHERTYPE_IPV4) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_PROTO_TYPE,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
     pkt_buf->deserialize_byte(&this->ha_len);
     if (this->ha_len != NETOS_ARP_HW_ADDR_LEN) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_HW_LEN,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
     pkt_buf->deserialize_byte(&this->proto_len);
     if (this->proto_len != NETOS_ARP_PROTOCOL_ADDR_LEN) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_PROTO_LEN,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
@@ -86,6 +96,10 @@ netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
         (this->op != NETOS_ARP_OP_DRARP_ERROR) &&
         (this->op != NETOS_ARP_OP_INARP_REQ) &&
         (this->op != NETOS_ARP_OP_INARP_REPLY)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_OP,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
@@ -93,12 +107,34 @@ netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
 
     if (is_broadcast_mac(this->sender_hwaddr) || is_multicast_mac(this->sender_hwaddr) ||
         is_zero_mac(this->sender_hwaddr)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_SENDER_HWADDR,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
     pkt_buf->deserialize_4_bytes(&this->sender_protocol_addr);
+    if (is_zero_ipaddr(this->sender_protocol_addr) ||
+        is_broadcast_ipaddr(this->sender_protocol_addr) ||
+        is_multicast_ipaddr(this->sender_protocol_addr)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_SENDER_PROTO_ADDR,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_mac(this->target_hwaddr);
     pkt_buf->deserialize_4_bytes(&this->target_protocol_addr);
+    if (is_broadcast_ipaddr(this->target_protocol_addr) ||
+        is_multicast_ipaddr(this->target_protocol_addr)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_INVAL_ARP_TARGET_PROTO_ADDR,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_ARP,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
 
     this->print();
     return netos_status::NETOS_STATUS_SUCCESS;
@@ -191,7 +227,7 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
     ah.sender_protocol_addr = ntohl(ipaddr);
     memcpy(ah.target_hwaddr, frame->eh.src_mac, NETOS_MACADDR_LEN);
     ah.target_protocol_addr = frame->ah.sender_protocol_addr;
-    ah.op = ARP_OP_ARP_REPLY;
+    ah.op = NETOS_ARP_OP_ARP_REPLY;
     ah.serialize(intf.pkt);
 
     network_egress::instance()->egress_enque(intf);
@@ -215,7 +251,7 @@ void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
     }
 
     // Packet is directed to us.. do not drop it.
-    if ((rx_frame->ah.op == ARP_OP_ARP_REQUEST) &&
+    if ((rx_frame->ah.op == NETOS_ARP_OP_ARP_REQUEST) &&
         (ntohl(ipaddr) == rx_frame->ah.target_protocol_addr)) {
         res = netos_hash_table_search(this->cache_.get(),
                                       &rx_frame->ah.sender_protocol_addr,

@@ -1,8 +1,6 @@
 #include "udp.h"
 #include "event_mgr.h"
 
-using namespace netos::ids;
-
 namespace netos {
 
 netos_status udp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)

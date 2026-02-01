@@ -12,16 +12,15 @@ namespace netos {
 #define NETOS_TCP_HLEN_MIN          5
 
 struct tcp_flags {
-    uint16_t            fin:1;
-    uint16_t            syn:1;
-    uint16_t            rst:1;
-    uint16_t            psh:1;
-    uint16_t            ack:1;
-    uint16_t            urg:1;
-    uint16_t            ece:1;
-    uint16_t            cwr:1;
-    uint16_t            reserved:4;
-    uint16_t            hl:4;
+    uint32_t            fin:1;
+    uint32_t            syn:1;
+    uint32_t            rst:1;
+    uint32_t            psh:1;
+    uint32_t            ack:1;
+    uint32_t            urg:1;
+    uint32_t            ece:1;
+    uint32_t            cwr:1;
+    uint32_t            ecn:1;
 
     explicit tcp_flags() : fin(0),
                            syn(0),
@@ -31,8 +30,7 @@ struct tcp_flags {
                            urg(0),
                            ece(0),
                            cwr(0),
-                           reserved(0),
-                           hl(0)
+                           ecn(0)
     {
     }
     ~tcp_flags()
@@ -47,6 +45,7 @@ struct tcp_hdr {
     uint32_t            seq_num;
     uint32_t            ack_num;
     tcp_flags           flags;
+    uint8_t             hl;
     uint16_t            win_size;
     uint16_t            chksum;
     uint16_t            urg_ptr;
@@ -74,7 +73,7 @@ struct tcp_hdr {
 
     netos_status serialize(std::shared_ptr<packet_buf> &buf);
     netos_status deserialize(std::shared_ptr<packet_buf> &buf);
-    uint16_t checksum(std::shared_ptr<packet_buf> &buf, uint32_t src_ip, uint32_t dst_ip);
+    uint16_t checksum(std::shared_ptr<packet_buf> &buf, uint8_t *src_ip, uint8_t *dst_ip);
     void print();
 };
 
