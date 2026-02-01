@@ -27,7 +27,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compiling the code..."
     - echo "Compile complete."
     - apt update
-    - apt install -y libssl-dev libpcap-dev libjsoncpp-dev libwolfssl-dev
+    - apt install -y libssl-dev libpcap-dev libjsoncpp-dev libwolfssl-dev cmake
     - mkdir build
     - cd build
     - cmake ..
