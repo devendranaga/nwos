@@ -48,14 +48,17 @@ netos_status openssl_hash::hash_msg(const EVP_MD *md, cryptograpy_hash_params *p
     }
 
     if (EVP_DigestInit_ex(md_ctx, md, NULL) != 1) {
+        EVP_MD_CTX_free(md_ctx);
         return netos_status::NETOS_STATUS_GENERIC_ERROR;
     }
 
     if (EVP_DigestUpdate(md_ctx, params->data_in, params->data_in_len) != 1) {
+        EVP_MD_CTX_free(md_ctx);
         return netos_status::NETOS_STATUS_GENERIC_ERROR;
     }
 
     if (EVP_DigestFinal_ex(md_ctx, params->hash, &params->hash_len) != 1) {
+        EVP_MD_CTX_free(md_ctx);
         return netos_status::NETOS_STATUS_GENERIC_ERROR;
     }
 
