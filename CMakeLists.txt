@@ -54,6 +54,9 @@ set(CRYPTOGRAPHY_SRC
 	cryptography/wolfssl/wolfssl_hash.cc
 	cryptography/interface/cryptography_methods.cc)
 
+set(CRYPTO_SRV_SRC
+	cryptography/srv/crypto_srv.cc)
+
 include_directories(
 	platform/lib/helpers/
 	platform/lib/linux/
@@ -72,6 +75,7 @@ include_directories(
 	cryptography/interface/
 	cryptography/openssl/
 	cryptography/wolfssl/
+	cryptography/srv/
 	logger/src/)
 
 ## command line options
@@ -93,4 +97,6 @@ target_link_libraries(netos_pktgen netos_platform pthread jsoncpp)
 add_library(netos_cryptography ${CRYPTOGRAPHY_SRC})
 target_link_libraries(netos_cryptography netos_platform pthread)
 
+add_executable(netos_crypto_srv ${CRYPTO_SRV_SRC})
+target_link_libraries(netos_crypto_srv netos_platform pthread netos_cryptography ssl crypto wolfssl)
 
