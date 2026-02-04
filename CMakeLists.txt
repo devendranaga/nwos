@@ -40,6 +40,11 @@ set(IDS_PKT_GEN_SRC
 	pktgen/pktgen.cc
 	pktgen/pktgen_config.cc)
 
+set(CLOUD_INTERFACE_SRC
+	cloud_interface/stats_interface_tx.cc
+	cloud_interface/events_interface_tx.cc
+	cloud_interface/cloud_interface_tx.cc)
+
 set(NETWORKING_SRC
 	${IDS_COMMON_SRC}
 	networking/network_main.cc
@@ -47,15 +52,20 @@ set(NETWORKING_SRC
 	networking/pkt_parser.cc
 	networking/network_egress_intf.cc
 	networking/pcap.cc
-	${STATISTICS_SRC})
+	${STATISTICS_SRC}
+	${CLOUD_INTERFACE_SRC})
 
 set(CRYPTOGRAPHY_SRC
 	cryptography/openssl/openssl_hash.cc
+	cryptography/openssl/openssl_rsa.cc
 	cryptography/wolfssl/wolfssl_hash.cc
 	cryptography/interface/cryptography_methods.cc)
 
 set(CRYPTO_SRV_SRC
 	cryptography/srv/crypto_srv.cc)
+
+set(CRYPTO_CLI_SRC
+	cryptography/cli/crypto_cli.cc)
 
 include_directories(
 	platform/lib/helpers/
@@ -63,6 +73,7 @@ include_directories(
 	platform/lib/algorithms/
 	platform/lib/error/
 	platform/lib/logging/
+	platform/lib/gcd/
 	pkt/
 	protocols/
 	protocols/macros/
@@ -76,7 +87,9 @@ include_directories(
 	cryptography/openssl/
 	cryptography/wolfssl/
 	cryptography/srv/
-	logger/src/)
+	cryptography/cli/
+	logger/src/
+	cloud_interface/)
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
@@ -100,3 +113,5 @@ target_link_libraries(netos_cryptography netos_platform pthread)
 add_executable(netos_crypto_srv ${CRYPTO_SRV_SRC})
 target_link_libraries(netos_crypto_srv netos_platform pthread netos_cryptography ssl crypto wolfssl)
 
+add_executable(netos_crypto_cli ${CRYPTO_CLI_SRC})
+target_link_libraries(netos_crypto_cli netos_platform pthread netos_cryptography ssl crypto wolfssl)

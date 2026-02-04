@@ -10,12 +10,16 @@ using namespace netos::lib;
 namespace netos {
 
 struct cryptograpy_hash_params {
-    uint8_t *data_in;
-    uint32_t data_in_len;
-    uint8_t hash[CRYPTOGRAPHY_HASH_LEN];
-    uint32_t hash_len;
+    uint8_t     *data_in;
+    uint32_t    data_in_len;
+    uint8_t     hash[CRYPTOGRAPHY_HASH_LEN];
+    uint32_t    hash_len;
 
-    explicit cryptograpy_hash_params() : data_in(nullptr), data_in_len(0), hash_len(0) {}
+    explicit cryptograpy_hash_params() :
+                data_in(nullptr),
+                data_in_len(0),
+                hash_len(0) {}
+    ~cryptograpy_hash_params() = default;
 };
 
 class cryptography_hash {

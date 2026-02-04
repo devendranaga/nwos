@@ -4,6 +4,7 @@
 #include "parsed_pkt.h"
 #include "protocols.h"
 #include "event_mgr.h"
+#include "statistics.h"
 #include "logging.h"
 
 namespace netos {
@@ -11,6 +12,8 @@ namespace netos {
 netos_status parsed_pkt::parse_frame()
 {
     netos_status ret = netos_status::NETOS_STATUS_SUCCESS;
+
+    statistics::instance()->inc_eth_rx_count(this->ifname);
 
     ret = this->eh.deserialize(this->pkt_buf);
     if (ret != netos_status::NETOS_STATUS_SUCCESS) {
@@ -21,6 +24,9 @@ netos_status parsed_pkt::parse_frame()
 
     if ((this->ethertype == NETOS_ETHERTYPE_VLAN) ||
         (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN)) {
+
+        statistics::instance()->inc_vlan_rx_count(this->ifname);
+
         ret = this->vh.deserialize(this->pkt_buf);
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
             return ret;
@@ -56,6 +62,8 @@ netos_status parsed_pkt::parse_l2_frame()
 
     switch (this->ethertype) {
         case NETOS_ETHERTYPE_ARP:
+            statistics::instance()->inc_arp_rx_count(this->ifname);
+
             ret = this->ah.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_arp = 1;
@@ -85,12 +93,16 @@ netos_status parsed_pkt::parse_l3_frame()
 
     switch (this->ethertype) {
         case NETOS_ETHERTYPE_IPV4:
+            statistics::instance()->inc_ipv4_rx_count(this->ifname);
+
             ret = this->ipv4_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_ipv4 = 1;
             }
         break;
         case NETOS_ETHERTYPE_IPV6:
+            statistics::instance()->inc_ipv6_rx_count(this->ifname);
+
             ret = this->ipv6_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_ipv6 = 1;
@@ -120,6 +132,8 @@ netos_status parsed_pkt::parse_l4_frame()
 
     switch (this->get_protocol()) {
         case NETOS_IP_PROTOCOL_TCP:
+            statistics::instance()->inc_tcp_rx_count(this->ifname);
+
             ret = this->tcp_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_tcp = 1;
@@ -128,12 +142,16 @@ netos_status parsed_pkt::parse_l4_frame()
             this->tcp_h.checksum(this->pkt_buf, (uint8_t *)&(this->ipv4_h.src_addr), (uint8_t *)&(this->ipv4_h.dst_addr));
         break;
         case NETOS_IP_PROTOCOL_UDP:
+            statistics::instance()->inc_udp_rx_count(this->ifname);
+
             ret = this->udp_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_udp = 1;
             }
         break;
         case NETOS_IP_PROTOCOL_ICMP:
+            statistics::instance()->inc_icmp_rx_count(this->ifname);
+
             ret = this->icmp_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_icmp = 1;

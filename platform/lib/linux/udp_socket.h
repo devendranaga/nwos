@@ -25,6 +25,7 @@ class udp_server_socket {
          * @param port - Port number to bind the socket to.
          */
         udp_server_socket(const char *ip, uint16_t port);
+        int get_fd() { return this->fd_; }
 
         /**
          * @brief - Cleanup the server.

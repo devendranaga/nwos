@@ -18,9 +18,9 @@ struct network_arp_config {
 
     /**
      * @brief - Parse the ARP configuration
-     * 
+     *
      * @param root - JSON root root["arp_config"]
-     * @return netos_status 
+     * @return netos_status
      */
     netos_status parse(Json::Value &root);
 };
@@ -33,9 +33,9 @@ struct network_if_config {
 
     /**
      * @brief - Parse the interface configuration
-     * 
+     *
      * @param root - JSON root root["interface_list"]
-     * @return netos_status 
+     * @return netos_status
      */
     netos_status parse(Json::Value &root);
 };
@@ -66,9 +66,9 @@ struct network_log_config {
 
     /**
      * @brief - Parse the logging configuration
-     * 
+     *
      * @param root - JSON root root["logging"]
-     * @return netos_status 
+     * @return netos_status
      */
     netos_status parse(Json::Value &root);
 };
@@ -87,8 +87,8 @@ struct network_config {
 
         /**
          * @brief - Get the singleton instance of the network configuration
-         * 
-         * @return network_config* 
+         *
+         * @return network_config*
          */
         static network_config *instance() {
             static network_config netw_config;
@@ -97,9 +97,9 @@ struct network_config {
 
         /**
          * @brief - Parse the network configuration
-         * 
+         *
          * @param config - JSON configuration string
-         * @return netos_status 
+         * @return netos_status
          */
         netos_status parse(const std::string &config);
 

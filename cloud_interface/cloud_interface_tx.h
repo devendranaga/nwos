@@ -1,0 +1,4 @@
+#ifndef NETOS_CLOUD_INTERFACE_TX_H
+#define NETOS_CLOUD_INTERFACE_TX_H
+
+#endif
