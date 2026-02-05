@@ -6,15 +6,26 @@
 
 int main()
 {
-    netos::cbor_encode enc(1024);
+    uint8_t buf[1024];
+
+    netos::cbor_encode enc(buf, sizeof(buf));
     uint8_t *enc_buf;
     uint32_t enc_buf_len;
     uint32_t i;
 
+    // number of elements in the map
     enc.encode_map(2);
+
+    // 1st type is test
     enc.encode_str("test");
+
+    // value
     enc.encode_uint(2);
+
+    // 2nd type is data
     enc.encode_str("data");
+
+    // array of values
     enc.encode_array(2);
     enc.encode_uint(3);
     enc.encode_uint(5);

@@ -8,6 +8,12 @@
 #include "cbor_encode.h"
 #include "cbor_decode.h"
 
+#define ENCODE_HEADER_BYTE(__buffer, __offset, __major_type, __val) {\
+    __buffer[__offset] = ((__major_type) << 5);\
+    __buffer[__offset] |= (__val);\
+    __offset ++;\
+}
+
 namespace netos {
 
 cbor_encode::cbor_encode(uint32_t len)
@@ -19,11 +25,20 @@ cbor_encode::cbor_encode(uint32_t len)
 
     this->offset_ = 0;
     this->buf_len_ = len;
+    this->preallocated_ = true;
+}
+
+cbor_encode::cbor_encode(uint8_t *buf, uint32_t len)
+{
+    this->buf_ = buf;
+    this->buf_len_ = len;
+    this->offset_ = 0;
+    this->preallocated_ = false;
 }
 
 cbor_encode::~cbor_encode()
 {
-    if (this->buf_) {
+    if (this->buf_ && this->preallocated_) {
         free(this->buf_);
     }
 }
@@ -37,10 +52,7 @@ void cbor_encode::encode_uint(uint32_t val)
 
 void cbor_encode::encode_uint8(uint32_t val)
 {
-    this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_UINT << 5);
-    this->buf_[this->offset_] |= val;
-
-    this->offset_ ++;
+    ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_UINT, val);
 }
 
 void cbor_encode::encode_str(const std::string &str)
@@ -54,10 +66,7 @@ void cbor_encode::encode_str8(const std::string &str)
 {
     uint32_t i;
 
-    this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_TEXT << 5);
-    this->buf_[this->offset_] |= str.size();
-
-    this->offset_ ++;
+    ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_TEXT, str.size());
 
     for (i = 0; i < str.size(); i ++) {
         this->buf_[this->offset_ + i] = str[i];
@@ -75,10 +84,7 @@ void cbor_encode::encode_array(uint32_t len)
 
 void cbor_encode::encode_array8(uint32_t len)
 {
-    this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_ARRAY << 5);
-    this->buf_[this->offset_] |= len;
-
-    this->offset_ ++;
+    ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_ARRAY, len);
 }
 
 void cbor_encode::encode_map(uint32_t n_elements)
@@ -90,10 +96,7 @@ void cbor_encode::encode_map(uint32_t n_elements)
 
 void cbor_encode::encode_map8(uint32_t n_elements)
 {
-    this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_MAP << 5);
-    this->buf_[this->offset_] |= n_elements;
-
-    this->offset_ ++;
+    ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_MAP, n_elements);
 }
 
 cbor_decode::cbor_decode(uint8_t *buf, uint32_t len)
