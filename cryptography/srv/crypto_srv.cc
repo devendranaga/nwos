@@ -54,7 +54,14 @@ void cryptography_srv::run(int argc, char **argv)
 
 void cryptography_srv::receive_callback(int fd)
 {
-    
+    struct sockaddr_in sender_addr;
+    char msg[2048];
+    int ret;
+
+    ret = this->udp_srv_->udp_recv_from(msg, sizeof(msg), &sender_addr);
+    if (ret < 0) {
+        return;
+    }
 }
 
 }

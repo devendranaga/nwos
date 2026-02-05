@@ -11,7 +11,8 @@ set(PLATFORM_SRC
 	platform/lib/helpers/conversion.cc
 	platform/lib/algorithms/hash_table.c
 	platform/lib/linux/pcap_lib.cc
-	platform/lib/gcd/gcd.cc)
+	platform/lib/gcd/gcd.cc
+	platform/lib/linux/socket_helper.c)
 
 set(LOGGER_SRC
 	logger/src/logger.cc)
@@ -62,10 +63,17 @@ set(CRYPTOGRAPHY_SRC
 	cryptography/interface/cryptography_methods.cc)
 
 set(CRYPTO_SRV_SRC
-	cryptography/srv/crypto_srv.cc)
+	cryptography/srv/crypto_srv.cc
+	cryptography/srv/crypto_srv_op.cc)
 
 set(CRYPTO_CLI_SRC
 	cryptography/cli/crypto_cli.cc)
+
+set(ENCODING_CBOR_SRC
+	encoding/cbor/cbor_enc_dec.cc)
+
+set(TEST_CBOR_SRC
+	test/test_cbor.cc)
 
 include_directories(
 	platform/lib/helpers/
@@ -87,9 +95,11 @@ include_directories(
 	cryptography/openssl/
 	cryptography/wolfssl/
 	cryptography/srv/
+	cryptography/cli_interface/
 	cryptography/cli/
 	logger/src/
-	cloud_interface/)
+	cloud_interface/
+	encoding/cbor/)
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
@@ -115,3 +125,9 @@ target_link_libraries(netos_crypto_srv netos_platform pthread netos_cryptography
 
 add_executable(netos_crypto_cli ${CRYPTO_CLI_SRC})
 target_link_libraries(netos_crypto_cli netos_platform pthread netos_cryptography ssl crypto wolfssl)
+
+add_library(netos_cbor ${ENCODING_CBOR_SRC})
+target_link_libraries(netos_cbor netos_platform pthread)
+
+add_executable(netos_test_cbor ${TEST_CBOR_SRC})
+target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)

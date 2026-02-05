@@ -152,6 +152,12 @@ void gcd::run()
 
         for (auto it : this->timers_) {
             if (FD_ISSET(it.get_fd(), &read_set)) {
+                uint64_t read_val;
+
+                ret = read(it.get_fd(), (uint8_t *)&read_val, sizeof(read_val));
+                if (ret < 0) {
+                    return;
+                }
                 auto cb = it.get_cb();
                 cb();
             }

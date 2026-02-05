@@ -13,8 +13,8 @@ namespace netos {
  * @brief - Interface statistics
  */
 struct stats_intf {
-    stats_intf_rx rx;
-    stats_intf_tx tx;
+    stats_intf_rx_t rx;
+    stats_intf_tx_t tx;
 
     stats_intf() {
         this->rx.rx_count = 0;

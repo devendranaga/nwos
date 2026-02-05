@@ -1,0 +1,19 @@
+#ifndef ENCODING_CBOR_TYPES_H
+#define ENCODING_CBOR_TYPES_H
+
+#define CBOR_MAJOR_TYPE_UINT 0
+#define CBOR_MAJOR_TYPE_NINT 1
+#define CBOR_MAJOR_TYPE_BSTR 2
+#define CBOR_MAJOR_TYPE_TEXT 3
+#define CBOR_MAJOR_TYPE_ARRAY 4
+#define CBOR_MAJOR_TYPE_MAP 5
+#define CBOR_MAJOR_TYPE_TAG 6
+#define CBOR_MAJOR_TYPE_SIMPLE 7
+
+typedef struct __attribute__ ((__packed__)) {
+    uint32_t major_type:3;
+    uint32_t additional_info:5;
+} cbor_header_t;
+
+#endif
+
