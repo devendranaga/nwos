@@ -69,6 +69,8 @@ class cbor_encode {
         uint32_t get_len() { return this->offset_; }
 
     private:
+        void copy_byte_string(uint8_t *buf, uint32_t len);
+
         /**
          * @brief - Encode a string bytes.
          * @param [in] str - string.

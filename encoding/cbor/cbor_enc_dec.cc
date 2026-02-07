@@ -76,26 +76,30 @@ void cbor_encode::encode_uint(uint32_t val)
     }
 }
 
+void cbor_encode::copy_byte_string(uint8_t *byte_string, uint32_t len)
+{
+    uint32_t i;
+
+    for (i = 0; i < len; i ++) {
+        this->buf_[this->offset_] = byte_string[i];
+        this->offset_ ++;
+    }
+}
+
 void cbor_encode::encode_byte_string(uint8_t *byte_string, uint32_t len)
 {
-    uint32_t i = 0;
-
     if (len <= 23) {
         ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_BSTR, len);
-        for (i = 0; i < len; i ++) {
-            this->buf_[this->offset_] = byte_string[i];
-            this->offset_ ++;
-        }
+        this->copy_byte_string(byte_string, len);
+
     } else if ((len > 23) && (len <= 255)) {
         this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_BSTR << 5);
         this->buf_[this->offset_] |= 0x18;
         this->buf_[this->offset_ + 1] = len;
         this->offset_ += 2;
 
-        for (i = 0; i < len; i ++) {
-            this->buf_[this->offset_] = byte_string[i];
-            this->offset_ ++;
-        }
+        this->copy_byte_string(byte_string, len);
+
     } else if ((len > 255) && (len <= 65535)) {
         this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_BSTR << 5);
         this->buf_[this->offset_] |= 0x19;
@@ -103,10 +107,8 @@ void cbor_encode::encode_byte_string(uint8_t *byte_string, uint32_t len)
         this->buf_[this->offset_ + 2] = (len & 0x00FF);
         this->offset_ += 3;
 
-        for (i = 0; i < len; i ++) {
-            this->buf_[this->offset_] = byte_string[i];
-            this->offset_ ++;
-        }
+        this->copy_byte_string(byte_string, len);
+
     } else if (len > 65535) {
         this->buf_[this->offset_] = (CBOR_MAJOR_TYPE_BSTR << 5);
         this->buf_[this->offset_] |= 0x1A;
@@ -116,10 +118,8 @@ void cbor_encode::encode_byte_string(uint8_t *byte_string, uint32_t len)
         this->buf_[this->offset_ + 4] = (len & 0x000000FF);
         this->offset_ += 5;
 
-        for (i = 0; i < len; i ++) {
-            this->buf_[this->offset_] = byte_string[i];
-            this->offset_ ++;
-        }
+        this->copy_byte_string(byte_string, len);
+
     }
 }
 
@@ -284,6 +284,17 @@ void cbor_decode::decode_byte_string(uint8_t *byte_string, uint32_t len)
     }
 }
 
+void cbor_decode::copy_string(std::string &str, uint32_t len)
+{
+    uint32_t i;
+
+    for (i = 0; i < len; i ++) {
+        str += this->buf_[this->offset_ + i];
+    }
+
+    this->offset_ += len;
+}
+
 std::string cbor_decode::decode_str(uint32_t len)
 {
     std::string str;
@@ -293,42 +304,26 @@ std::string cbor_decode::decode_str(uint32_t len)
     val = (len & 0x1f);
 
     if (len <= 23) {
-        for (uint32_t i = 0; i < len; i ++) {
-            str += this->buf_[this->offset_ + i];
-        }
-
-        this->offset_ += len;
+        this->copy_string(str, len);
 
     } else if (val == 0x18) {
         len_bytes = this->buf_[this->offset_];
         this->offset_ ++;
 
-        for (uint32_t i = 0; i < len_bytes; i ++) {
-            str += this->buf_[this->offset_ + i];
-        }
-
-        this->offset_ += len_bytes;
+        this->copy_string(str, len_bytes);
 
     } else if (val == 0x19) {
         len_bytes = (this->buf_[this->offset_] << 8) | this->buf_[this->offset_ + 1];
         this->offset_ += 2;
 
-        for (uint32_t i = 0; i < len_bytes; i ++) {
-            str += this->buf_[this->offset_ + i];
-        }
-
-        this->offset_ += len_bytes;
+        this->copy_string(str, len_bytes);
 
     } else if (val == 0x1A) {
         len_bytes = (this->buf_[this->offset_] << 24) | (this->buf_[this->offset_ + 1] << 16) |
                     (this->buf_[this->offset_ + 2] << 8) | this->buf_[this->offset_ + 3];
         this->offset_ += 4;
 
-        for (uint32_t i = 0; i < len_bytes; i ++) {
-            str += this->buf_[this->offset_ + i];
-        }
-
-        this->offset_ += len_bytes;
+        this->copy_string(str, len_bytes);
 
     }
 

@@ -56,6 +56,7 @@ class cbor_decode {
 
     private:
         void copy_bytes(uint8_t *buf, uint32_t buf_len);
+        void copy_string(std::string &str, uint32_t len);
 
         uint8_t *buf_;
         uint32_t buf_len_;
