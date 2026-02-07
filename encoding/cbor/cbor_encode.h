@@ -32,6 +32,13 @@ class cbor_encode {
         void encode_uint(uint32_t val);
 
         /**
+         * @brief - Encode a byte string.
+         * @param [in] byte_string - array of bytes.
+         * @param [in] len - length of the byte string.
+         */
+        void encode_byte_string(uint8_t *byte_string, uint32_t len);
+
+        /**
          * @brief - Encode a string.
          * @param [in] str - string.
          */
@@ -63,16 +70,10 @@ class cbor_encode {
 
     private:
         /**
-         * @brief - Encode a 1 byte unsigned integer.
-         * @param [in] val - unsigned integer.
-         */
-        void encode_uint8(uint32_t val);
-
-        /**
-         * @brief - Encode a string <= 23 bytes in length.
+         * @brief - Encode a string bytes.
          * @param [in] str - string.
          */
-        void encode_str8(const std::string &str);
+        void encode_string_full(const std::string &str);
 
         /**
          * @brief - Encode an array <= 23 elements in length.

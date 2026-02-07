@@ -35,6 +35,13 @@ class cbor_decode {
         uint32_t decode_uint(uint32_t len);
 
         /**
+         * @brief - Decode a byte string.
+         * @param [out] byte_string - array of bytes.
+         * @param [in] len - length of the byte string.
+         */
+        void decode_byte_string(uint8_t *byte_string, uint32_t len);
+
+        /**
          * @brief - Decode a string.
          * @param [in] len - length of the string.
          * @return - string.
@@ -48,6 +55,8 @@ class cbor_decode {
         uint32_t remaining_len() { return this->buf_len_ - this->offset_; }
 
     private:
+        void copy_bytes(uint8_t *buf, uint32_t buf_len);
+
         uint8_t *buf_;
         uint32_t buf_len_;
         uint32_t offset_;
