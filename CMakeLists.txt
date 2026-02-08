@@ -106,6 +106,16 @@ include_directories(
 set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g -DNETOS_DEBUG_PKT_DECODE")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g")
 
+## Use clang compiler
+
+if(CLANG_COMPILER)
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+elseif(GCC_COMPILER)
+set(CMAKE_C_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
+endif()
+
 add_library(netos_platform ${PLATFORM_SRC})
 
 add_executable(netos_netwd ${NETWORKING_SRC})

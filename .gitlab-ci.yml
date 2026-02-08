@@ -30,7 +30,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - apt install -y libssl-dev libpcap-dev libjsoncpp-dev libwolfssl-dev cmake
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake .. -DCLANG_COMPILER=ON
     - make -j2
 
 unit-test-job:   # This job runs in the test stage.
