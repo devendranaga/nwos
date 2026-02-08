@@ -3,7 +3,7 @@
 
 namespace netos {
 
-netos_status udp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status udp_hdr::serialize(packet_buf *pkt_buf)
 {
     pkt_buf->serialize_2_bytes(this->src_port);
     pkt_buf->serialize_2_bytes(this->dst_port);
@@ -13,7 +13,7 @@ netos_status udp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status udp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status udp_hdr::deserialize(packet_buf *pkt_buf)
 {
     if ((pkt_buf->len_ - pkt_buf->offset_) < NETOS_UDP_HDR_LEN_DEFAULT) {
         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,

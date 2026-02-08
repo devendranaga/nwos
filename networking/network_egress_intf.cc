@@ -1,5 +1,6 @@
 #include "ids_macro_defs.h"
 #include "network_egress_intf.h"
+#include "statistics.h"
 
 namespace netos {
 
@@ -18,6 +19,9 @@ void network_egress_interface_ctx::egress_tx_thread()
 
             netos_log_info("send egress frame %s %d\n", intf.ifname.c_str(), intf.pkt->offset_);
             intf.raw_fd_->send_msg(dst, intf.pkt->buf_, intf.pkt->offset_);
+
+            // increment the tx count after tx
+            statistics::instance()->inc_tx_count(intf.ifname);
         }
     }
 }

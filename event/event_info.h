@@ -107,6 +107,9 @@ enum class event_description : uint32_t {
 
     /* Invalid UDP header length. */
     EVENT_DESC_INVAL_UDP_HDR_LEN                        = 0x00002500,
+
+    /* Invalid ICMP checksum. */
+    EVENT_DESEC_INVAL_ICMP_CHECKSUM                     = 0x00002600,
 };
 
 /**

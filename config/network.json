@@ -1,7 +1,7 @@
 {
     "network_config": {
         "interface_list": [
-            "wlp4s0"
+            "dummy0"
         ],
         "logging": {
             "debug_log_server_ip": "127.0.0.1",

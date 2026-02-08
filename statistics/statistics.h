@@ -26,6 +26,7 @@ struct stats_intf {
         this->rx.n_tcp_rx = 0;
         this->rx.n_udp_rx = 0;
         this->rx.n_icmp_rx = 0;
+        this->rx.n_deny = 0;
 
         this->tx.tx_count = 0;
         this->tx.n_eth_tx = 0;
@@ -98,6 +99,11 @@ class statistics {
         inline void inc_icmp_rx_count(const std::string &ifname) {
             std::unique_lock<std::mutex> l(this->lock_);
             this->stats_map_[ifname].rx.n_icmp_rx++;
+        }
+
+        inline void inc_n_deny_rx(const std::string &ifname) {
+            std::unique_lock<std::mutex> l(this->lock_);
+            this->stats_map_[ifname].rx.n_deny ++;
         }
 
         inline void inc_eth_tx_count(const std::string &ifname) {

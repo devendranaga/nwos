@@ -71,9 +71,9 @@ struct tcp_hdr {
     {
     }
 
-    netos_status serialize(std::shared_ptr<packet_buf> &buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &buf);
-    uint16_t checksum(std::shared_ptr<packet_buf> &buf, uint8_t *src_ip, uint8_t *dst_ip);
+    netos_status serialize(packet_buf *buf);
+    netos_status deserialize(packet_buf *buf);
+    uint16_t checksum(packet_buf *buf, uint8_t *src_ip, uint8_t *dst_ip);
     void print();
 };
 

@@ -28,9 +28,9 @@ struct udp_hdr {
     {
     }
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
-    uint16_t calc_checksum(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
+    uint16_t calc_checksum(packet_buf *pkt_buf);
 };
 
 }

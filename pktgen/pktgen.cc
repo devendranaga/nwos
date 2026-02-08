@@ -39,14 +39,17 @@ class pktgen {
 
 void pktgen::gen_eth()
 {
-    std::shared_ptr<packet_buf> pktbuf;
+    packet_buf *pktbuf;
     pktgen_config *config = pktgen_config::instance();
     eth_hdr eh;
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
 
     for (i = 0; i < config->eth_config.count; i ++) {
-        pktbuf = std::make_shared<packet_buf>();
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
         pktbuf->allocate();
 
         memcpy(eh.src_mac, config->eth_config.src_mac, NETOS_MACADDR_LEN);
@@ -64,13 +67,16 @@ void pktgen::gen_eth()
 
 void pktgen::gen_vlan()
 {
-    std::shared_ptr<packet_buf> pktbuf;
+    packet_buf *pktbuf;
     pktgen_config *config = pktgen_config::instance();
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
 
     for (i = 0; i < config->vlan_config.count; i ++) {
-        pktbuf = std::make_shared<packet_buf>();
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
         pktbuf->allocate();
 
         eth_hdr eh;
@@ -96,13 +102,16 @@ void pktgen::gen_vlan()
 
 void pktgen::gen_arp()
 {
-    std::shared_ptr<packet_buf> pktbuf;
+    packet_buf *pktbuf;
     pktgen_config *config = pktgen_config::instance();
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
 
     for (i = 0; i < config->arp_config.count; i ++) {
-        pktbuf = std::make_shared<packet_buf>();
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
         pktbuf->allocate();
 
         eth_hdr eh;
@@ -132,7 +141,7 @@ void pktgen::gen_arp()
 
 void pktgen::gen_ipv4()
 {
-    std::shared_ptr<packet_buf> pktbuf;
+    packet_buf *pktbuf;
     pktgen_config *config = pktgen_config::instance();
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
@@ -146,7 +155,10 @@ void pktgen::gen_ipv4()
     }
 
     for (i = 0; i < config->ipv4_config.count; i ++) {
-        pktbuf = std::make_shared<packet_buf>();
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
         pktbuf->allocate();
 
         eth_hdr eh;

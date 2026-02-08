@@ -5,7 +5,7 @@
 
 namespace netos {
 
-uint16_t ipv4_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf)
+uint16_t ipv4_hdr::checksum(packet_buf *pkt_buf)
 {
     uint32_t chksum32 = 0;
     uint16_t chksum = 0;
@@ -20,7 +20,7 @@ uint16_t ipv4_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf)
     return chksum;
 }
 
-netos_status ipv4_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status ipv4_hdr::serialize(packet_buf *pkt_buf)
 {
     this->start_off = pkt_buf->offset_;
 
@@ -62,7 +62,7 @@ netos_status ipv4_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status ipv4_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status ipv4_hdr::deserialize(packet_buf *pkt_buf)
 {
     network_config *conf = network_config::instance();
 

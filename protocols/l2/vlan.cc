@@ -4,7 +4,7 @@
 
 namespace netos {
 
-netos_status vlan_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status vlan_hdr::serialize(packet_buf *pkt_buf)
 {
     pkt_buf->buf_[pkt_buf->offset_] = 0;
     pkt_buf->buf_[pkt_buf->offset_] |= (this->priority << 5);
@@ -20,7 +20,7 @@ netos_status vlan_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status vlan_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status vlan_hdr::deserialize(packet_buf *pkt_buf)
 {
     if ((pkt_buf->len_ - pkt_buf->offset_) > NETOS_VLAN_HDR_LEN) {
         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,

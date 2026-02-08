@@ -6,6 +6,7 @@
 #include <error_codes.h>
 #include <packet_buf.h>
 #include <ip_macros.h>
+#include <event_mgr.h>
 
 namespace netos {
 
@@ -78,8 +79,8 @@ struct icmp_dest_unreachable {
     uint8_t ip_hdr_data[NETOS_IP_HDR_MAX_LEN];
     uint8_t datagram_data[8];
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -88,8 +89,8 @@ struct icmp_time_exceeded {
     uint8_t ip_hdr_data[NETOS_IP_HDR_MAX_LEN];
     uint8_t datagram_data[8];
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -99,8 +100,8 @@ struct icmp_parameter_problem {
     uint8_t ip_hdr_data[NETOS_IP_HDR_MAX_LEN];
     uint8_t datagram_data[8];
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -109,8 +110,8 @@ struct icmp_source_quench {
     uint8_t ip_hdr_data[NETOS_IP_HDR_MAX_LEN];
     uint8_t datagram_data[8];
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -119,8 +120,8 @@ struct icmp_redirect {
     uint8_t ip_hdr_data[NETOS_IP_HDR_MAX_LEN];
     uint8_t datagram_data[8];
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -130,8 +131,8 @@ struct icmp_echo {
     uint16_t icmp_data_len;
     uint8_t *icmp_data;
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -142,8 +143,8 @@ struct icmp_timestamp {
     uint32_t receive_timestamp;
     uint32_t transmit_timestamp;
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -151,8 +152,8 @@ struct icmp_identification {
     uint16_t identifier;
     uint16_t sequence_number;
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
     void print();
 };
 
@@ -179,9 +180,10 @@ struct icmp_hdr {
     std::shared_ptr<icmp_identification> identification_req;
     std::shared_ptr<icmp_identification> identification_reply;
 
-    netos_status serialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status deserialize(std::shared_ptr<packet_buf> &pkt_buf);
-    netos_status calc_checksum(std::shared_ptr<packet_buf> &pkt_buf);
+    netos_status serialize(packet_buf *pkt_buf);
+    netos_status deserialize(packet_buf *pkt_buf);
+    uint16_t calc_checksum(packet_buf *pkt_buf);
+    netos_status verify_checksum(packet_buf *pkt_buf);
     void print();
 };
 

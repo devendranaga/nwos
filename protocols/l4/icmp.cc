@@ -2,7 +2,7 @@
 
 namespace netos {
 
-netos_status icmp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_hdr::serialize(packet_buf *pkt_buf)
 {
     this->start_off = pkt_buf->offset_;
 
@@ -14,32 +14,32 @@ netos_status icmp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_dest_unreachable::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_dest_unreachable::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_time_exceeded::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_time_exceeded::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_parameter_problem::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_parameter_problem::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_source_quench::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_source_quench::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_redirect::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_redirect::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_hdr::calc_checksum(std::shared_ptr<packet_buf> &pkt_buf)
+uint16_t icmp_hdr::calc_checksum(packet_buf *pkt_buf)
 {
     uint32_t checksum = 0;
     uint32_t i = 0;
@@ -58,13 +58,23 @@ netos_status icmp_hdr::calc_checksum(std::shared_ptr<packet_buf> &pkt_buf)
     }
 
     checksum = ~checksum;
+
+    return checksum;
+}
+
+netos_status icmp_hdr::verify_checksum(packet_buf *pkt_buf)
+{
+    uint16_t checksum;
+
+    checksum = this->calc_checksum(pkt_buf);
     if (checksum != 0) {
+        return netos_status::NETOS_STATUS_INVAL_ICMP_CHECKSUM;
     }
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_echo::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_echo::deserialize(packet_buf *pkt_buf)
 {
     pkt_buf->deserialize_2_bytes(&this->identifier);
     pkt_buf->deserialize_2_bytes(&this->sequence_number);
@@ -72,18 +82,20 @@ netos_status icmp_echo::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_timestamp::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_timestamp::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_identification::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_identification::deserialize(packet_buf *pkt_buf)
 {
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status icmp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status icmp_hdr::deserialize(packet_buf *pkt_buf)
 {
+    netos_status ret;
+
     this->start_off = pkt_buf->offset_;
     this->end_off = pkt_buf->len_;
 
@@ -140,7 +152,15 @@ netos_status icmp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
             return netos_status::NETOS_STATUS_UNSUPPORTED_ICMP_TYPE;
     }
 
-    this->calc_checksum(pkt_buf);
+    ret = this->verify_checksum(pkt_buf);
+    /* Raise if checksum is invalid. */
+    if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESEC_INVAL_ICMP_CHECKSUM,
+                                            event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
+                                            pkt_buf->len_);
+        return ret;
+    }
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

@@ -44,11 +44,11 @@ class pcap_mod {
         /**
          * Queue the frame to the packet queue.
          */
-        void add_packet(std::shared_ptr<packet_buf> &pkt);
+        void add_packet(packet_buf *pkt);
 
     private:
         std::shared_ptr<pcap_writer> pcap_wr_;
-        std::queue<std::shared_ptr<packet_buf>> pkt_queue_;
+        std::queue<packet_buf *> pkt_queue_;
         std::mutex pkt_queue_lock_;
         std::condition_variable pkt_queue_cond_;
         std::shared_ptr<std::thread> pcap_thr_;

@@ -30,7 +30,7 @@ void pcap_mod::pcap_thread()
         std::unique_lock<std::mutex> lock(this->pkt_queue_lock_);
         this->pkt_queue_cond_.wait(lock);
         while (!this->pkt_queue_.empty()) {
-            std::shared_ptr<packet_buf> pkt = this->pkt_queue_.front();
+            packet_buf *pkt = this->pkt_queue_.front();
             this->pkt_queue_.pop();
 
             pcaprec_hdr_t rec = this->pcap_wr_->format_pcap_pkthdr(pkt->get_raw_buf_len());
@@ -39,7 +39,7 @@ void pcap_mod::pcap_thread()
     }
 }
 
-void pcap_mod::add_packet(std::shared_ptr<packet_buf> &pkt)
+void pcap_mod::add_packet(packet_buf *pkt)
 {
     std::lock_guard<std::mutex> lock(this->pkt_queue_lock_);
     this->pkt_queue_.push(pkt);

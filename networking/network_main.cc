@@ -4,7 +4,6 @@
 
 #include "ethertypes.h"
 #include "logging.h"
-#include "pool.h"
 #include "arp.h"
 #include "network_main.h"
 #include "statistics.h"
@@ -90,7 +89,11 @@ void network_interface::rx_thread()
         std::shared_ptr<parsed_pkt> pkt;
 
         pkt = std::make_shared<parsed_pkt>();
-        pkt->pkt_buf = std::make_shared<packet_buf>();
+        pkt->pkt_buf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pkt->pkt_buf) {
+            return;
+        }
+
         res = pkt->pkt_buf->allocate();
         if (res != netos_status::NETOS_STATUS_SUCCESS) {
             continue;
@@ -135,6 +138,8 @@ void network_interface::parse_thread()
             ret = pkt->parse_frame();
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->dispatch_pkt(pkt);
+            } else {
+                statistics::instance()->inc_n_deny_rx(this->ifname_);
             }
 
             if (this->pcap_) {

@@ -8,9 +8,11 @@
 #include <memory>
 #include <condition_variable>
 
-#include "packet_buf.h"
+#include "egress_queue.h"
 #include "raw_socket.h"
 #include "logging.h"
+
+#define NETWORK_EGRESS_QUEUES_LEN 8
 
 using namespace netos::lib;
 
@@ -18,7 +20,7 @@ namespace netos {
 
 struct network_egress_intf {
     std::string ifname;
-    std::shared_ptr<packet_buf> pkt;
+    packet_buf *pkt;
     std::shared_ptr<raw_socket> raw_fd_;
 
     explicit network_egress_intf() : ifname(""),
@@ -29,6 +31,7 @@ struct network_egress_intf {
 
 struct network_egress_interface_ctx {
     std::queue<network_egress_intf> egress_queue_;
+    network_egress_queue *queues_;
     std::condition_variable egress_queue_cond_;
     std::shared_ptr<std::thread> egress_thr_;
     std::shared_ptr<raw_socket> raw_fd_;

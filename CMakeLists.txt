@@ -53,6 +53,7 @@ set(NETWORKING_SRC
 	networking/pkt_parser.cc
 	networking/network_egress_intf.cc
 	networking/pcap.cc
+	networking/egress_queue.cc
 	${STATISTICS_SRC}
 	${CLOUD_INTERFACE_SRC})
 

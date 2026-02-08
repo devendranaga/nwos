@@ -9,7 +9,7 @@ namespace netos {
 
 using namespace netos::lib;
 
-netos_status eth_hdr::serialize(std::shared_ptr<packet_buf> &buf)
+netos_status eth_hdr::serialize(packet_buf *buf)
 {
     buf->serialize_mac(this->dst_mac);
     buf->serialize_mac(this->src_mac);
@@ -18,7 +18,7 @@ netos_status eth_hdr::serialize(std::shared_ptr<packet_buf> &buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status eth_hdr::deserialize(std::shared_ptr<packet_buf> &buf)
+netos_status eth_hdr::deserialize(packet_buf *buf)
 {
     if ((buf->len_ - buf->offset_) < NETOS_ETH_ALEN) {
         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,

@@ -4,7 +4,7 @@
 
 namespace netos {
 
-netos_status ipv6_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status ipv6_hdr::serialize(packet_buf *pkt_buf)
 {
     this->start_off = pkt_buf->offset_;
 
@@ -39,7 +39,7 @@ netos_status ipv6_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status ipv6_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
 {
     uint32_t first_word = 0;
     

@@ -39,7 +39,7 @@ struct parsed_pkt_types {
  *          parsed headers of the packet and the received buffer.
  */
 struct parsed_pkt {
-    std::shared_ptr<packet_buf> pkt_buf;
+    packet_buf                  *pkt_buf;
     std::shared_ptr<raw_socket> raw;
     std::string                 ifname;
     parsed_pkt_types            pkt_types_present;

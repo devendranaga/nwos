@@ -6,7 +6,7 @@
 
 namespace netos {
 
-uint16_t tcp_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf, uint8_t *src_ip, uint8_t *dst_ip)
+uint16_t tcp_hdr::checksum(packet_buf *pkt_buf, uint8_t *src_ip, uint8_t *dst_ip)
 {
     uint32_t chksum32 = 0;
     uint32_t i = 0;
@@ -50,7 +50,7 @@ uint16_t tcp_hdr::checksum(std::shared_ptr<packet_buf> &pkt_buf, uint8_t *src_ip
     return ~chksum32;
 }
 
-netos_status tcp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status tcp_hdr::serialize(packet_buf *pkt_buf)
 {
     this->start_off = pkt_buf->offset_;
 
@@ -87,7 +87,7 @@ netos_status tcp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status tcp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
 {
     if (pkt_buf->len_ < NETOS_TCP_HLEN_MIN) {
          event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,

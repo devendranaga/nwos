@@ -18,6 +18,7 @@ typedef struct __attribute__ ((__packed__)) {
     uint64_t n_tcp_rx;
     uint64_t n_udp_rx;
     uint64_t n_icmp_rx;
+    uint64_t n_deny;
 } stats_intf_rx_t;
 
 /**

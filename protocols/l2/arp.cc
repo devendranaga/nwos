@@ -33,7 +33,7 @@ static bool arp_ipaddr_compare(void *ip1, void *ip2)
 
 namespace netos {
 
-netos_status arp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status arp_hdr::serialize(packet_buf *pkt_buf)
 {
     pkt_buf->serialize_2_bytes(this->hw_type);
     pkt_buf->serialize_2_bytes(this->protocol_type);
@@ -48,7 +48,7 @@ netos_status arp_hdr::serialize(std::shared_ptr<packet_buf> &pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
-netos_status arp_hdr::deserialize(std::shared_ptr<packet_buf> &pkt_buf)
+netos_status arp_hdr::deserialize(packet_buf *pkt_buf)
 {
     pkt_buf->deserialize_2_bytes(&this->hw_type);
     if (this->hw_type != NETOS_ARP_HWTYPE) {
@@ -211,7 +211,10 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
 
     intf.ifname = frame->ifname;
     intf.raw_fd_ = frame->raw;
-    intf.pkt = std::make_shared<packet_buf>();
+    intf.pkt = (packet_buf *)calloc(1, sizeof(packet_buf));
+    if (!intf.pkt) {
+        return;
+    }
     intf.pkt->allocate();
 
     memcpy(eh.dst_mac, frame->eh.src_mac, NETOS_MACADDR_LEN);
