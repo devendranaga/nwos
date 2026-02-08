@@ -87,6 +87,28 @@ class pycbor:
         elif isinstance(data, str):
             self.encode_str(data)
 
+    def decode(self, buf):
+        print("len " + str(len(buf)))
+        for i in range(len(buf)):
+            major_type = buf[i] >> 5
+            length = buf[i] & 0x1f
+            if major_type == pycbor_types.MAJOR_TYPE_MAP:
+                print("map")
+            elif major_type == pycbor_types.MAJOR_TYPE_BYTE_STRING:
+                print("byte string")
+            elif major_type == pycbor_types.MAJOR_TYPE_TEXT_STRING:
+                print("text string")
+            elif major_type == pycbor_types.MAJOR_TYPE_ARRAY:
+                print("array")
+            elif major_type == pycbor_types.MAJOR_TYPE_TAG:
+                print("tag")
+            elif major_type == pycbor_types.MAJOR_TYPE_SIMPLE:
+                print("simple")
+            elif major_type == pycbor_types.MAJOR_TYPE_POSITIVE_INT:
+                print("positive int")
+            elif major_type == pycbor_types.MAJOR_TYPE_NEGATIVE_INT:
+                print("negative int")
+
 if __name__ == "__main__":
     cbor = pycbor()
     cbor.encode_map(2)
@@ -96,3 +118,4 @@ if __name__ == "__main__":
     cbor.encode([1, 2, 3, 4, 5])
     buf, length = cbor.get_encode_buf()
     print(buf.hex())
+    cbor.decode(buf)

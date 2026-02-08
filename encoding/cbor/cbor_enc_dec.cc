@@ -8,6 +8,13 @@
 #include "cbor_encode.h"
 #include "cbor_decode.h"
 
+#define CBOR_SIMPLE_FALSE           20u
+#define CBOR_SIMPLE_TRUE            21u
+#define CBOR_SIMPLE_NULL            22u
+
+/**
+ * @brief - Encode header byte for default <= 23 byte frames.
+ */
 #define ENCODE_HEADER_BYTE(__buffer, __offset, __major_type, __val) {\
     __buffer[__offset] = ((__major_type) << 5);\
     __buffer[__offset] |= (__val);\
@@ -23,9 +30,10 @@ cbor_encode::cbor_encode(uint32_t len)
         throw std::runtime_error("cannot allocate buffer");
     }
 
-    this->offset_ = 0;
-    this->buf_len_ = len;
-    this->preallocated_ = true;
+    this->offset_           = 0;
+    this->buf_len_          = len;
+    /* Only free an allocated buf_ pointer. */
+    this->preallocated_     = true;
 }
 
 cbor_encode::cbor_encode(uint8_t *buf, uint32_t len)
@@ -41,6 +49,20 @@ cbor_encode::~cbor_encode()
     if (this->buf_ && this->preallocated_) {
         free(this->buf_);
     }
+}
+
+void cbor_encode::encode_bool(bool val)
+{
+    if (val) {
+        ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_SIMPLE, CBOR_SIMPLE_TRUE);
+    } else {
+        ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_SIMPLE, CBOR_SIMPLE_FALSE);
+    }
+}
+
+void cbor_encode::encode_null()
+{
+    ENCODE_HEADER_BYTE(this->buf_, this->offset_, CBOR_MAJOR_TYPE_SIMPLE, CBOR_SIMPLE_NULL);
 }
 
 void cbor_encode::encode_uint(uint32_t val)
@@ -214,6 +236,21 @@ void cbor_decode::decode_type_len(uint32_t *type, uint32_t *len)
     *len = this->buf_[this->offset_] & 0x1f;
 
     this->offset_ ++;
+}
+
+bool cbor_decode::is_simple_value_true(uint32_t val)
+{
+    return val == CBOR_SIMPLE_TRUE;
+}
+
+bool cbor_decode::is_simple_value_false(uint32_t val)
+{
+    return val == CBOR_SIMPLE_FALSE;
+}
+
+bool cbor_decode::is_simple_value_null(uint32_t val)
+{
+    return val == CBOR_SIMPLE_NULL;
 }
 
 uint32_t cbor_decode::decode_uint(uint32_t len)

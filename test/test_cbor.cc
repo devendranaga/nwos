@@ -15,7 +15,7 @@ int main()
     uint32_t i;
 
     // number of elements in the map
-    enc.encode_map(3);
+    enc.encode_map(4);
 
     // 1st type is test
     //enc.encode_str("test");
@@ -39,6 +39,9 @@ int main()
 
     enc.encode_str("123456789012345678901234567890");
     enc.encode_uint(1);
+
+    enc.encode_uint(1);
+    enc.encode_bool(true);
 
     enc_buf = enc.get_data();
     enc_buf_len = enc.get_len();
@@ -85,6 +88,15 @@ int main()
             case CBOR_MAJOR_TYPE_TEXT: {
                 std::string str = dec.decode_str(len);
                 printf("is a text <%s>\n", str.c_str());
+            } break;
+            case CBOR_MAJOR_TYPE_SIMPLE: {
+                if (dec.is_simple_value_true(len)) {
+                    printf("is a true\n");
+                } else if (dec.is_simple_value_false(len)) {
+                    printf("is a false\n");
+                } else if (dec.is_simple_value_null(len)) {
+                    printf("is a null\n");
+                }
             } break;
             default:
                 printf("unknown type\n");

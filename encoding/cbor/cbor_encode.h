@@ -26,6 +26,17 @@ class cbor_encode {
         ~cbor_encode();
 
         /**
+         * @brief - Encode a boolean.
+         * @param [in] val - boolean.
+         */
+        void encode_bool(bool val);
+
+        /**
+         * @brief - Encode a null.
+         */
+        void encode_null();
+
+        /**
          * @brief - Encode a unsigned integer.
          * @param [in] val - unsigned integer.
          */

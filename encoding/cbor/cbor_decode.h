@@ -21,6 +21,27 @@ class cbor_decode {
         ~cbor_decode();
 
         /**
+         * @brief - Check if the simple value is true.
+         * @param [in] val - simple value.
+         * @return - true if the simple value is true.
+         */
+        bool is_simple_value_true(uint32_t val);
+
+        /**
+         * @brief - Check if the simple value is false.
+         * @param [in] val - simple value.
+         * @return - true if the simple value is false.
+         */
+        bool is_simple_value_false(uint32_t val);
+
+        /**
+         * @brief - Check if the simple value is null.
+         * @param [in] val - simple value.
+         * @return - true if the simple value is null.
+         */
+        bool is_simple_value_null(uint32_t val);
+
+        /**
          * @brief - Decode the type and length of the next element.
          * @param [out] type - type of the element.
          * @param [out] len - length of the element.
