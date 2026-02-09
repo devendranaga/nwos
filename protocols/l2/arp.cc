@@ -194,14 +194,14 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
     netos_hash_table_add_item(arp_cache_, entry, macaddr, arp_macaddr_hash);
 }
 
-void arp_context::add_rx_frame(std::shared_ptr<parsed_pkt> rx_frame)
+void arp_context::add_rx_frame(parsed_pkt *rx_frame)
 {
     std::unique_lock<std::mutex> l(this->process_thr_lock_);
     this->arp_rx_queue_.push(rx_frame);
     this->process_cond_lock_.notify_one();
 }
 
-void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
+void arp_context::arp_frame_prepare(parsed_pkt *frame,
                                     uint8_t *macaddr,
                                     uint32_t ipaddr)
 {
@@ -236,7 +236,7 @@ void arp_context::arp_frame_prepare(std::shared_ptr<parsed_pkt> frame,
     network_egress::instance()->egress_enque(intf);
 }
 
-void arp_context::arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame)
+void arp_context::arp_process_packet(parsed_pkt *rx_frame)
 {
     uint8_t mac[6] = {0};
     uint32_t ipaddr = 0;
@@ -283,7 +283,7 @@ void arp_context::arp_process_thread()
         std::unique_lock<std::mutex> l(this->process_thr_lock_);
         this->process_cond_lock_.wait(l);
         while (!arp_rx_queue_.empty()) {
-            std::shared_ptr<parsed_pkt> rx_frame = arp_rx_queue_.front();
+            parsed_pkt *rx_frame = arp_rx_queue_.front();
 
             this->arp_process_packet(rx_frame);
             arp_rx_queue_.pop();

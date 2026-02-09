@@ -84,6 +84,8 @@ int main()
                     printf("%02x ", byte_string[i]);
                 }
                 printf("\n");
+
+                free(byte_string);
             } break;
             case CBOR_MAJOR_TYPE_TEXT: {
                 std::string str = dec.decode_str(len);

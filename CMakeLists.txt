@@ -31,7 +31,8 @@ set(IDS_COMMON_SRC
 	protocols/l4/icmp.cc
 	protocols/l4/icmpv6.cc
 	event/event_mgr.cc
-	networking/network_egress_intf.cc)
+	networking/network_egress_intf.cc
+	pkt/parsed_pkt_pool.cc)
 
 set(STATISTICS_SRC
 	statistics/statistics.cc)
@@ -104,8 +105,8 @@ include_directories(
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g -DNETOS_DEBUG_PKT_DECODE")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g -DNETOS_DEBUG_PKT_DECODE -fsanitize=address")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g -fsanitize=address")
 
 ## Use clang compiler
 

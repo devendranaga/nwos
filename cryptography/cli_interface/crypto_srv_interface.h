@@ -9,6 +9,10 @@ extern "C" {
 
 #define CRYPTO_OP_HASH 1
 
+#define CRYPTO_OP_HASH_SHA256 1
+#define CRYPTO_OP_HASH_SHA384 2
+#define CRYPTO_OP_HASH_SHA512 3
+
 typedef struct __attribute__ ((__packed__)) {
     uint8_t hash_algorithm;
     uint16_t msg_len;

@@ -16,7 +16,12 @@ class openssl_rsa : public cryptography_rsa {
         netos_status gen_keypair(rsa_key_type key_type,
                                  const std::string &pkey,
                                  const std::string &pubkey);
-    private:
+
+        netos_status sign_privkey(const std::string &privkey,
+                                  cryptography_rsa_params *params);
+
+        netos_status verify_pubkey(const std::string &pubkey,
+                                   cryptography_rsa_params *params);
 };
 
 }

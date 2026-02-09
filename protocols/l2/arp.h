@@ -67,7 +67,7 @@ class arp_context {
 
         netos_status init();
 
-        void add_rx_frame(std::shared_ptr<parsed_pkt> rx_frame);
+        void add_rx_frame(parsed_pkt *rx_frame);
 
     private:
         explicit arp_context() { }
@@ -75,11 +75,11 @@ class arp_context {
         std::mutex process_thr_lock_;
         std::condition_variable process_cond_lock_;
         arp_cache cache_;
-        std::queue<std::shared_ptr<parsed_pkt>> arp_rx_queue_;
+        std::queue<parsed_pkt *> arp_rx_queue_;
 
         void arp_process_thread();
-        void arp_process_packet(std::shared_ptr<parsed_pkt> rx_frame);
-        void arp_frame_prepare(std::shared_ptr<parsed_pkt> rx_frame, uint8_t *mac, uint32_t ipaddr);
+        void arp_process_packet(parsed_pkt *rx_frame);
+        void arp_frame_prepare(parsed_pkt *rx_frame, uint8_t *mac, uint32_t ipaddr);
 };
 
 }

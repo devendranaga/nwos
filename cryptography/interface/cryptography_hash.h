@@ -7,6 +7,10 @@
 
 using namespace netos::lib;
 
+#define CRYPTO_HASH_SHA256 1
+#define CRYPTO_HASH_SHA384 2
+#define CRYPTO_HASH_SHA512 3
+
 namespace netos {
 
 struct cryptograpy_hash_params {

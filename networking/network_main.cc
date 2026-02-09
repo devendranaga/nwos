@@ -56,6 +56,8 @@ void network_manager::run(int argc, char **argv)
     // initialize network interface
     conf = network_config::instance();
 
+    parsed_pkt_pool::instance()->initialize(1000);
+
     for (auto ifname : conf->if_config_.ifname) {
         network_egress *egress;
         std::shared_ptr<network_interface> netif;
@@ -80,23 +82,16 @@ void network_manager::run(int argc, char **argv)
 
 void network_interface::rx_thread()
 {
-    netos_status res;
     int ret;
 
     netos_log_info("create rx thread for <%s> ok\n", this->ifname_.c_str());
 
     while (1) {
-        std::shared_ptr<parsed_pkt> pkt;
+        parsed_pkt *pkt;
 
-        pkt = std::make_shared<parsed_pkt>();
-        pkt->pkt_buf = (packet_buf *)calloc(1, sizeof(packet_buf));
-        if (!pkt->pkt_buf) {
+        pkt = parsed_pkt_pool::instance()->get_pkt();
+        if (!pkt) {
             return;
-        }
-
-        res = pkt->pkt_buf->allocate();
-        if (res != netos_status::NETOS_STATUS_SUCCESS) {
-            continue;
         }
 
         pkt->ifname = this->ifname_;
@@ -114,7 +109,7 @@ void network_interface::rx_thread()
     }
 }
 
-void network_interface::dispatch_pkt(std::shared_ptr<parsed_pkt> pkt)
+void network_interface::dispatch_pkt(parsed_pkt *pkt)
 {
     if (pkt->pkt_types_present.has_arp) {
         arp_context::instance()->add_rx_frame(pkt);
@@ -127,11 +122,13 @@ void network_interface::parse_thread()
 
     while (1) {
         std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
+        bool free_frame = false;
+
         rx_pkt_pool_cond_.wait(l);
 
         // dequeue all the packets from the pool
         while (!this->rx_pkt_pool_.empty()) {
-            std::shared_ptr<parsed_pkt> pkt = this->rx_pkt_pool_.front();
+            parsed_pkt *pkt = this->rx_pkt_pool_.front();
             this->rx_pkt_pool_.pop();
 
             // parse and dispatch them to the corresponding protocol layer
@@ -140,10 +137,15 @@ void network_interface::parse_thread()
                 this->dispatch_pkt(pkt);
             } else {
                 statistics::instance()->inc_n_deny_rx(this->ifname_);
+                free_frame = true;
             }
 
             if (this->pcap_) {
                 this->pcap_->add_packet(pkt->pkt_buf);
+            }
+
+            if (free_frame) {
+                parsed_pkt_pool::instance()->put_pkt(pkt);
             }
         }
     }

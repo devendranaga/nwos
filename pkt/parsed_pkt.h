@@ -52,6 +52,7 @@ struct parsed_pkt {
     udp_hdr                     udp_h;
     tcp_hdr                     tcp_h;
     icmp_hdr                    icmp_h;
+    struct parsed_pkt           *next;
 
     explicit parsed_pkt() {}
     ~parsed_pkt() {}
@@ -91,6 +92,24 @@ struct parsed_pkt {
 
             return netos_status::NETOS_STATUS_GENERIC_ERROR;
         }
+};
+
+class parsed_pkt_pool {
+    public:
+        static parsed_pkt_pool *instance() {
+            static parsed_pkt_pool pool;
+            return &pool;
+        }
+        ~parsed_pkt_pool() {}
+
+        netos_status initialize(uint32_t size);
+        parsed_pkt *get_pkt();
+        void put_pkt(parsed_pkt *pkt);
+
+    private:
+        uint32_t size_;
+        parsed_pkt *head_;
+        explicit parsed_pkt_pool() {}
 };
 
 }

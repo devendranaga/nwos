@@ -30,9 +30,9 @@ class network_interface {
         void tx_thread();
         void rx_thread();
         void parse_thread();
-        void dispatch_pkt(std::shared_ptr<parsed_pkt> pkt);
+        void dispatch_pkt(parsed_pkt *pkt);
 
-        std::queue<std::shared_ptr<parsed_pkt>> rx_pkt_pool_;
+        std::queue<parsed_pkt *> rx_pkt_pool_;
         std::condition_variable rx_pkt_pool_cond_;
         std::mutex rx_pkt_pool_lock_;
         std::shared_ptr<std::thread> rx_thr_;
