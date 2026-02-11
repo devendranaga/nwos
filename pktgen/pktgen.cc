@@ -14,6 +14,8 @@
 #include "arp_hdr.h"
 #include "vlan.h"
 #include "ipv4.h"
+#include "icmp.h"
+#include "protocols.h"
 #include "pktgen_config.h"
 #include "pktgen.h"
 
@@ -34,6 +36,7 @@ class pktgen {
         void gen_vlan();
         void gen_arp();
         void gen_ipv4();
+        void gen_icmp();
         std::shared_ptr<netos::lib::raw_socket> raw_fd_;
 };
 
@@ -163,7 +166,6 @@ void pktgen::gen_ipv4()
 
         eth_hdr eh;
         ipv4_hdr ipv4_h;
-        uint16_t chksum;
 
         memcpy(eh.src_mac, config->ipv4_config.eth_src_mac, NETOS_MACADDR_LEN);
         memcpy(eh.dst_mac, config->ipv4_config.eth_dst_mac, NETOS_MACADDR_LEN);
@@ -203,13 +205,80 @@ void pktgen::gen_ipv4()
         ipv4_h.src_addr = config->ipv4_config.src_addr;
         ipv4_h.dst_addr = config->ipv4_config.dst_addr;
         ipv4_h.serialize(pktbuf);
-        chksum = ipv4_h.checksum(pktbuf);
-        pktbuf->buf_[ipv4_h.checksum_off] = (chksum & 0x00FF);
-        pktbuf->buf_[ipv4_h.checksum_off + 1] = (chksum & 0xFF00) >> 8;
         pktbuf->serialize_bytes(buf, config->ipv4_config.total_len);
 
         this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->ipv4_config.pkt_intvl_nsec));
+
+        pktbuf->free_ptr();
+    }
+
+    if (buf)
+        free(buf);
+}
+
+void pktgen::gen_icmp()
+{
+    packet_buf *pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i = 0;
+    uint8_t *buf = NULL;
+
+    if (config->icmp_config.payload_len != 0) {
+        buf = (uint8_t *)calloc(1, config->icmp_config.payload_len);
+        if (!buf) {
+            return;
+        }
+    }
+
+    for (i = 0; i < config->icmp_config.count; i ++) {
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        ipv4_hdr ipv4_h;
+
+        memcpy(eh.src_mac, config->icmp_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->icmp_config.eth_dst_mac, NETOS_MACADDR_LEN);
+        eh.ethertype = NETOS_ETHERTYPE_IPV4;
+        eh.serialize(pktbuf);
+
+        ipv4_h.version = NETOS_IPV4_VERSION;
+        ipv4_h.ihl = NETOS_IPV4_IHL_DEFAULT;
+        ipv4_h.dscp = 0;
+        ipv4_h.ecn = 0;
+        ipv4_h.total_len = (NETOS_IPV4_IHL_DEFAULT * 4) +
+                            NETOS_ICMP_HDR_LEN +
+                            NETOS_ICMP_ECHO_REQ_HDR_LEN + config->icmp_config.payload_len;
+        ipv4_h.id = 0x1212;
+        ipv4_h.flags.reserved = 0;
+        ipv4_h.flags.df = 0;
+        ipv4_h.flags.mf = 0;
+        ipv4_h.ttl = 64;
+        ipv4_h.protocol = NETOS_IP_PROTOCOL_ICMP;
+
+        ipv4_h.hdr_chksum = 0;
+
+        ipv4_h.frag_off = 0;
+        ipv4_h.src_addr = config->icmp_config.src_addr;
+        ipv4_h.dst_addr = config->icmp_config.dst_addr;
+        ipv4_h.serialize(pktbuf);
+
+        icmp_hdr icmp_h;
+        icmp_h.type = config->icmp_config.type;
+        icmp_h.code = config->icmp_config.code;
+
+        icmp_h.echo_request = std::make_shared<icmp_echo>();
+        icmp_h.echo_request->identifier = config->icmp_config.identifier;
+        icmp_h.echo_request->sequence_number = config->icmp_config.sequence_number;
+        icmp_h.serialize(pktbuf);
+
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(config->icmp_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
     }
@@ -255,6 +324,9 @@ void pktgen::run(int argc, char **argv)
     }
     if (config->ipv4_config.enable) {
         this->gen_ipv4();
+    }
+    if (config->icmp_config.enable) {
+        this->gen_icmp();
     }
 }
 

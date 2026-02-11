@@ -8,16 +8,13 @@ namespace netos {
 uint16_t ipv4_hdr::checksum(packet_buf *pkt_buf)
 {
     uint32_t chksum32 = 0;
-    uint16_t chksum = 0;
     uint32_t i = 0;
 
     for (i = this->start_off; i < this->end_off; i += 2) {
         chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
     }
 
-    chksum = ((chksum32 >> 16) + (chksum32 & 0x0000FFFF));
-
-    return chksum;
+    return ~((chksum32 >> 16) + (chksum32 & 0x0000FFFF));
 }
 
 netos_status ipv4_hdr::serialize(packet_buf *pkt_buf)
@@ -53,11 +50,18 @@ netos_status ipv4_hdr::serialize(packet_buf *pkt_buf)
 
     this->checksum_off = pkt_buf->offset_;
 
+    this->hdr_chksum = 0;
     pkt_buf->serialize_2_bytes(this->hdr_chksum);
     pkt_buf->serialize_4_bytes(this->src_addr);
     pkt_buf->serialize_4_bytes(this->dst_addr);
 
     this->end_off = pkt_buf->offset_;
+
+    auto hdr_chksum = this->checksum(pkt_buf);
+
+    /* swap back the checksum bytes and store in the checksum offset. */
+    pkt_buf->buf_[this->checksum_off] = hdr_chksum & 0xFF;
+    pkt_buf->buf_[this->checksum_off + 1] = (hdr_chksum & 0xFF00) >> 8;
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

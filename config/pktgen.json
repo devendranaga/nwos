@@ -11,7 +11,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "arp": {
-        "enable": true,
+        "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -105,6 +105,26 @@
         "hop_limit": 1,
         "src_addr": "2001::1",
         "dst_addr": "2001::2",
+        "randomize": false,
+        "repeat": true,
+        "count": 1,
+        "pkt_intvl_nsec": 1
+    },
+    "icmp": {
+        "enable": true,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "ipv4": {
+            "src_addr": "192.168.0.1",
+            "dst_addr": "192.168.0.12"
+        },
+        "type": 8,
+        "code": 0,
+        "identifier": "0x1",
+        "sequence_number": "0x1",
+        "payload_len": 0,
         "randomize": false,
         "repeat": true,
         "count": 1,

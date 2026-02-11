@@ -18,6 +18,10 @@ using namespace netos::lib;
 
 namespace netos {
 
+/**
+ * @brief Network interface class
+ * This is per interface class definition and implementation.
+ */
 class network_interface {
     public:
         explicit network_interface() { }

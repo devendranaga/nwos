@@ -30,6 +30,7 @@ struct packet_buf {
     uint8_t *buf_;
     uint32_t offset_;
     uint32_t len_;
+    packet_buf *next;
 
     netos_status allocate();
     void free_ptr();
@@ -61,6 +62,25 @@ struct packet_buf {
     void deserialize_mac(uint8_t *mac);
     void deserialize_2_bytes(uint16_t *val);
     void deserialize_4_bytes(uint32_t *val);
+};
+
+struct packet_buf_pool {
+    public:
+        static packet_buf_pool *instance() {
+            static packet_buf_pool instance;
+            return &instance;
+        }
+
+        ~packet_buf_pool() {}
+
+        netos_status initialize(uint32_t size);
+        packet_buf *get_pkt();
+        void put_pkt(packet_buf *pkt);
+
+    private:
+        explicit packet_buf_pool() {}
+        packet_buf *head_;
+        uint32_t size_;
 };
 
 }

@@ -211,11 +211,10 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
 
     intf.ifname = frame->ifname;
     intf.raw_fd_ = frame->raw;
-    intf.pkt = (packet_buf *)calloc(1, sizeof(packet_buf));
+    intf.pkt = packet_buf_pool::instance()->get_pkt();
     if (!intf.pkt) {
         return;
     }
-    intf.pkt->allocate();
 
     memcpy(eh.dst_mac, frame->eh.src_mac, NETOS_MACADDR_LEN);
     memcpy(eh.src_mac, macaddr, NETOS_MACADDR_LEN);

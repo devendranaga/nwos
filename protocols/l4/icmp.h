@@ -8,6 +8,10 @@
 #include <ip_macros.h>
 #include <event_mgr.h>
 
+#define NETOS_ICMP_HDR_LEN 4
+#define NETOS_ICMP_ECHO_REQ_HDR_LEN 4
+#define NETOS_ICMP_ECHO_REPLY_HDR_LEN 4
+
 namespace netos {
 
 /**

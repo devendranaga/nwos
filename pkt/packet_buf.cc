@@ -6,6 +6,49 @@
 
 namespace netos {
 
+netos_status packet_buf_pool::initialize(uint32_t size)
+{
+    uint32_t i;
+
+    this->size_ = size;
+    this->head_ = nullptr;
+
+    for (i = 0; i < size; i ++) {
+        packet_buf *pkt_buf;
+
+        pkt_buf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pkt_buf) {
+            return netos_status::NETOS_STATUS_ALLOC_FAILURE;
+        }
+
+        pkt_buf->allocate();
+        if (!this->head_) {
+            this->head_ = pkt_buf;
+        } else {
+            pkt_buf->next = this->head_;
+            this->head_ = pkt_buf;
+        }
+    }
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+packet_buf *packet_buf_pool::get_pkt()
+{
+    if (this->head_) {
+        packet_buf *pkt = this->head_;
+        this->head_ = this->head_->next;
+        return pkt;
+    }
+    return nullptr;
+}
+
+void packet_buf_pool::put_pkt(packet_buf *pkt)
+{
+    pkt->next = this->head_;
+    this->head_ = pkt;
+}
+
 netos_status packet_buf::allocate()
 {
     this->buf_ = (uint8_t *)calloc(1, NETOS_PACKET_BUF_SIZE);

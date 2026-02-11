@@ -116,6 +116,26 @@ struct pktgen_ipv6_config {
     void print();
 };
 
+struct pktgen_icmp_config {
+    bool            enable;
+    uint8_t         eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t         eth_dst_mac[NETOS_MACADDR_LEN];
+    uint32_t        src_addr;
+    uint32_t        dst_addr;
+    uint8_t         type;
+    uint8_t         code;
+    uint32_t        identifier;
+    uint32_t        sequence_number;
+    bool            randomize;
+    bool            repeat;
+    uint32_t        count;
+    uint64_t        pkt_intvl_nsec;
+    uint32_t        payload_len;
+
+    int parse(const Json::Value &r);
+    void print();
+};
+
 struct pktgen_config {
     ~pktgen_config() = default;
 
@@ -130,6 +150,7 @@ struct pktgen_config {
     pktgen_vlan_config vlan_config;
     pktgen_ipv4_config ipv4_config;
     pktgen_ipv6_config ipv6_config;
+    pktgen_icmp_config icmp_config;
     int parse(const std::string &filename);
     void print();
 

@@ -56,6 +56,10 @@ void network_manager::run(int argc, char **argv)
     // initialize network interface
     conf = network_config::instance();
 
+    // initialize packet buffer pool
+    packet_buf_pool::instance()->initialize(1000);
+
+    // initialize parsed packet buffer pool
     parsed_pkt_pool::instance()->initialize(1000);
 
     for (auto ifname : conf->if_config_.ifname) {
@@ -89,6 +93,7 @@ void network_interface::rx_thread()
     while (1) {
         parsed_pkt *pkt;
 
+        // get an instance of the parsed packet buffer pool
         pkt = parsed_pkt_pool::instance()->get_pkt();
         if (!pkt) {
             return;
@@ -97,10 +102,13 @@ void network_interface::rx_thread()
         pkt->ifname = this->ifname_;
         pkt->raw = this->raw_;
 
+        // receive the packet from the raw socket
         ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
         if (ret > 0) {
             pkt->pkt_buf->len_ = ret;
             statistics::instance()->inc_rx_count(this->ifname_);
+
+            // queue the frame to the receive pool
             std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
             this->rx_pkt_pool_.push(pkt);
             rx_pkt_pool_cond_.notify_one();

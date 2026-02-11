@@ -2,14 +2,43 @@
 
 namespace netos {
 
+netos_status icmp_echo::serialize(packet_buf *pkt_buf)
+{
+    pkt_buf->serialize_2_bytes(this->identifier);
+    pkt_buf->serialize_2_bytes(this->sequence_number);
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status icmp_hdr::serialize(packet_buf *pkt_buf)
 {
+    uint16_t checksum;
+
     this->start_off = pkt_buf->offset_;
 
-    pkt_buf->serialize_2_bytes(this->type);
-    pkt_buf->serialize_2_bytes(this->code);
+    this->start_off = pkt_buf->offset_;
 
+    pkt_buf->serialize_byte(this->type);
+    pkt_buf->serialize_byte(this->code);
     this->checksum_off = pkt_buf->offset_;
+    pkt_buf->serialize_2_bytes(0);
+
+    switch (this->type) {
+        case static_cast<uint8_t>(icmp_type::ECHO_REPLY):
+            this->echo_reply->serialize(pkt_buf);
+        break;
+        case static_cast<uint8_t>(icmp_type::ECHO_REQUEST):
+            this->echo_request->serialize(pkt_buf);
+        break;
+        default:
+            return netos_status::NETOS_STATUS_UNSUPPORTED_ICMP_TYPE;
+    }
+
+    this->end_off = pkt_buf->offset_;
+
+    checksum = this->calc_checksum(pkt_buf);
+    pkt_buf->buf_[this->checksum_off] = checksum & 0xFF;
+    pkt_buf->buf_[this->checksum_off + 1] = (checksum & 0xFF00) >> 8;
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -50,7 +79,7 @@ uint16_t icmp_hdr::calc_checksum(packet_buf *pkt_buf)
     }
 
     for (i = this->start_off; i <= this->end_off + pad; i += 2) {
-        checksum += (pkt_buf->buf_[i] << 8) | pkt_buf->buf_[i + 1];
+        checksum += (pkt_buf->buf_[i + 1] << 8) | pkt_buf->buf_[i];
     }
 
     if (checksum > 0xFFFFu) {

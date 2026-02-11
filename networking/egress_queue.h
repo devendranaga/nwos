@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <memory>
+#include <mutex>
 
 #include <packet_buf.h>
 #include <raw_socket.h>
@@ -15,19 +16,19 @@ using namespace netos::lib;
 namespace netos {
 
 struct network_egress_item {
+    bool available;
     std::string ifname;
     packet_buf *pkt_buf;
-    std::shared_ptr<raw_socket> raw_fd_;
+    std::shared_ptr<raw_socket> raw_fd;
 
     network_egress_item() { }
     ~network_egress_item() { }
-
-    void initialize(std::string &ifname, packet_buf *pkt_buf, std::shared_ptr<raw_socket> &raw_fd_);
 };
 
 struct network_egress_queue {
     uint32_t priority;
-    network_egress_item items[NETWORK_EGRESS_ITEMS_LEN];
+    network_egress_item *items;
+    std::mutex lock;
 };
 
 }

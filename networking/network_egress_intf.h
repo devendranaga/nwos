@@ -48,6 +48,10 @@ struct network_egress_interface_ctx {
         void egress_tx_thread();
 };
 
+/**
+ * @brief - Network Egress.
+ * This is a global egress which holds all the egress queues per interface.
+ */
 class network_egress {
     public:
         ~network_egress() {}
@@ -57,8 +61,19 @@ class network_egress {
             return &egress;
         }
 
+        /**
+         * @brief - Add a raw socket and interface pair to the egress.
+         * This creates a thread that accepts the frames to be egressed out of the
+         * given port when egress_enque is called.
+         */
         void add_interface_ctx(std::shared_ptr<raw_socket> raw,
                                std::string ifname);
+
+        /**
+         * @brief - Enqueue a frame to be egressed out of the given interface.
+         * Make sure to call add_interface_ctx before calling this, otherwise
+         * frame will be dropped because of no interface match.
+         */
         void egress_enque(network_egress_intf &intf);
 
     private:

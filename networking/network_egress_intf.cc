@@ -23,6 +23,8 @@ void network_egress_interface_ctx::egress_tx_thread()
 
             // increment the tx count after tx
             statistics::instance()->inc_tx_count(intf.ifname);
+
+            packet_buf_pool::instance()->put_pkt(intf.pkt);
         }
     }
 }
