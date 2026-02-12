@@ -12,7 +12,8 @@ set(PLATFORM_SRC
 	platform/lib/algorithms/hash_table.c
 	platform/lib/linux/pcap_lib.cc
 	platform/lib/gcd/gcd.cc
-	platform/lib/linux/socket_helper.c)
+	platform/lib/linux/socket_helper.c
+	platform/lib/linux/perf_linux.cc)
 
 set(LOGGER_SRC
 	logger/src/logger.cc)
