@@ -19,7 +19,7 @@ namespace netos {
 
 namespace lib {
 
-pcap_writer::pcap_writer(std::string filename)
+pcap_writer::pcap_writer(const std::string &filename)
 {
     pcap_hdr_t glob_hdr;
 
@@ -56,7 +56,7 @@ pcaprec_hdr_t pcap_writer::format_pcap_pkthdr(size_t pktsize)
     return rec_hdr;
 }
 
-int pcap_writer::write_packet(pcaprec_hdr_t *rec, uint8_t *buf)
+int pcap_writer::write_packet(const pcaprec_hdr_t *rec, const uint8_t *buf)
 {
     int ret;
 
@@ -89,7 +89,7 @@ pcap_hdr_t pcap_writer::format_default_glob_header()
     return glob_hdr;
 }
 
-pcap_reader::pcap_reader(std::string filename)
+pcap_reader::pcap_reader(const std::string &filename)
 {
     fp = fopen(filename.c_str(), "r");
     if (!fp) {

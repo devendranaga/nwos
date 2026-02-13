@@ -1,14 +1,15 @@
 #ifndef PLATFORM_LINUX_PERF_LINUX_H
 #define PLATFORM_LINUX_PERF_LINUX_H
 
-#include <sys/time.h>
 #include <string>
 #include <vector>
+#include <memory>
+#include <sys/time.h>
+#include <time.h>
 
-struct perf_data {
-    struct timespec start_ns;
-    struct timespec end_ns;
-};
+namespace netos {
+
+namespace lib {
 
 class perf_event {
     public:
@@ -18,11 +19,13 @@ class perf_event {
         void capture_start();
         void capture_end();
         double average();
-        double sum();
+        std::string get_name() { return this->name_; }
 
     private:
         std::string name_;
-        std::vector<perf_data> perf_data_;
+        std::vector<double> perf_data_;
+        struct timespec start_ns_;
+        struct timespec end_ns_;
 };
 
 class perf_linux {
@@ -31,11 +34,17 @@ class perf_linux {
             static perf_linux p;
             return &p;
         }
+        std::shared_ptr<perf_event> add_event(const std::string &event);
+        std::shared_ptr<perf_event> get_event(const std::string &event);
         ~perf_linux() { }
 
     private:
         explicit perf_linux() { }
-        std::vector<perf_event> events_;
+        std::vector<std::shared_ptr<perf_event>> events_;
 };
+
+}
+
+}
 
 #endif

@@ -10,6 +10,11 @@ uint16_t ipv4_hdr::checksum(packet_buf *pkt_buf)
     uint32_t chksum32 = 0;
     uint32_t i = 0;
 
+    /**
+     * In general IP header is multiples of 2, so we are safe here
+     * to perform this check, otherwise the pad needs to be considered
+     * and it must be added to the last checksum in high byte.
+     */
     for (i = this->start_off; i < this->end_off; i += 2) {
         chksum32 += ((pkt_buf->buf_[i + 1] << 8) | (pkt_buf->buf_[i]));
     }
@@ -32,6 +37,7 @@ netos_status ipv4_hdr::serialize(packet_buf *pkt_buf)
     pkt_buf->serialize_2_bytes(this->total_len);
     pkt_buf->serialize_2_bytes(this->id);
     pkt_buf->buf_[pkt_buf->offset_] = 0;
+
     if (this->flags.reserved) {
         pkt_buf->buf_[pkt_buf->offset_] |= 0x80;
     }
@@ -41,6 +47,7 @@ netos_status ipv4_hdr::serialize(packet_buf *pkt_buf)
     if (this->flags.mf) {
         pkt_buf->buf_[pkt_buf->offset_] |= 0x20;
     }
+
     pkt_buf->buf_[pkt_buf->offset_] |= (this->frag_off & 0x1F00) >> 8;
     pkt_buf->buf_[pkt_buf->offset_ + 1] = this->frag_off & 0x00FF;
     pkt_buf->offset_ += 2;

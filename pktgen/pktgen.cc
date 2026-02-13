@@ -37,6 +37,7 @@ class pktgen {
         void gen_arp();
         void gen_ipv4();
         void gen_icmp();
+
         std::shared_ptr<netos::lib::raw_socket> raw_fd_;
 };
 
@@ -65,6 +66,7 @@ void pktgen::gen_eth()
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->eth_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
+        free(pktbuf);
     }
 }
 
@@ -100,6 +102,7 @@ void pktgen::gen_vlan()
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->vlan_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
+        free(pktbuf);
     }
 }
 
@@ -139,6 +142,7 @@ void pktgen::gen_arp()
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->arp_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
+        free(pktbuf);
     }
 }
 
@@ -149,6 +153,7 @@ void pktgen::gen_ipv4()
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
     uint8_t *buf = NULL;
+    netos_status ret;
 
     if (config->ipv4_config.total_len != 0) {
         buf = (uint8_t *)calloc(1, config->ipv4_config.total_len);
@@ -204,13 +209,18 @@ void pktgen::gen_ipv4()
         ipv4_h.frag_off = config->ipv4_config.frag_off;
         ipv4_h.src_addr = config->ipv4_config.src_addr;
         ipv4_h.dst_addr = config->ipv4_config.dst_addr;
-        ipv4_h.serialize(pktbuf);
+        ret = ipv4_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return;
+        }
+
         pktbuf->serialize_bytes(buf, config->ipv4_config.total_len);
 
         this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->ipv4_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
+        free(pktbuf);
     }
 
     if (buf)
@@ -224,6 +234,7 @@ void pktgen::gen_icmp()
     uint8_t dst_mac[6] = {};
     uint32_t i = 0;
     uint8_t *buf = NULL;
+    netos_status ret;
 
     if (config->icmp_config.payload_len != 0) {
         buf = (uint8_t *)calloc(1, config->icmp_config.payload_len);
@@ -266,7 +277,10 @@ void pktgen::gen_icmp()
         ipv4_h.frag_off = 0;
         ipv4_h.src_addr = config->icmp_config.src_addr;
         ipv4_h.dst_addr = config->icmp_config.dst_addr;
-        ipv4_h.serialize(pktbuf);
+        ret = ipv4_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return;
+        }
 
         icmp_hdr icmp_h;
         icmp_h.type = config->icmp_config.type;
@@ -275,12 +289,17 @@ void pktgen::gen_icmp()
         icmp_h.echo_request = std::make_shared<icmp_echo>();
         icmp_h.echo_request->identifier = config->icmp_config.identifier;
         icmp_h.echo_request->sequence_number = config->icmp_config.sequence_number;
-        icmp_h.serialize(pktbuf);
+        ret = icmp_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return;
+        }
 
         this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(config->icmp_config.pkt_intvl_nsec));
+        std::this_thread::sleep_for(
+                        std::chrono::nanoseconds(config->icmp_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
+        free(pktbuf);
     }
 
     if (buf)

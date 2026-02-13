@@ -9,9 +9,19 @@
 
 namespace netos {
 
+/**
+ * @brief - Defines IPV4 version.
+ */
 #define NETOS_IPV4_VERSION          4
+
+/**
+ * @brief - Defines IPV4 default IHL.
+ */
 #define NETOS_IPV4_IHL_DEFAULT      5
 
+/**
+ * @brief - Defines IPV4 flags.
+ */
 struct ipv4_flags {
     uint32_t            reserved:1;
     uint32_t            df:1;
@@ -31,6 +41,9 @@ struct ipv4_flags {
     void print();
 } __attribute__ ((__packed__));
 
+/**
+ * @brief - Defines IPV4 header.
+ */
 struct ipv4_hdr {
     uint8_t             version;
     uint8_t             ihl;
