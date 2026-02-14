@@ -21,7 +21,7 @@ set(LOGGER_SRC
 set(IDS_COMMON_SRC
 	pkt/packet_buf.cc
 	protocols/l2/eth.cc
-	protocols/l2/arp.cc
+	protocols/l2/arp_hdr.cc
 	protocols/l2/vlan.cc
 	protocols/l2/macsec.cc
 	protocols/l2/mka.cc
@@ -32,8 +32,10 @@ set(IDS_COMMON_SRC
 	protocols/l4/icmp.cc
 	protocols/l4/icmpv6.cc
 	event/event_mgr.cc
-	networking/network_egress_intf.cc
 	pkt/parsed_pkt_pool.cc)
+
+set(NETOS_PROTOCOLS_SRC
+	protocols/l2/arp.cc)
 
 set(STATISTICS_SRC
 	statistics/statistics.cc)
@@ -50,6 +52,7 @@ set(CLOUD_INTERFACE_SRC
 
 set(NETWORKING_SRC
 	${IDS_COMMON_SRC}
+	${NETOS_PROTOCOLS_SRC}
 	networking/network_main.cc
 	networking/network_config.cc
 	networking/pkt_parser.cc

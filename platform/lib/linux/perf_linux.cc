@@ -6,27 +6,22 @@ namespace lib {
 
 void perf_event::capture_start()
 {
-    clock_gettime(CLOCK_MONOTONIC, &this->start_ns_);
+    clock_gettime(CLOCK_REALTIME, &this->start_ns_);
 }
 
 void perf_event::capture_end()
 {
-    double delta_ns;
+    double diff;
 
-    clock_gettime(CLOCK_MONOTONIC, &this->end_ns_);
-    delta_ns = (this->end_ns_.tv_sec - this->start_ns_.tv_sec) * 1000000000 +
-               (this->end_ns_.tv_nsec - this->start_ns_.tv_nsec);
+    clock_gettime(CLOCK_REALTIME, &this->end_ns_);
 
-    this->perf_data_.push_back(delta_ns);
-}
+    struct timespec diff_tv = {
+        .tv_sec = this->end_ns_.tv_sec - this->start_ns_.tv_sec, //
+        .tv_nsec = this->end_ns_.tv_nsec - this->start_ns_.tv_nsec
+    };
 
-double perf_event::average()
-{
-    double sum = 0;
-    for (auto &it : this->perf_data_) {
-        sum += it;
-    }
-    return sum / this->perf_data_.size();
+    diff = (diff_tv.tv_sec * 1000000) + (diff_tv.tv_nsec / 1000);
+    printf(" took %f sec\n", diff / 1000000.0);
 }
 
 std::shared_ptr<perf_event> perf_linux::add_event(const std::string &event)

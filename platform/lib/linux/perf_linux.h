@@ -18,12 +18,10 @@ class perf_event {
 
         void capture_start();
         void capture_end();
-        double average();
         std::string get_name() { return this->name_; }
 
     private:
         std::string name_;
-        std::vector<double> perf_data_;
         struct timespec start_ns_;
         struct timespec end_ns_;
 };

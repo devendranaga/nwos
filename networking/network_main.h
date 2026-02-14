@@ -12,6 +12,7 @@
 #include "parsed_pkt.h"
 #include "network_config.h"
 #include "pcap.h"
+#include "perf_linux.h"
 #include "network_egress_intf.h"
 
 using namespace netos::lib;
@@ -44,6 +45,7 @@ class network_interface {
         std::string ifname_;
         std::shared_ptr<raw_socket> raw_;
         std::shared_ptr<pcap_mod> pcap_;
+        std::shared_ptr<perf_event> latency_event_;
 };
 
 struct network_cmdargs {

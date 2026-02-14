@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <getopt.h>
+#include <chrono>
 
 #include "ethertypes.h"
 #include "logging.h"
@@ -104,6 +105,7 @@ void network_interface::rx_thread()
 
         // receive the packet from the raw socket
         ret = this->raw_->recv_msg(pkt->pkt_buf->buf_, NETOS_PACKET_BUF_SIZE);
+        auto start = std::chrono::steady_clock::now();
         if (ret > 0) {
             pkt->pkt_buf->len_ = ret;
             statistics::instance()->inc_rx_count(this->ifname_);
@@ -113,6 +115,10 @@ void network_interface::rx_thread()
             this->rx_pkt_pool_.push(pkt);
             rx_pkt_pool_cond_.notify_one();
         }
+        auto end = std::chrono::steady_clock::now();
+        std::cout << "elapsed " <<
+                     std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<
+                     " microseconds" << std::endl;
         statistics::instance()->print();
     }
 }
@@ -170,6 +176,8 @@ netos_status network_interface::initialize(const std::string &ifname)
     netos_log_info("created raw socket on <%s>\n", ifname.c_str());
 
     this->ifname_ = ifname;
+
+    statistics::instance()->initialize(ifname);
 
     if (conf->log_config_.log_pcap) {
         this->pcap_ = std::make_shared<pcap_mod>();
