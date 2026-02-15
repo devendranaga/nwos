@@ -10,6 +10,7 @@
 #include "event_mgr.h"
 #include "network_egress_intf.h"
 #include "network_config.h"
+#include "gcd.h"
 
 static uint32_t arp_macaddr_hash(void *macaddr_ptr)
 {
@@ -162,6 +163,10 @@ void arp_context::arp_process_thread()
 
 netos_status arp_context::init()
 {
+    gcd *gcd_instance;
+
+    gcd_instance = gcd::instance();
+
     monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
     monitor_thr_->detach();
 

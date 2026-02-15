@@ -4,14 +4,18 @@
 #include <sys/timerfd.h>
 
 #include "gcd.h"
+#include "error_codes.h"
+
+using namespace netos::lib;
 
 namespace netos {
 
-int gcd_timer::initialize(uint32_t sec, uint64_t nsec, timer_callback &cb)
+netos_status gcd_timer::initialize(uint32_t sec, uint64_t nsec, timer_callback &cb)
 {
     struct itimerspec timer_val;
     int ret;
 
+    /* Default initialize with the reload option. */
     timer_val.it_value.tv_sec           = sec;
     timer_val.it_value.tv_nsec          = nsec;
     timer_val.it_interval.tv_sec        = sec;
@@ -21,18 +25,20 @@ int gcd_timer::initialize(uint32_t sec, uint64_t nsec, timer_callback &cb)
     this->nsec_ = nsec;
     this->cb_   = cb;
 
+    /* Create the timer. */
     this->timer_fd_ = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
     if (this->timer_fd_ < 0) {
-        return -1;
+        return netos_status::NETOS_STATUS_TIMERFD_CREATE_FAIL;
     }
 
+    /* Set the timer. */
     ret = timerfd_settime(this->timer_fd_, 0, &timer_val, NULL);
     if (ret < 0) {
         close(this->timer_fd_);
-        return -1;
+        return netos_status::NETOS_STATUS_TIMERFD_SETTIME_FAIL;
     }
 
-    return 0;
+    return netos_status::NETOS_STATUS_SUCCESS;
 }
 
 int gcd_socket::initialize(int fd, socket_callback &cb)
@@ -49,6 +55,7 @@ void gcd_thread_pool::initialize(uint32_t n_threads)
 
     this->n_threads_ = n_threads;
     this->next_worker_id_ = 0;
+
     for (i = 0; i < n_threads; i ++) {
         std::shared_ptr<gcd_worker_thread> worker_thr;
 
@@ -66,11 +73,20 @@ void gcd_worker_thread::initialize()
     this->thread_->detach();
 }
 
+/**
+ * @brief Worker thread function.
+ *
+ * This function is the main loop of the worker thread.
+ * It waits for a notification from the main thread and then processes the task queue.
+ *
+ * Each callback executes until completion and dequeues the next task in queue.
+ */
 void gcd_worker_thread::worker_thread()
 {
     while (1) {
         std::unique_lock<std::mutex> lock(this->lock_);
         this->cond_.wait(lock);
+
         while (this->task_queue_.empty() == false) {
             task_callback cb;
 
@@ -98,12 +114,17 @@ void gcd_thread_pool::queue_task(task_callback &cb)
     this->next_worker_id_ ++;
 }
 
-void gcd::register_timer(uint32_t sec, uint64_t nsec, timer_callback &cb)
+netos_status gcd::register_timer(uint32_t sec, uint64_t nsec, timer_callback &cb)
 {
     gcd_timer t;
     int timer_fd;
+    netos_status ret;
 
-    t.initialize(sec, nsec, cb);
+    ret = t.initialize(sec, nsec, cb);
+    if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
     this->timers_.emplace_back(t);
 
     timer_fd = t.get_fd();
@@ -111,6 +132,8 @@ void gcd::register_timer(uint32_t sec, uint64_t nsec, timer_callback &cb)
         this->max_fd_ = timer_fd;
     }
     FD_SET(timer_fd, &this->allfd_);
+
+    return netos_status::NETOS_STATUS_SUCCESS;
 }
 
 void gcd::register_socket(int fd, socket_callback &cb)

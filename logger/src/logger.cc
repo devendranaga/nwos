@@ -21,7 +21,7 @@ namespace logging {
 
 void usage(const char *progname)
 {
-    fprintf(stderr, "%s -i <ipaddr> -p <port>\n", progname);
+    fprintf(stderr, "%s -i <ipaddr> -p <port> -f <config_file>\n", progname);
 }
 
 int logger_config::parse(const std::string &config_file)

@@ -77,6 +77,15 @@ netos_status ipv4_hdr::deserialize(packet_buf *pkt_buf)
 {
     network_config *conf = network_config::instance();
 
+    /* Short header length. */
+    if (pkt_buf->get_remaining_len() < (NETOS_IPV4_IHL_DEFAULT * 4)) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_IPV4_SHORT_HDR_LEN,
+                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV4,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     this->version = (pkt_buf->buf_[pkt_buf->offset_] & 0xF0) >> 4;
 
     /* Invalid IPV4 version. */

@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <chrono>
 
+#include "gcd.h"
 #include "ethertypes.h"
 #include "logging.h"
 #include "arp.h"
@@ -11,9 +12,19 @@
 
 namespace netos {
 
+static void usage(const char *progname)
+{
+    fprintf(stderr, "usage: %s <-f configuration file>\n", progname);
+}
+
 int network_manager::parse_cmdargs(int argc, char **argv)
 {
     int ret;
+
+    if (argc == 1) {
+        usage(argv[0]);
+        return -1;
+    }
 
     while ((ret = getopt(argc, argv, "f:")) != -1) {
         switch (ret) {
@@ -21,6 +32,7 @@ int network_manager::parse_cmdargs(int argc, char **argv)
                 this->cmdargs_.config_file = std::string(optarg);
             break;
             default:
+                usage(argv[0]);
                 return -1;
         }
     }
@@ -31,8 +43,11 @@ int network_manager::parse_cmdargs(int argc, char **argv)
 void network_manager::run(int argc, char **argv)
 {
     network_config *conf;
+    gcd *gcd_instance;
     netos_status res;
     int ret;
+
+    gcd_instance = gcd::instance();
 
     // parse command line arguments
     ret = this->parse_cmdargs(argc, argv);
@@ -63,6 +78,9 @@ void network_manager::run(int argc, char **argv)
     // initialize parsed packet buffer pool
     parsed_pkt_pool::instance()->initialize(1000);
 
+    // initialize the event manager
+    event_mgr::instance()->initialize();
+
     for (auto ifname : conf->if_config_.ifname) {
         network_egress *egress;
         std::shared_ptr<network_interface> netif;
@@ -81,7 +99,7 @@ void network_manager::run(int argc, char **argv)
     }
 
     while (1) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        gcd_instance->run();
     }
 }
 

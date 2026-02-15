@@ -15,6 +15,25 @@
         },
         "filter": {
             "drop_ipv4_fragments": true
+        },
+        "egress": {
+            "number_of_queues": 8,
+            "egress_algorithm": "round_robin"
+        },
+        "ids": {
+            "events": {
+                "event_forwarding": {
+                    "enable": false,
+                    "server_ip": "127.0.0.1",
+                    "server_port": 1883,
+                    "server_protocol": "mqtt",
+                    "timer_period_ms": 100
+                },
+                "event_storage": {
+                    "enable": true,
+                    "storage_path": "./"
+                }
+            }
         }
     }
 }

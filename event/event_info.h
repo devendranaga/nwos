@@ -96,6 +96,9 @@ enum class event_description : uint32_t {
     /* IPV4 TTL is zero. */
     EVENT_DESC_IPV4_TTL_ZERO                            = 0x00002206,
 
+    /* IPV4 short header length. */
+    EVENT_DESC_IPV4_SHORT_HDR_LEN                       = 0x00002207,
+
     /* Invalid IPV6 version. */
     EVENT_DESC_INVAL_IPV6_VERSION                       = 0x00002302,
 

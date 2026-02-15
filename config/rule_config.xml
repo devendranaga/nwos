@@ -1,0 +1,23 @@
+<? xml version="1.0" encoding="UTF-8"?>
+<rule_config>
+    <rule>
+        <!--
+          action is one of the following:
+          1. allow
+          2. drop
+          3. monitor
+          4. trap
+          5. route
+        -->
+        <action>drop</action>
+        <from_interface>dummy0</from_interface>
+        <to_interface>dummy1</to_interface>
+        <src_mac>00:11:22:11:22:33</src_mac>
+        <dst_mac>00:11:22:11:22:33</dst_mac>
+        <ethertype>0x0800</ethertype>
+        <egress_config>
+            <egress_queue_priority>1</egress_queue_priority>
+            <egress_queue_weight>1</egress_queue_weight>
+        </egress_config>
+    </rule>
+</rule_config>

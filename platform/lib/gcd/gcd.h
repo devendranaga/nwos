@@ -10,6 +10,9 @@
 #include <queue>
 
 #include <sys/select.h>
+#include "error_codes.h"
+
+using namespace netos::lib;
 
 namespace netos {
 
@@ -53,7 +56,7 @@ class gcd_timer {
         explicit gcd_timer() = default;
         ~gcd_timer() = default;
 
-        int initialize(uint32_t sec, uint64_t nsec, timer_callback &cb);
+        netos_status initialize(uint32_t sec, uint64_t nsec, timer_callback &cb);
         int get_fd() { return this->timer_fd_; }
         timer_callback get_cb() { return this->cb_; }
 
@@ -86,10 +89,40 @@ class gcd {
             return &instance;
         }
         ~gcd() { }
+        /**
+         * @brief - Initialize the thread pool given the number of threads.
+         *
+         * @param [in] n_threads - Number of threads.
+         */
         void initialize_thr_pool(uint32_t n_threads);
-        void register_timer(uint32_t sec, uint64_t nsec, timer_callback &cb);
+
+        /**
+         * @brief - Register a periodic timer.
+         *
+         * @param [in] sec - Seconds.
+         * @param [in] nsec - Nanoseconds.
+         * @param [in] cb - Callback.
+         */
+        netos_status register_timer(uint32_t sec, uint64_t nsec, timer_callback &cb);
+
+        /**
+         * @brief - Register a socket.
+         *
+         * @param [in] fd - File descriptor.
+         * @param [in] cb - Callback.
+         */
         void register_socket(int fd, socket_callback &cb);
+
+        /**
+         * @brief - Queue a work.
+         *
+         * @param [in] cb - Callback.
+         */
         void queue_work(task_callback &cb);
+
+        /**
+         * @brief - Run the GCD.
+         */
         void run();
 
     private:

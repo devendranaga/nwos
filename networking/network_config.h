@@ -55,12 +55,64 @@ struct network_filter_config {
     netos_status parse(Json::Value &root);
 };
 
+enum class egress_algorithm {
+    ROUND_ROBIN
+};
+
+/**
+ * @brief - Network egress configuration
+ */
+struct network_egress_config {
+    uint32_t            number_of_queues;
+    egress_algorithm    algorithm;
+
+    /**
+     * @brief - Parse the egress configuration
+     *
+     * @param root - JSON root root["egress"]
+     * @return netos_status
+     */
+    netos_status parse(Json::Value &root);
+};
+
+enum class event_fwd_protocol {
+    MQTT,
+};
+
+/**
+ * @brief - Network event configuration
+ */
+struct network_event_config {
+    bool                event_fwd_enable;
+    std::string         event_fwd_ip;
+    uint32_t            event_fwd_port;
+    event_fwd_protocol  fwd_protocol;
+    uint32_t            timer_period_ms;
+    bool                event_storage_enable;
+    std::string         event_storage_path;
+};
+
+/**
+ * @brief - Network IDS configuration
+ */
+struct network_ids_config {
+    network_event_config event_config;
+
+    /**
+     * @brief - Parse the IDS configuration
+     *
+     * @param root - JSON root root["ids"]
+     * @return netos_status
+     */
+    netos_status parse(Json::Value &root);
+};
+
 /**
  * @brief - Network logging configuration
  */
 struct network_log_config {
     std::string debug_log_server_ip;
-    uint16_t debug_log_server_port;
+    uint32_t debug_log_server_port;
     bool log_pcap;
     std::string pcap_file_path;
 
@@ -82,6 +134,8 @@ struct network_config {
         network_arp_config arp_config_;
         network_log_config log_config_;
         network_filter_config filter_config_;
+        network_egress_config egress_config_;
+        network_ids_config ids_config_;
 
         ~network_config() { }
 

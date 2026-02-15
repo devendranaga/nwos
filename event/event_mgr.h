@@ -1,6 +1,7 @@
 #ifndef IDS_EVENT_EVENT_MGR_H
 #define IDS_EVENT_EVENT_MGR_H
 
+#include <memory>
 #include <thread>
 #include <queue>
 #include <mutex>
@@ -18,14 +19,21 @@ class event_mgr {
             return &evt_mgr;
         }
 
+        void initialize();
+
         void insert_event(uint8_t event_type,
                           event_description desc,
                           event_protocol_level proto_level,
                           uint32_t pkt_len);
 
     private:
+        void event_forwarding_timer();
+        void event_storage_thread();
+
+        std::shared_ptr<std::thread> event_storage_thr_;
         std::queue<event_info> event_info_queue_;
         std::mutex evt_q_lock_;
+        std::condition_variable evt_q_cond_;
         explicit event_mgr() = default;
 };
 

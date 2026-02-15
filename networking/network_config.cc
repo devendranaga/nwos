@@ -36,6 +36,49 @@ netos_status network_log_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status network_egress_config::parse(Json::Value &root)
+{
+    this->number_of_queues = root["number_of_queues"].asUInt();
+    auto egress_alg = root["egress_algorithm"].asString();
+    if (egress_alg == "round_robin") {
+        this->algorithm = egress_algorithm::ROUND_ROBIN;
+    } else {
+        return netos_status::NETOS_STATUS_INVAL_CONFIG;
+    }
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+netos_status network_ids_config::parse(Json::Value &root)
+{
+    auto event_fwd_config = root["events"]["event_forwarding"];
+
+    this->event_config.event_fwd_enable =
+                        event_fwd_config["enable"].asBool();
+    this->event_config.event_fwd_ip =
+                        event_fwd_config["server_ip"].asString();
+    this->event_config.event_fwd_port =
+                        event_fwd_config["server_port"].asUInt();
+
+    auto fwd_protocol = event_fwd_config["server_protocol"].asString();
+    if (fwd_protocol == "mqtt") {
+        this->event_config.fwd_protocol = event_fwd_protocol::MQTT;
+    } else {
+        return netos_status::NETOS_STATUS_INVAL_CONFIG;
+    }
+
+    this->event_config.timer_period_ms =
+                        event_fwd_config["timer_period_ms"].asUInt();
+
+    auto event_storage_config = root["events"]["event_storage"];
+    this->event_config.event_storage_enable =
+                        event_storage_config["enable"].asBool();
+    this->event_config.event_storage_path =
+                        event_storage_config["storage_path"].asString();
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status network_filter_config::parse(Json::Value &root)
 {
     this->drop_ipv4_fragments = root["drop_ipv4_fragments"].asBool();
@@ -63,6 +106,12 @@ netos_status network_config::parse(const std::string &config)
 
     auto filter_config = root["network_config"]["filter"];
     this->filter_config_.parse(filter_config);
+
+    auto egress_config = root["network_config"]["egress"];
+    this->egress_config_.parse(egress_config);
+
+    auto ids_config = root["network_config"]["ids"];
+    this->ids_config_.parse(ids_config);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
