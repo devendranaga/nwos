@@ -119,6 +119,7 @@ void network_interface::rx_thread()
         }
 
         pkt->ifname = this->ifname_;
+        pkt->stats = this->stats_;
         pkt->raw = this->raw_;
 
         // receive the packet from the raw socket
@@ -126,7 +127,7 @@ void network_interface::rx_thread()
         auto start = std::chrono::steady_clock::now();
         if (ret > 0) {
             pkt->pkt_buf->len_ = ret;
-            statistics::instance()->inc_rx_count(this->ifname_);
+            this->stats_->inc_rx_count();
 
             // queue the frame to the receive pool
             std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
@@ -137,7 +138,6 @@ void network_interface::rx_thread()
         std::cout << "elapsed " <<
                      std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<
                      " microseconds" << std::endl;
-        statistics::instance()->print();
     }
 }
 
@@ -168,7 +168,7 @@ void network_interface::parse_thread()
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->dispatch_pkt(pkt);
             } else {
-                statistics::instance()->inc_n_deny_rx(this->ifname_);
+                this->stats_->inc_n_deny_rx();
                 free_frame = true;
             }
 
@@ -195,7 +195,7 @@ netos_status network_interface::initialize(const std::string &ifname)
 
     this->ifname_ = ifname;
 
-    statistics::instance()->initialize(ifname);
+    this->stats_ = statistics::instance()->initialize(ifname);
 
     if (conf->log_config_.log_pcap) {
         this->pcap_ = std::make_shared<pcap_mod>();

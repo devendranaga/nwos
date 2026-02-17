@@ -19,6 +19,9 @@ class event_mgr {
             return &evt_mgr;
         }
 
+        /**
+         * @brief - Initialize event manager.
+         */
         void initialize();
 
         void insert_event(uint8_t event_type,

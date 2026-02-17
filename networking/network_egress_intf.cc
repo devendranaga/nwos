@@ -22,7 +22,7 @@ void network_egress_interface_ctx::egress_tx_thread()
             intf.raw_fd_->send_msg(dst, intf.pkt->buf_, intf.pkt->offset_);
 
             // increment the tx count after tx
-            statistics::instance()->inc_tx_count(intf.ifname);
+            this->stats_->inc_tx_count();
 
             packet_buf_pool::instance()->put_pkt(intf.pkt);
         }
@@ -45,6 +45,7 @@ void network_egress::add_interface_ctx(std::shared_ptr<raw_socket> raw,
     ctx = std::make_shared<network_egress_interface_ctx>();
     ctx->raw_fd_ = raw;
     ctx->ifname_ = ifname;
+    ctx->stats_ = statistics::instance()->get_stats_intf(ifname);
     ctx->initialize();
     this->interface_ctx_list_.push_back(ctx);
 }

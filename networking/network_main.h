@@ -14,6 +14,7 @@
 #include "pcap.h"
 #include "perf_linux.h"
 #include "network_egress_intf.h"
+#include "statistics.h"
 
 using namespace netos::lib;
 
@@ -45,6 +46,7 @@ class network_interface {
         std::string ifname_;
         std::shared_ptr<raw_socket> raw_;
         std::shared_ptr<pcap_mod> pcap_;
+        stats_intf *stats_;
         std::shared_ptr<perf_event> latency_event_;
 };
 

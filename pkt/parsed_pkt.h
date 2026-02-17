@@ -13,11 +13,14 @@
 #include "eth.h"
 #include "vlan.h"
 #include "arp_hdr.h"
+#include "macsec.h"
 #include "ipv4.h"
 #include "ipv6.h"
 #include "udp.h"
 #include "tcp.h"
 #include "icmp.h"
+
+#include "statistics.h"
 
 namespace netos {
 
@@ -27,6 +30,7 @@ namespace netos {
 struct parsed_pkt_types {
     uint32_t has_vlan   :1;
     uint32_t has_arp    :1;
+    uint32_t has_macsec :1;
     uint32_t has_ipv4   :1;
     uint32_t has_ipv6   :1;
     uint32_t has_udp    :1;
@@ -40,6 +44,7 @@ struct parsed_pkt_types {
  */
 struct parsed_pkt {
     packet_buf                  *pkt_buf;
+    stats_intf                  *stats;
     std::shared_ptr<raw_socket> raw;
     std::string                 ifname;
     parsed_pkt_types            pkt_types_present;
@@ -47,6 +52,7 @@ struct parsed_pkt {
     eth_hdr                     eh;
     vlan_hdr                    vh;
     arp_hdr                     ah;
+    macsec_hdr                  macsec_h;
     ipv4_hdr                    ipv4_h;
     ipv6_hdr                    ipv6_h;
     udp_hdr                     udp_h;

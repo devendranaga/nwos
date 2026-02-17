@@ -6,6 +6,7 @@
 #include "error_codes.h"
 
 #define NETOS_MACSEC_IV_LEN 16
+#define NETOS_MACSEC_HDR_MIN_LEN 22 // includes 6 byte header no sci but with ICV
 
 namespace netos {
 

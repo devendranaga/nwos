@@ -8,6 +8,7 @@
 #include <memory>
 #include <condition_variable>
 
+#include "statistics.h"
 #include "egress_queue.h"
 #include "raw_socket.h"
 #include "logging.h"
@@ -37,6 +38,7 @@ struct network_egress_interface_ctx {
     std::shared_ptr<raw_socket> raw_fd_;
     std::mutex egress_queue_lock_;
     std::string ifname_;
+    stats_intf *stats_;
 
     explicit network_egress_interface_ctx() : raw_fd_(nullptr),
                                               ifname_("") {}

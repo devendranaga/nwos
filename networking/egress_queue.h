@@ -15,6 +15,9 @@ using namespace netos::lib;
 
 namespace netos {
 
+/**
+ * @brief - Defines an Egress item.
+ */
 struct network_egress_item {
     bool available;
     std::string ifname;

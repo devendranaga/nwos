@@ -14,17 +14,18 @@ namespace netos {
  * List of protocol levels.
  */
 enum class event_protocol_level : uint32_t {
-    EVENT_PROTOCOL_NONE     = 0x00000000,
-    EVENT_PROTOCOL_L2       = 0x00000001,
-    EVENT_PROTOCOL_L2_ETH   = 0x00000002,
-    EVENT_PROTOCOL_L2_VLAN  = 0x00000003,
-    EVENT_PROTOCOL_L2_ARP   = 0x00000004,
-    EVENT_PROTOCOL_L3       = 0x00000005,
-    EVENT_PROTOCOL_L3_IPV4  = 0x00000007,
-    EVENT_PROTOCOL_L3_IPV6  = 0x00000008,
-    EVENT_PROTOCOL_L4_TCP   = 0x00000008,
-    EVENT_PROTOCOL_L4_UDP   = 0x00000009,
-    EVENT_PROTOCOL_L4_ICMP  = 0x0000000A,
+    EVENT_PROTOCOL_NONE         = 0x00000000,
+    EVENT_PROTOCOL_L2           = 0x00000001,
+    EVENT_PROTOCOL_L2_ETH       = 0x00000002,
+    EVENT_PROTOCOL_L2_VLAN      = 0x00000003,
+    EVENT_PROTOCOL_L2_ARP       = 0x00000004,
+    EVENT_PROTOCOL_L2_MACSEC    = 0x00000005,
+    EVENT_PROTOCOL_L3           = 0x00000006,
+    EVENT_PROTOCOL_L3_IPV4      = 0x00000007,
+    EVENT_PROTOCOL_L3_IPV6      = 0x00000008,
+    EVENT_PROTOCOL_L4_TCP       = 0x00000009,
+    EVENT_PROTOCOL_L4_UDP       = 0x0000000A,
+    EVENT_PROTOCOL_L4_ICMP      = 0x0000000B,
 };
 
 /**
@@ -41,6 +42,9 @@ enum class event_description : uint32_t {
 
     /* Reserved vlan id in the frame. */
     EVENT_DESC_INVAL_VLAN_RESERVED                      = 0x00001101,
+
+    /* Short MACsec header. */
+    EVENT_DESC_SHORT_MACSEC_HDR                         = 0x00001200,
 
     /* Invalid ARP hardware type. */
     EVENT_DESC_INVAL_ARP_HW_TYPE                        = 0x00002001,
