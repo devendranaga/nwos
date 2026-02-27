@@ -60,15 +60,16 @@ void gcd_thread_pool::initialize(uint32_t n_threads)
         std::shared_ptr<gcd_worker_thread> worker_thr;
 
         worker_thr = std::make_shared<gcd_worker_thread>();
-        worker_thr->initialize();
+        worker_thr->initialize(i);
         this->threads_.emplace_back(worker_thr);
     }
 }
 
-void gcd_worker_thread::initialize()
+void gcd_worker_thread::initialize(uint32_t thread_id)
 {
     auto callback = std::bind(&gcd_worker_thread::worker_thread, this);
 
+    this->thread_id_ = thread_id;
     this->thread_ = std::make_shared<std::thread>(callback);
     this->thread_->detach();
 }
@@ -90,6 +91,7 @@ void gcd_worker_thread::worker_thread()
         while (this->task_queue_.empty() == false) {
             task_callback cb;
 
+            printf("deque and execute from %d\n", this->thread_id_);
             cb = this->task_queue_.front();
             this->task_queue_.pop();
             cb();

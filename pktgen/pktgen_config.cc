@@ -35,6 +35,9 @@ int pktgen_arp_config::parse(const Json::Value &r)
     this->enable                = r["enable"].asBool();
     netos::lib::str_to_mac(r["eth"]["src_mac"].asString(), this->eth_src_mac);
     netos::lib::str_to_mac(r["eth"]["dst_mac"].asString(), this->eth_dst_mac);
+    for (auto it : r["multi_vlan_tag"]) {
+        this->vlan_ids.push_back(it["vid"].asUInt());
+    }
     this->hw_type               = r["hw_type"].asUInt();
     auto p_str                  = r["protocol"].asString();
     netos::lib::str_hex_to_int(p_str, &this->protocol);

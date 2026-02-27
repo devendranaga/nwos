@@ -13,6 +13,7 @@
 #include "eth.h"
 #include "arp_hdr.h"
 #include "vlan.h"
+#include "avtp.h"
 #include "ipv4.h"
 #include "icmp.h"
 #include "protocols.h"
@@ -35,6 +36,7 @@ class pktgen {
         void gen_eth();
         void gen_vlan();
         void gen_arp();
+        void gen_avtp();
         void gen_ipv4();
         void gen_icmp();
 
@@ -123,15 +125,36 @@ void pktgen::gen_arp()
         eth_hdr eh;
         memcpy(eh.src_mac, config->arp_config.eth_src_mac, NETOS_MACADDR_LEN);
         memcpy(eh.dst_mac, config->arp_config.eth_dst_mac, NETOS_MACADDR_LEN);
-        eh.ethertype = NETOS_ETHERTYPE_ARP;
+        if (config->arp_config.vlan_ids.size() > 0) {
+            eh.ethertype = NETOS_ETHERTYPE_VLAN;
+        } else {
+            eh.ethertype = NETOS_ETHERTYPE_ARP;
+        }
         eh.serialize(pktbuf);
 
+        // If there is a VLAN setup in the rules, configure them
+        if (config->arp_config.vlan_ids.size() > 0) {
+            std::vector<uint16_t>::iterator it = config->arp_config.vlan_ids.begin();
+            do {
+                vlan_hdr vh;
+
+                vh.vid = *it;
+                if (it == config->arp_config.vlan_ids.end() - 1) {
+                    vh.ethertype = NETOS_ETHERTYPE_ARP;
+                } else {
+                    vh.ethertype = NETOS_ETHERTYPE_VLAN;
+                }
+                vh.serialize(pktbuf);
+                it ++;
+            } while (it != config->arp_config.vlan_ids.end());
+        }
+
         arp_hdr ah;
-        ah.hw_type = config->arp_config.hw_type;
-        ah.protocol_type = config->arp_config.protocol;
-        ah.ha_len = config->arp_config.ha_len;
-        ah.proto_len = config->arp_config.protocol_addr_len;
-        ah.op = config->arp_config.arp_op;
+        ah.hw_type              = config->arp_config.hw_type;
+        ah.protocol_type        = config->arp_config.protocol;
+        ah.ha_len               = config->arp_config.ha_len;
+        ah.proto_len            = config->arp_config.protocol_addr_len;
+        ah.op                   = config->arp_config.arp_op;
         memcpy(ah.sender_hwaddr, config->arp_config.sender_hwaddr, NETOS_MACADDR_LEN);
         ah.sender_protocol_addr = config->arp_config.sender_protocol_addr;
         memcpy(ah.target_hwaddr, config->arp_config.target_hwaddr, NETOS_MACADDR_LEN);
@@ -144,6 +167,66 @@ void pktgen::gen_arp()
         pktbuf->free_ptr();
         free(pktbuf);
     }
+}
+
+void pktgen::gen_avtp()
+{
+    packet_buf *pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i = 0;
+
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        eh.dst_mac[0] = 0xff,
+        eh.dst_mac[1] = 0xff,
+        eh.dst_mac[2] = 0xff,
+        eh.dst_mac[3] = 0xff,
+        eh.dst_mac[4] = 0xff,
+        eh.dst_mac[5] = 0xff,
+
+        eh.src_mac[0] = 0x02,
+        eh.src_mac[1] = 0x02,
+        eh.src_mac[2] = 0x02,
+        eh.src_mac[3] = 0x02,
+        eh.src_mac[4] = 0x02,
+        eh.src_mac[5] = 0x02,
+
+        eh.ethertype = NETOS_ETHERTYPE_AVTP;
+        eh.serialize(pktbuf);
+
+        avtp_header avtp;
+
+        avtp.subtype = AVTP_SUBTYPE_NTSCF;
+        avtp.ntscf_h = (ntscf_header *)calloc(1, sizeof(ntscf_header));
+        avtp.ntscf_h->opt.sv = 1;
+        avtp.ntscf_h->opt.version = 1;
+        avtp.ntscf_h->opt.seq_no = 1;
+        avtp.ntscf_h->stream_id[0] = 0x01;
+        avtp.ntscf_h->opt.ntscf_data_len = 32;
+        avtp.ntscf_h->acf_opt.acf_msg_type = ACF_CAN;
+        avtp.ntscf_h->acf_opt.acf_msg_len = 4;
+        avtp.ntscf_h->can_hdr = (acf_can_header *)calloc(1, sizeof(acf_can_header));
+        avtp.ntscf_h->can_hdr->can_id = 0x600;
+        avtp.ntscf_h->can_hdr->can_msg_len = 7;
+        avtp.ntscf_h->can_hdr->can_payload[0] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[1] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[2] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[3] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[4] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[5] = 0x01;
+        avtp.ntscf_h->can_hdr->can_payload[6] = 0x01;
+        avtp.serialize(pktbuf);
+
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+
+        pktbuf->free_ptr();
+        free(pktbuf);
 }
 
 void pktgen::gen_ipv4()
@@ -347,6 +430,7 @@ void pktgen::run(int argc, char **argv)
     if (config->icmp_config.enable) {
         this->gen_icmp();
     }
+    this->gen_avtp();
 }
 
 }

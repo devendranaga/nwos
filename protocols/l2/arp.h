@@ -12,7 +12,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "packet_buf.h"
 #include "hash_table.h"
 #include "error_codes.h"
@@ -80,6 +80,7 @@ class arp_context {
         void arp_process_thread();
         void arp_process_packet(parsed_pkt *rx_frame);
         void arp_frame_prepare(parsed_pkt *rx_frame, uint8_t *mac, uint32_t ipaddr);
+        void arp_query_timer_handler();
 };
 
 }

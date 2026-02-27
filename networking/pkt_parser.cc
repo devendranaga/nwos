@@ -82,6 +82,24 @@ netos_status parsed_pkt::parse_l2_frame()
             }
             return ret;
         break;
+        case NETOS_ETHERTYPE_MACSEC:
+            stats->inc_macsec_rx_count();
+
+            ret = this->macsec_h.deserialize(this->pkt_buf);
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->pkt_types_present.has_macsec = 1;
+            }
+            return ret;
+        break;
+        case NETOS_ETHERTYPE_MKA:
+            stats->inc_mka_rx_count();
+
+            ret = this->dot1x_h.deserialize(this->pkt_buf);
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->pkt_types_present.has_mka = 1;
+            }
+            return ret;
+        break;
         default:
             event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
                                                 event_description::EVENT_DESC_INVAL_L2_PROTOCOL,

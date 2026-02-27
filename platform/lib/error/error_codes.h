@@ -1,3 +1,9 @@
+/**
+ * @brief - Defines error enumerations.
+ *
+ * @author - Nagadevendra
+ */
+
 #ifndef NETOS_PLATFORM_LIB_ERROR_CODES_H
 #define NETOS_PLATFORM_LIB_ERROR_CODES_H
 

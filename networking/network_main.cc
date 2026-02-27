@@ -49,6 +49,9 @@ void network_manager::run(int argc, char **argv)
 
     gcd_instance = gcd::instance();
 
+    // initialize 4 threads for the pool
+    gcd_instance->initialize_thr_pool(8);
+
     // parse command line arguments
     ret = this->parse_cmdargs(argc, argv);
     if (ret != 0) {
@@ -73,10 +76,10 @@ void network_manager::run(int argc, char **argv)
     conf = network_config::instance();
 
     // initialize packet buffer pool
-    packet_buf_pool::instance()->initialize(1000);
+    packet_buf_pool::instance()->initialize(conf->packet_buf_pool_len);
 
     // initialize parsed packet buffer pool
-    parsed_pkt_pool::instance()->initialize(1000);
+    parsed_pkt_pool::instance()->initialize(conf->parsed_pkt_buf_pool_len);
 
     // initialize the event manager
     event_mgr::instance()->initialize();
@@ -88,7 +91,7 @@ void network_manager::run(int argc, char **argv)
         netif = std::make_shared<network_interface>();
         res = netif->initialize(ifname);
         if (res != netos_status::NETOS_STATUS_SUCCESS) {
-            netos_log_error("failed to initialize interface <%s>\n", ifname.c_str());
+            netos_log_error("failed to initialize egress instance for interface <%s>\n", ifname.c_str());
             continue;
         }
 
@@ -135,9 +138,9 @@ void network_interface::rx_thread()
             rx_pkt_pool_cond_.notify_one();
         }
         auto end = std::chrono::steady_clock::now();
-        std::cout << "elapsed " <<
-                     std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<
-                     " microseconds" << std::endl;
+        //std::cout << "elapsed " <<
+        //             std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<
+        //             " microseconds" << std::endl;
     }
 }
 
@@ -200,9 +203,9 @@ netos_status network_interface::initialize(const std::string &ifname)
     if (conf->log_config_.log_pcap) {
         this->pcap_ = std::make_shared<pcap_mod>();
         this->pcap_->initialize(ifname, conf->log_config_.pcap_file_path);
-    }
 
-    netos_log_info("initialize pcap log for the interface <%s>\n", ifname.c_str());
+        netos_log_info("initialize pcap log for the interface <%s>\n", ifname.c_str());
+    }
 
     // create parser thread
     this->parse_thr_ = std::make_shared<std::thread>(

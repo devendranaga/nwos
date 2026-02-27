@@ -22,6 +22,7 @@ netos_status network_if_config::parse(Json::Value &root)
 netos_status network_arp_config::parse(Json::Value &root)
 {
     this->arp_table_len = root["arp_table_len"].asUInt();
+    this->arp_query_timer_intvl_sec = root["arp_query_timer_intvl_sec"].asUInt();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -86,6 +87,35 @@ netos_status network_filter_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status network_vlan_mapping::parse(Json::Value &root)
+{
+    this->ifname = root["interface_name"].asString();
+    for (auto vlan_id_map : root["vlan_ids"]) {
+        network_vlan_id_map vid_map;
+
+        vid_map.ingress_vlan_id =
+                        vlan_id_map["ingress_vlan_id"].asUInt();
+        vid_map.egress_vlan_id =
+                        vlan_id_map["egress_vlan_id"].asUInt();
+        this->vlan_id_map.push_back(vid_map);
+    }
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+netos_status network_vlan_config::parse(Json::Value &root)
+{
+    auto vlan_map_config = root["vlan_mapping"];
+
+    for (auto vlan_map : vlan_map_config) {
+        network_vlan_mapping vlan_mapping;
+
+        vlan_mapping.parse(vlan_map);
+        this->vlan_mapping.push_back(vlan_mapping);
+    }
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status network_config::parse(const std::string &config)
 {
     netos_status ret;
@@ -98,8 +128,14 @@ netos_status network_config::parse(const std::string &config)
     if (ret != netos_status::NETOS_STATUS_SUCCESS) {
         return ret;
     }
+    auto vlan_config = root["network_config"]["vlan_config"];
+    this->vlan_config_.parse(vlan_config);
+
     auto arp_config = root["network_config"]["arp_config"];
     this->arp_config_.parse(arp_config);
+
+    this->packet_buf_pool_len = root["network_config"]["packet_buf_pool_len"].asUInt();
+    this->parsed_pkt_buf_pool_len = root["network_config"]["parsed_pkt_buf_pool_len"].asUInt();
 
     auto log_config = root["network_config"]["logging"];
     this->log_config_.parse(log_config);

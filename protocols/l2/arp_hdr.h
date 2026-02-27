@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "ethertypes.h"
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "error_codes.h"
 #include "packet_buf.h"
 

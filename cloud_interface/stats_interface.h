@@ -14,6 +14,7 @@ typedef struct __attribute__ ((__packed__)) {
     uint64_t n_vlan_rx;
     uint64_t n_arp_rx;
     uint64_t n_macsec_rx;
+    uint64_t n_mka_rx;
     uint64_t n_ipv4_rx;
     uint64_t n_ipv6_rx;
     uint64_t n_tcp_rx;
@@ -31,6 +32,7 @@ typedef struct __attribute__ ((__packed__)) {
     uint64_t n_vlan_tx;
     uint64_t n_arp_tx;
     uint64_t n_macsec_tx;
+    uint64_t n_mka_tx;
     uint64_t n_ipv4_tx;
     uint64_t n_ipv6_tx;
     uint64_t n_tcp_tx;

@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "stats_interface.h"
+#include "performance_statistics.h"
 
 namespace netos {
 
@@ -16,6 +17,7 @@ struct stats_intf {
     std::string ifname;
     stats_intf_rx_t rx;
     stats_intf_tx_t tx;
+    perf_statistics_t perf;
     struct stats_intf *next;
     std::mutex lock;
 
@@ -26,6 +28,7 @@ struct stats_intf {
         this->rx.n_vlan_rx = 0;
         this->rx.n_arp_rx = 0;
         this->rx.n_macsec_rx = 0;
+        this->rx.n_mka_rx = 0;
         this->rx.n_ipv4_rx = 0;
         this->rx.n_ipv6_rx = 0;
         this->rx.n_tcp_rx = 0;
@@ -38,11 +41,13 @@ struct stats_intf {
         this->tx.n_vlan_tx = 0;
         this->tx.n_arp_tx = 0;
         this->tx.n_macsec_tx = 0;
+        this->tx.n_mka_tx = 0;
         this->tx.n_ipv4_tx = 0;
         this->tx.n_ipv6_tx = 0;
         this->tx.n_tcp_tx = 0;
         this->tx.n_udp_tx = 0;
         this->tx.n_icmp_tx = 0;
+        this->perf.rx.parse_time_ns = 0;
     }
     ~stats_intf() { }
 
@@ -52,6 +57,7 @@ struct stats_intf {
     void inc_vlan_rx_count();
     void inc_arp_rx_count();
     void inc_macsec_rx_count();
+    void inc_mka_rx_count();
     void inc_ipv4_rx_count();
     void inc_ipv6_rx_count();
     void inc_tcp_rx_count();
@@ -63,6 +69,7 @@ struct stats_intf {
     void inc_vlan_tx_count();
     void inc_arp_tx_count();
     void inc_macsec_tx_count();
+    void inc_mka_tx_count();
     void inc_ipv4_tx_count();
     void inc_ipv6_tx_count();
     void inc_tcp_tx_count();

@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include "ids_macro_defs.h"
-
 int netos_get_macaddr(const char *ifname, uint8_t *macaddr);
 
 int netos_get_ipaddr(const char *ifname, uint32_t *ipaddr);

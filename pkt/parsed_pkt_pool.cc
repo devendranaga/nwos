@@ -61,6 +61,9 @@ void parsed_pkt_pool::put_pkt(parsed_pkt *pkt)
         return;
     }
 
+    pkt->pkt_buf->offset_ = 0;
+    pkt->pkt_buf->len_ = 0;
+
     pkt->next = this->head_;
     this->head_ = pkt;
 }

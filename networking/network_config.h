@@ -15,6 +15,7 @@ namespace netos {
  */
 struct network_arp_config {
     uint32_t arp_table_len;
+    uint32_t arp_query_timer_intvl_sec;
 
     /**
      * @brief - Parse the ARP configuration
@@ -125,17 +126,38 @@ struct network_log_config {
     netos_status parse(Json::Value &root);
 };
 
+struct network_vlan_id_map {
+    uint16_t ingress_vlan_id;
+    uint16_t egress_vlan_id;
+};
+
+struct network_vlan_mapping {
+    std::string ifname;
+    std::vector<network_vlan_id_map> vlan_id_map;
+
+    netos_status parse(Json::Value &root);
+};
+
+struct network_vlan_config {
+    std::vector<network_vlan_mapping> vlan_mapping;
+
+    netos_status parse(Json::Value &root);
+};
+
 /**
  * @brief - Network configuration
  */
 struct network_config {
     public:
-        network_if_config if_config_;
-        network_arp_config arp_config_;
-        network_log_config log_config_;
-        network_filter_config filter_config_;
-        network_egress_config egress_config_;
-        network_ids_config ids_config_;
+        network_if_config       if_config_;
+        uint32_t                packet_buf_pool_len;
+        uint32_t                parsed_pkt_buf_pool_len;
+        network_vlan_config     vlan_config_;
+        network_arp_config      arp_config_;
+        network_log_config      log_config_;
+        network_filter_config   filter_config_;
+        network_egress_config   egress_config_;
+        network_ids_config      ids_config_;
 
         ~network_config() { }
 

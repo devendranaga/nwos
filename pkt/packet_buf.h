@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "error_codes.h"
 
 namespace netos {
@@ -38,7 +38,7 @@ struct packet_buf {
     /**
      * Return the remaining length (after parsing as many possible layers).
      */
-    uint32_t get_remaining_len() const;
+    uint32_t get_remaining_len();
 
     /**
      * Return the raw buffer.
@@ -56,12 +56,14 @@ struct packet_buf {
     void serialize_mac(uint8_t *mac);
     void serialize_2_bytes(uint16_t val);
     void serialize_4_bytes(uint32_t val);
+    void serialize_8_bytes(uint64_t val);
 
     void deserialize_byte(uint8_t *val);
     void deserialize_bytes(uint8_t *bytes, uint32_t len);
     void deserialize_mac(uint8_t *mac);
     void deserialize_2_bytes(uint16_t *val);
     void deserialize_4_bytes(uint32_t *val);
+    void deserialize_8_bytes(uint64_t *val);
 };
 
 struct packet_buf_pool {

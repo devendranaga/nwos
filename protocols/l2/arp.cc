@@ -156,17 +156,25 @@ void arp_context::arp_process_thread()
 
             this->arp_process_packet(rx_frame);
             arp_rx_queue_.pop();
-            l.unlock();
         }
     }
 }
 
+void arp_context::arp_query_timer_handler()
+{
+    printf("arp query timer\n");
+}
+
 netos_status arp_context::init()
 {
-    gcd *gcd_instance;
+    network_config *config = network_config::instance();
+    gcd *gcd_instance = gcd::instance();
 
-    gcd_instance = gcd::instance();
+    std::function<void()> query_timer_cb = std::bind(&arp_context::arp_query_timer_handler, this);
 
+    gcd_instance->register_timer(config->arp_config_.arp_query_timer_intvl_sec,
+                                 0,
+                                 query_timer_cb);
     monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
     monitor_thr_->detach();
 

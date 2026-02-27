@@ -1,4 +1,4 @@
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "network_egress_intf.h"
 #include "parsed_pkt.h"
 #include "statistics.h"

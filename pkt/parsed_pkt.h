@@ -14,6 +14,7 @@
 #include "vlan.h"
 #include "arp_hdr.h"
 #include "macsec.h"
+#include "mka.h"
 #include "ipv4.h"
 #include "ipv6.h"
 #include "udp.h"
@@ -31,6 +32,7 @@ struct parsed_pkt_types {
     uint32_t has_vlan   :1;
     uint32_t has_arp    :1;
     uint32_t has_macsec :1;
+    uint32_t has_mka    :1;
     uint32_t has_ipv4   :1;
     uint32_t has_ipv6   :1;
     uint32_t has_udp    :1;
@@ -53,6 +55,7 @@ struct parsed_pkt {
     vlan_hdr                    vh;
     arp_hdr                     ah;
     macsec_hdr                  macsec_h;
+    ieee8021x_header            dot1x_h;
     ipv4_hdr                    ipv4_h;
     ipv6_hdr                    ipv6_h;
     udp_hdr                     udp_h;

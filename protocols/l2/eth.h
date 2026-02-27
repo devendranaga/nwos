@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <memory>
 
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "packet_buf.h"
 #include "error_codes.h"
 

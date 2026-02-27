@@ -24,6 +24,9 @@ class event_mgr {
          */
         void initialize();
 
+        /**
+         * @brief - insert event into the event queue.
+         */
         void insert_event(uint8_t event_type,
                           event_description desc,
                           event_protocol_level proto_level,

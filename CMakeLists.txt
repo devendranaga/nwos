@@ -10,6 +10,7 @@ set(PLATFORM_SRC
 	platform/lib/logging/logging.c
 	platform/lib/helpers/conversion.cc
 	platform/lib/algorithms/hash_table.c
+	platform/lib/algorithms/queue.c
 	platform/lib/linux/pcap_lib.cc
 	platform/lib/gcd/gcd.cc
 	platform/lib/linux/socket_helper.c
@@ -23,14 +24,17 @@ set(IDS_COMMON_SRC
 	protocols/l2/eth.cc
 	protocols/l2/arp_hdr.cc
 	protocols/l2/vlan.cc
+	protocols/l2/vlan_membership.cc
 	protocols/l2/macsec.cc
 	protocols/l2/mka.cc
+	protocols/l2/avtp.cc
 	protocols/l3/ipv4.cc
 	protocols/l3/ipv6.cc
 	protocols/l4/udp.cc
 	protocols/l4/tcp.cc
 	protocols/l4/icmp.cc
 	protocols/l4/icmpv6.cc
+	protocols/app/dlt_header.cc
 	event/event_mgr.cc
 	pkt/parsed_pkt_pool.cc)
 
@@ -81,6 +85,9 @@ set(ENCODING_CBOR_SRC
 set(TEST_CBOR_SRC
 	test/test_cbor.cc)
 
+set(TEST_QUEUE_SRC
+	test/test_queue.c)
+
 include_directories(
 	platform/lib/helpers/
 	platform/lib/linux/
@@ -94,6 +101,7 @@ include_directories(
 	protocols/l2/
 	protocols/l3/
 	protocols/l4/
+	protocols/app/
 	event/
 	networking/
 	statistics/
@@ -109,8 +117,10 @@ include_directories(
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g -DNETOS_DEBUG_PKT_DECODE -fsanitize=address")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -DNETOS_DEBUG_PKT_DECODE -g -fsanitize=address")
+set(CMAKE_DEBUG_OPT "-fsanitize=address -DNETOS_DEBUG_PKT_DECODE")
+
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
 
 ## Use clang compiler
 
@@ -147,3 +157,7 @@ target_link_libraries(netos_cbor netos_platform pthread)
 
 add_executable(netos_test_cbor ${TEST_CBOR_SRC})
 target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)
+
+add_executable(netos_test_queue ${TEST_QUEUE_SRC})
+target_link_libraries(netos_test_queue netos_platform pthread)
+

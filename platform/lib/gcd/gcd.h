@@ -25,12 +25,13 @@ class gcd_worker_thread {
         explicit gcd_worker_thread() = default;
         ~gcd_worker_thread() = default;
 
-        void initialize();
+        void initialize(uint32_t thread_id);
         void queue_task(task_callback &cb);
 
     private:
         void worker_thread();
 
+        uint32_t thread_id_;
         std::shared_ptr<std::thread> thread_;
         std::mutex lock_;
         std::condition_variable cond_;

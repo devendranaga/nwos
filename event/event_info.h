@@ -2,6 +2,7 @@
 #define IDS_EVENT_EVENT_INFO_H
 
 #include <stdint.h>
+#include <string>
 
 namespace netos {
 
@@ -20,12 +21,13 @@ enum class event_protocol_level : uint32_t {
     EVENT_PROTOCOL_L2_VLAN      = 0x00000003,
     EVENT_PROTOCOL_L2_ARP       = 0x00000004,
     EVENT_PROTOCOL_L2_MACSEC    = 0x00000005,
-    EVENT_PROTOCOL_L3           = 0x00000006,
-    EVENT_PROTOCOL_L3_IPV4      = 0x00000007,
-    EVENT_PROTOCOL_L3_IPV6      = 0x00000008,
-    EVENT_PROTOCOL_L4_TCP       = 0x00000009,
-    EVENT_PROTOCOL_L4_UDP       = 0x0000000A,
-    EVENT_PROTOCOL_L4_ICMP      = 0x0000000B,
+    EVENT_PROTOCOL_L2_MKA       = 0x00000006,
+    EVENT_PROTOCOL_L3           = 0x00000007,
+    EVENT_PROTOCOL_L3_IPV4      = 0x00000008,
+    EVENT_PROTOCOL_L3_IPV6      = 0x00000009,
+    EVENT_PROTOCOL_L4_TCP       = 0x0000000A,
+    EVENT_PROTOCOL_L4_UDP       = 0x0000000B,
+    EVENT_PROTOCOL_L4_ICMP      = 0x0000000C,
 };
 
 /**
@@ -45,6 +47,15 @@ enum class event_description : uint32_t {
 
     /* Short MACsec header. */
     EVENT_DESC_SHORT_MACSEC_HDR                         = 0x00001200,
+
+    /* Short MKA basic parameters. */
+    EVENT_DESC_SHORT_MKA_BASIC_PARAMS                   = 0x00001300,
+
+    /* Zero CKN length in MKA. */
+    EVENT_DESC_ZERO_MKA_CKN                             = 0x00001301,
+
+    /* Larger CKN buffer. */
+    EVENT_DESC_LARGE_MKA_CKN                            = 0x00001302,
 
     /* Invalid ARP hardware type. */
     EVENT_DESC_INVAL_ARP_HW_TYPE                        = 0x00002001,
@@ -123,7 +134,10 @@ enum class event_description : uint32_t {
  * Event information structure.
  */
 struct event_info {
+    std::string             ifname;
     uint8_t                 event_type;
+    uint32_t                detection_tv_sec;
+    uint32_t                detection_tv_usec;
     event_description       event_desc;
     event_protocol_level    protocol_level;
     uint32_t                pkt_len;

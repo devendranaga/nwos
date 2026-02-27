@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 #include "ioctl_nw.h"
 
 int netos_get_macaddr(const char *ifname, uint8_t *macaddr)

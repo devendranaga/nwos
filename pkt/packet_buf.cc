@@ -38,6 +38,10 @@ packet_buf *packet_buf_pool::get_pkt()
     if (this->head_) {
         packet_buf *pkt = this->head_;
         this->head_ = this->head_->next;
+
+        pkt->offset_ = 0;
+        pkt->len_ = 0;
+
         return pkt;
     }
     return nullptr;
@@ -45,6 +49,9 @@ packet_buf *packet_buf_pool::get_pkt()
 
 void packet_buf_pool::put_pkt(packet_buf *pkt)
 {
+    pkt->offset_ = 0;
+    pkt->len_ = 0;
+
     pkt->next = this->head_;
     this->head_ = pkt;
 }
@@ -77,19 +84,12 @@ void packet_buf::serialize_bit(uint8_t bit_pos)
 
 void packet_buf::serialize_byte(uint8_t val)
 {
-    if ((this->offset_ + sizeof(uint8_t)) >= this->len_) {
-        return;
-    }
     this->buf_[this->offset_] = val;
     this->offset_ ++;
 }
 
 void packet_buf::serialize_bytes(uint8_t *bytes, uint32_t len)
 {
-    if ((this->offset_ + len) >= this->len_) {
-        return;
-    }
-
     memcpy(this->buf_ + this->offset_, bytes, len);
     this->offset_ += len;
 }
@@ -113,6 +113,18 @@ void packet_buf::serialize_4_bytes(uint32_t val)
     this->buf_[this->offset_ + 2] = (val & 0x0000FF00) >> 8;
     this->buf_[this->offset_ + 3] = (val & 0x000000FF);
     this->offset_ += 4;
+}
+
+void packet_buf::serialize_8_bytes(uint64_t val)
+{
+    this->buf_[this->offset_]       = (val & 0xFF00000000000000) >> 56;
+    this->buf_[this->offset_ + 1]   = (val & 0x00FF000000000000) >> 48;
+    this->buf_[this->offset_ + 2]   = (val & 0x0000FF0000000000) >> 40;
+    this->buf_[this->offset_ + 3]   = (val & 0x000000FF00000000) >> 32;
+    this->buf_[this->offset_ + 4]   = (val & 0x00000000FF000000) >> 24;
+    this->buf_[this->offset_ + 5]   = (val & 0x0000000000FF0000) >> 16;
+    this->buf_[this->offset_ + 6]   = (val & 0x000000000000FF00) >> 8;
+    this->buf_[this->offset_ + 7]   = (val & 0x00000000000000FF);
 }
 
 void packet_buf::deserialize_byte(uint8_t *val)
@@ -165,7 +177,24 @@ void packet_buf::deserialize_4_bytes(uint32_t *val)
     this->offset_ += 4;
 }
 
-uint32_t packet_buf::get_remaining_len() const
+void packet_buf::deserialize_8_bytes(uint64_t *val)
+{
+    if ((this->offset_ + sizeof(uint64_t)) > this->len_) {
+        return;
+    }
+
+    *val = (((uint64_t)(this->buf_[this->offset_]) << 56) |
+            ((uint64_t)(this->buf_[this->offset_ + 1]) << 48) |
+            ((uint64_t)(this->buf_[this->offset_ + 2]) << 40) |
+            ((uint64_t)(this->buf_[this->offset_ + 3]) << 32) |
+            (this->buf_[this->offset_ + 4] << 24) |
+            (this->buf_[this->offset_ + 5] << 16) |
+            (this->buf_[this->offset_ + 6] << 8) |
+            this->buf_[this->offset_ + 7]);
+    this->offset_ += 8;
+}
+
+uint32_t packet_buf::get_remaining_len()
 {
     return this->len_ - this->offset_;
 }

@@ -80,6 +80,13 @@ void stats_intf::inc_macsec_rx_count()
     this->rx.n_macsec_rx ++;
 }
 
+void stats_intf::inc_mka_rx_count()
+{
+    std::unique_lock<std::mutex> l(this->lock);
+
+    this->rx.n_mka_rx ++;
+}
+
 void stats_intf::inc_macsec_tx_count()
 {
     std::unique_lock<std::mutex> l(this->lock);

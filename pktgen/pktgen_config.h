@@ -6,7 +6,7 @@
 
 #include <jsoncpp/json/json.h>
 
-#include "ids_macro_defs.h"
+#include "netos_macros.h"
 
 namespace netos {
 
@@ -27,22 +27,23 @@ struct pktgen_eth_config {
 };
 
 struct pktgen_arp_config {
-    bool            enable;
-    uint8_t         eth_src_mac[NETOS_MACADDR_LEN];
-    uint8_t         eth_dst_mac[NETOS_MACADDR_LEN];
-    uint8_t         hw_type;
-    uint32_t        protocol;
-    uint8_t         ha_len;
-    uint8_t         protocol_addr_len;
-    uint8_t         arp_op;
-    uint8_t         sender_hwaddr[NETOS_MACADDR_LEN];
-    uint32_t        sender_protocol_addr;
-    uint8_t         target_hwaddr[NETOS_MACADDR_LEN];
-    uint32_t        target_protocol_addr;
-    bool            randomize;
-    bool            repeat;
-    uint32_t        count;
-    uint64_t        pkt_intvl_nsec;
+    bool                        enable;
+    uint8_t                     eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t                     eth_dst_mac[NETOS_MACADDR_LEN];
+    std::vector<uint16_t>       vlan_ids;
+    uint8_t                     hw_type;
+    uint32_t                    protocol;
+    uint8_t                     ha_len;
+    uint8_t                     protocol_addr_len;
+    uint8_t                     arp_op;
+    uint8_t                     sender_hwaddr[NETOS_MACADDR_LEN];
+    uint32_t                    sender_protocol_addr;
+    uint8_t                     target_hwaddr[NETOS_MACADDR_LEN];
+    uint32_t                    target_protocol_addr;
+    bool                        randomize;
+    bool                        repeat;
+    uint32_t                    count;
+    uint64_t                    pkt_intvl_nsec;
 
     int parse(const Json::Value &r);
     void print();
