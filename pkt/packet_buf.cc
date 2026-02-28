@@ -35,6 +35,8 @@ netos_status packet_buf_pool::initialize(uint32_t size)
 
 packet_buf *packet_buf_pool::get_pkt()
 {
+    std::unique_lock<std::mutex> l(this->lock_);
+
     if (this->head_) {
         packet_buf *pkt = this->head_;
         this->head_ = this->head_->next;
@@ -52,6 +54,7 @@ void packet_buf_pool::put_pkt(packet_buf *pkt)
     pkt->offset_ = 0;
     pkt->len_ = 0;
 
+    std::unique_lock<std::mutex> l(this->lock_);
     pkt->next = this->head_;
     this->head_ = pkt;
 }
@@ -125,6 +128,7 @@ void packet_buf::serialize_8_bytes(uint64_t val)
     this->buf_[this->offset_ + 5]   = (val & 0x0000000000FF0000) >> 16;
     this->buf_[this->offset_ + 6]   = (val & 0x000000000000FF00) >> 8;
     this->buf_[this->offset_ + 7]   = (val & 0x00000000000000FF);
+    this->offset_ += 8;
 }
 
 void packet_buf::deserialize_byte(uint8_t *val)

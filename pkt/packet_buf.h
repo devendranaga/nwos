@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mutex>
 
 #include "netos_macros.h"
 #include "error_codes.h"
@@ -80,9 +81,10 @@ struct packet_buf_pool {
         void put_pkt(packet_buf *pkt);
 
     private:
-        explicit packet_buf_pool() {}
         packet_buf *head_;
         uint32_t size_;
+        std::mutex lock_;
+        explicit packet_buf_pool() {}
 };
 
 }

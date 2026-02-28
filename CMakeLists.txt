@@ -82,6 +82,9 @@ set(CRYPTO_CLI_SRC
 set(ENCODING_CBOR_SRC
 	encoding/cbor/cbor_enc_dec.cc)
 
+set(TOOL_REPLAY_SRC
+	replay/replay.cc)
+
 set(TEST_CBOR_SRC
 	test/test_cbor.cc)
 
@@ -113,20 +116,29 @@ include_directories(
 	cryptography/cli/
 	logger/src/
 	cloud_interface/
-	encoding/cbor/)
+	encoding/cbor/
+	replay/)
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
 set(CMAKE_DEBUG_OPT "-fsanitize=address -DNETOS_DEBUG_PKT_DECODE")
 
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -g")
+if(CMAKE_DEBUG_BIN)
+set(NETOS_BIN_OPT "-g -ggdb")
+else()
+set(NETOS_BIN_OPT "-O2 -flto -fPIC -Wl,-z,noexecstack")
+endif()
+
+set(CMAKE_C_FLAGS "-fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_CXX_FLAGS "-fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
 
 ## Use clang compiler
 
 if(CLANG_COMPILER)
 set(CMAKE_C_COMPILER "clang")
 set(CMAKE_CXX_COMPILER "clang++")
+
+## Use gcc compiler
 elseif(GCC_COMPILER)
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++")
@@ -161,3 +173,5 @@ target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue netos_platform pthread)
 
+add_executable(netos_replay ${TOOL_REPLAY_SRC})
+target_link_libraries(netos_replay netos_platform pthread)

@@ -45,12 +45,17 @@ parsed_pkt *parsed_pkt_pool::get_pkt()
 {
     parsed_pkt *pkt;
 
+    std::unique_lock<std::mutex> l(this->lock_);
+
     if (!this->head_) {
         return nullptr;
     }
 
     pkt = this->head_;
     this->head_ = this->head_->next;
+
+    pkt->pkt_buf->offset_ = 0;
+    pkt->pkt_buf->len_ = 0;
 
     return pkt;
 }
@@ -63,6 +68,8 @@ void parsed_pkt_pool::put_pkt(parsed_pkt *pkt)
 
     pkt->pkt_buf->offset_ = 0;
     pkt->pkt_buf->len_ = 0;
+
+    std::unique_lock<std::mutex> l(this->lock_);
 
     pkt->next = this->head_;
     this->head_ = pkt;

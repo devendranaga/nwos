@@ -7,6 +7,7 @@
 #include "ethertypes.h"
 #include "logging.h"
 #include "arp.h"
+#include "vlan_membership.h"
 #include "network_main.h"
 #include "statistics.h"
 
@@ -70,8 +71,6 @@ void network_manager::run(int argc, char **argv)
             conf->log_config_.debug_log_server_ip.c_str(),
             conf->log_config_.debug_log_server_port);
 
-    arp_context::instance()->init();
-
     // initialize network interface
     conf = network_config::instance();
 
@@ -80,6 +79,12 @@ void network_manager::run(int argc, char **argv)
 
     // initialize parsed packet buffer pool
     parsed_pkt_pool::instance()->initialize(conf->parsed_pkt_buf_pool_len);
+
+    // initialize ARP context
+    arp_context::instance()->init();
+
+    // initialize VLAN membership context
+    vlan_membership::instance()->initialize();
 
     // initialize the event manager
     event_mgr::instance()->initialize();

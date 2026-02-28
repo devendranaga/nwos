@@ -27,7 +27,9 @@ netos_status vlan_hdr::deserialize(packet_buf *pkt_buf)
                                             event_description::EVENT_DESC_INVAL_VLAN_HDR_LEN,
                                             event_protocol_level::EVENT_PROTOCOL_L2_VLAN,
                                             pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
+
     this->priority = (pkt_buf->buf_[pkt_buf->offset_] >> 5);
     this->dei = (pkt_buf->buf_[pkt_buf->offset_] & 0x10) >> 4;
     this->vid = ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 8) |
@@ -38,6 +40,7 @@ netos_status vlan_hdr::deserialize(packet_buf *pkt_buf)
                                             event_description::EVENT_DESC_INVAL_VLAN_RESERVED,
                                             event_protocol_level::EVENT_PROTOCOL_L2_VLAN,
                                             pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
     pkt_buf->offset_ += 2;

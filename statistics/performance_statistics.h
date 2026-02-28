@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 typedef struct __attribute__ ((__packed__)) {
+    uint64_t rx_queue_time_ns;
     uint64_t parse_time_ns;
 } perf_statistics_rx_t;
 

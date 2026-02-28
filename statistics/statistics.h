@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "stats_interface.h"
+#include "arp_statistics.h"
 #include "performance_statistics.h"
 
 namespace netos {
@@ -17,6 +18,7 @@ struct stats_intf {
     std::string ifname;
     stats_intf_rx_t rx;
     stats_intf_tx_t tx;
+    arp_statistics_t arp;
     perf_statistics_t perf;
     struct stats_intf *next;
     std::mutex lock;
@@ -47,6 +49,10 @@ struct stats_intf {
         this->tx.n_tcp_tx = 0;
         this->tx.n_udp_tx = 0;
         this->tx.n_icmp_tx = 0;
+
+        this->arp.rx.arp_reply_time_ns = 0;
+        this->arp.rx.arp_processing_time_ns = 0;
+
         this->perf.rx.parse_time_ns = 0;
     }
     ~stats_intf() { }

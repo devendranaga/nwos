@@ -51,6 +51,7 @@ static void netos_log_msg(netos_log_type_t type, const char *fmt, va_list ap)
            0,
            (struct sockaddr *)&ctx.server_addr,
            sizeof(ctx.server_addr));
+    printf("%s", (char *)(log_info->data));
     pthread_mutex_unlock(&ctx.lock);
 }
 

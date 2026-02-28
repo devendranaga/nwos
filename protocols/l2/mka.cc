@@ -16,9 +16,21 @@ netos_status mka_icv_header::serialize(packet_buf *pkt_buf)
 
 netos_status mka_icv_header::deserialize(packet_buf *pkt_buf)
 {
+    uint32_t len = 0;
+
+    pkt_buf->offset_ ++;
+
+    len = ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) >> 8) +
+           (pkt_buf->buf_[pkt_buf->offset_ + 1]);
+    pkt_buf->offset_ += 2;
+
+    if (len > MKA_ICV_LEN) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     memcpy(this->icv,
            &pkt_buf->buf_[pkt_buf->offset_],
-           MKA_ICV_LEN);
+           len);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -130,12 +142,78 @@ netos_status mka_live_peer_header::deserialize(packet_buf *pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status mka_dist_sak_header::serialize(packet_buf *pkt_buf)
+{
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+netos_status mka_dist_sak_header::deserialize(packet_buf *pkt_buf)
+{
+    uint32_t remaining_len = 0;
+
+    this->opt.dist_an = (pkt_buf->buf_[pkt_buf->offset_] & 0xC0) >> 6;
+    this->opt.conf_off = (pkt_buf->buf_[pkt_buf->offset_] & 0x30) >> 4;
+    pkt_buf->offset_ ++;
+
+    this->opt.reserved = 0;
+    this->opt.paramset_body_len =
+                    ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 8) |
+                     (pkt_buf->buf_[pkt_buf->offset_ + 1]);
+    pkt_buf->offset_ += 2;
+
+    pkt_buf->deserialize_4_bytes(&this->kn);
+
+    remaining_len = pkt_buf->offset_ - this->opt.paramset_body_len;
+    this->aes_keywrap_len = remaining_len;
+
+    this->aes_wrap = &pkt_buf->buf_[pkt_buf->offset_];
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+netos_status mka_macsec_sak_header::serialize(packet_buf *pkt_buf)
+{
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+netos_status mka_macsec_sak_header::deserialize(packet_buf *pkt_buf)
+{
+    this->opt.lan = (pkt_buf->buf_[pkt_buf->offset_] & 0xC0) >> 6;
+    this->opt.ltx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x20);
+    this->opt.lrx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x10);
+    this->opt.oan = (pkt_buf->buf_[pkt_buf->offset_] & 0x0C) >> 2;
+    this->opt.otx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x02);
+    this->opt.orx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x01);
+    pkt_buf->offset_ ++;
+
+    this->opt.ptx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x80);
+    this->opt.prx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x40);
+    this->opt.dp = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x10);
+    this->opt.paramset_body_len =
+                    ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 8) |
+                     (pkt_buf->buf_[pkt_buf->offset_ + 1]);
+    pkt_buf->offset_ += 2;
+
+    if (pkt_buf->get_remaining_len() < MKA_MACSEC_DIST_PARAM_LEN_DEFAULT) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    pkt_buf->deserialize_bytes(this->latest_mi, MKA_MI_LEN);
+    pkt_buf->deserialize_4_bytes(&this->latest_kn);
+    pkt_buf->deserialize_4_bytes(&this->latest_lowest_pn);
+    pkt_buf->deserialize_bytes(this->oldest_mi, MKA_MI_LEN);
+    pkt_buf->deserialize_4_bytes(&this->oldest_kn);
+    pkt_buf->deserialize_4_bytes(&this->oldest_lowest_pn);
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status mka_header::serialize(packet_buf *pkt_buf)
 {
     netos_status ret;
 
     ret = this->bh.serialize(pkt_buf);
-    return netos_status::NETOS_STATUS_SUCCESS;
+    return ret;
 }
 
 netos_status mka_header::deserialize(packet_buf *pkt_buf)
@@ -146,6 +224,8 @@ netos_status mka_header::deserialize(packet_buf *pkt_buf)
     if (ret != netos_status::NETOS_STATUS_SUCCESS) {
         return ret;
     }
+
+    this->available_headers = 0;
 
     while ((pkt_buf->get_remaining_len() > 0) &&
            (pkt_buf->get_remaining_len() < NETOS_PACKET_BUF_SIZE)) {
@@ -158,12 +238,40 @@ netos_status mka_header::deserialize(packet_buf *pkt_buf)
                 if (ret != netos_status::NETOS_STATUS_SUCCESS) {
                     return ret;
                 }
+
+                this->available_headers |= MKA_POTENTIAL_HDR;
             break;
             case MKA_LIVE_PEER_PARAM_TYPE:
                 ret = this->lh.deserialize(pkt_buf);
                 if (ret != netos_status::NETOS_STATUS_SUCCESS) {
                     return ret;
                 }
+
+                this->available_headers |= MKA_LIVE_PEER_HDR;
+            break;
+            case MKA_DIST_SAK_PARAM_TYPE:
+                ret = this->dh.deserialize(pkt_buf);
+                if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+
+                this->available_headers |= MKA_DIST_SAK_HDR;
+            break;
+            case MKA_MACSEC_SAK_USE_PARAM_TYPE:
+                ret = this->mh.deserialize(pkt_buf);
+                if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+
+                this->available_headers |= MKA_MACSEC_SAK_HDR;
+            break;
+            case MKA_ICV_PARAM_TYPE:
+                ret = this->ih.deserialize(pkt_buf);
+                if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+
+                this->available_headers |= MKA_ICV_HDR;
             break;
             default:
             break;
@@ -175,15 +283,17 @@ netos_status mka_header::deserialize(packet_buf *pkt_buf)
 
 netos_status ieee8021x_header::deserialize(packet_buf *pkt_buf)
 {
+    netos_status ret = NETOS_STATUS_UNSUPPORTED_IEEE8021X_TYPE;
+
     pkt_buf->deserialize_byte(&this->version);
     pkt_buf->deserialize_byte(&this->type);
     pkt_buf->deserialize_2_bytes(&this->len);
 
     if (this->type == IEEE8021X_TYPE_MKA) {
-        this->mh.deserialize(pkt_buf);
+        ret = this->mh.deserialize(pkt_buf);
     }
 
-    return netos_status::NETOS_STATUS_SUCCESS;
+    return ret;
 }
 
 }

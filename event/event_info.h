@@ -57,6 +57,18 @@ enum class event_description : uint32_t {
     /* Larger CKN buffer. */
     EVENT_DESC_LARGE_MKA_CKN                            = 0x00001302,
 
+    /* No ICV paramset in the MKA frame. */
+    EVENT_DESC_NO_ICV_PARAMSET                          = 0x00001303,
+
+    /* No basic param set in the MKA frame. */
+    EVENT_DESC_NO_BASIC_PARAMSET                        = 0x00001304,
+
+    /* ICV length is beyond the fixed 16 bytes ICV. */
+    EVENT_DESC_ICV_LEN_IS_BEYOND_MAX                    = 0x00001305,
+
+    /* MACsec SAK params have invalid length. */
+    EVENT_DESC_MACSEC_SAK_PARAM_INVAL_LEN               = 0x00001306,
+
     /* Invalid ARP hardware type. */
     EVENT_DESC_INVAL_ARP_HW_TYPE                        = 0x00002001,
 

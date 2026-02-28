@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string>
 #include <memory>
+#include <thread>
 
 #include "raw_socket.h"
 #include "error_codes.h"
@@ -118,6 +119,7 @@ class parsed_pkt_pool {
     private:
         uint32_t size_;
         parsed_pkt *head_;
+        std::mutex lock_;
         explicit parsed_pkt_pool() {}
 };
 

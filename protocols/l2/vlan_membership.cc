@@ -14,6 +14,14 @@ static uint32_t vlan_membership_hash_fn(void *key)
 
 namespace netos {
 
+#if 0
+void for_each_callback(uint32_t butcket_no, void *item)
+{
+    vlan_entry *entry = (vlan_entry *)item;
+    printf("bucket %d interface %s\n", butcket_no, entry->intf.c_str());
+}
+#endif
+
 void vlan_membership::initialize()
 {
     network_config *config = network_config::instance();
@@ -33,6 +41,8 @@ void vlan_membership::initialize()
             netos_hash_table_add_item(this->vlan_table_, entry, entry->mac, vlan_membership_hash_fn);
         }
     }
+
+    //netos_hash_table_for_each(this->vlan_table_, for_each_callback);
 }
 
 }
