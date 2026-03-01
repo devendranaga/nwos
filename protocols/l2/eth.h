@@ -12,6 +12,9 @@ namespace netos {
 
 #define NETOS_ETH_ALEN 14
 
+/**
+ * @brief - Defines Ethernet Header.
+ */
 struct eth_hdr {
     uint8_t         src_mac[NETOS_MACADDR_LEN];
     uint8_t         dst_mac[NETOS_MACADDR_LEN];

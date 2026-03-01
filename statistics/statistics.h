@@ -15,13 +15,13 @@ namespace netos {
  * @brief - Interface statistics
  */
 struct stats_intf {
-    std::string ifname;
-    stats_intf_rx_t rx;
-    stats_intf_tx_t tx;
-    arp_statistics_t arp;
-    perf_statistics_t perf;
-    struct stats_intf *next;
-    std::mutex lock;
+    std::string         ifname;
+    stats_intf_rx_t     rx;
+    stats_intf_tx_t     tx;
+    arp_statistics_t    arp;
+    perf_statistics_t   perf;
+    std::mutex          lock;
+    struct stats_intf   *next;
 
     stats_intf() {
         this->ifname = "";
@@ -53,6 +53,7 @@ struct stats_intf {
         this->arp.rx.arp_reply_time_ns = 0;
         this->arp.rx.arp_processing_time_ns = 0;
 
+        this->perf.rx.rx_queue_time_ns = 0;
         this->perf.rx.parse_time_ns = 0;
     }
     ~stats_intf() { }
@@ -69,6 +70,8 @@ struct stats_intf {
     void inc_tcp_rx_count();
     void inc_udp_rx_count();
     void inc_icmp_rx_count();
+    void set_rx_queue_time_ns(uint64_t time_ns);
+    void set_parse_time_ns(uint64_t time_ns);
 
     void inc_tx_count();
     void inc_eth_tx_count();

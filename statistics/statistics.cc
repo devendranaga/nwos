@@ -136,6 +136,20 @@ void stats_intf::inc_icmp_rx_count()
     this->rx.n_icmp_rx ++;
 }
 
+void stats_intf::set_rx_queue_time_ns(uint64_t time_ns)
+{
+    std::unique_lock<std::mutex> l(this->lock);
+
+    this->perf.rx.rx_queue_time_ns = time_ns;
+}
+
+void stats_intf::set_parse_time_ns(uint64_t time_ns)
+{
+    std::unique_lock<std::mutex> l(this->lock);
+
+    this->perf.rx.parse_time_ns = time_ns;
+}
+
 void stats_intf::print()
 {
     std::unique_lock<std::mutex> l(this->lock);

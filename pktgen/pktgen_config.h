@@ -10,8 +10,6 @@
 
 namespace netos {
 
-namespace ids {
-
 struct pktgen_eth_config {
     bool            enable;
     uint8_t         src_mac[NETOS_MACADDR_LEN];
@@ -40,6 +38,36 @@ struct pktgen_arp_config {
     uint32_t                    sender_protocol_addr;
     uint8_t                     target_hwaddr[NETOS_MACADDR_LEN];
     uint32_t                    target_protocol_addr;
+    bool                        randomize;
+    bool                        repeat;
+    uint32_t                    count;
+    uint64_t                    pkt_intvl_nsec;
+
+    int parse(const Json::Value &r);
+    void print();
+};
+
+struct pktgen_macsec_tci {
+    uint32_t version:1;
+    uint32_t es:1;
+    uint32_t sc:1;
+    uint32_t scb:1;
+    uint32_t e:1;
+    uint32_t c:1;
+    uint32_t an:2;
+} __attribute__ ((__packed__));
+
+struct pktgen_macsec_config {
+    bool                        enable;
+    uint8_t                     eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t                     eth_dst_mac[NETOS_MACADDR_LEN];
+    pktgen_macsec_tci           tci;
+    uint8_t                     short_len;
+    uint32_t                    pn;
+    uint8_t                     sci_mac[NETOS_MACADDR_LEN];
+    uint16_t                    sci_port_id;
+    uint16_t                    macsec_ethertype;
+    uint8_t                     icv[16];
     bool                        randomize;
     bool                        repeat;
     uint32_t                    count;
@@ -148,18 +176,18 @@ struct pktgen_config {
     std::string interface;
     pktgen_eth_config eth_config;
     pktgen_arp_config arp_config;
+    pktgen_macsec_config macsec_config;
     pktgen_vlan_config vlan_config;
     pktgen_ipv4_config ipv4_config;
     pktgen_ipv6_config ipv6_config;
     pktgen_icmp_config icmp_config;
+
     int parse(const std::string &filename);
     void print();
 
     private:
         explicit pktgen_config() = default;
 };
-
-}
 
 }
 

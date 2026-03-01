@@ -140,6 +140,7 @@ struct network_vlan_mapping {
 
 struct network_vlan_config {
     std::vector<network_vlan_mapping> vlan_mapping;
+    bool drop_double_tagged_vlan;
 
     netos_status parse(Json::Value &root);
 };

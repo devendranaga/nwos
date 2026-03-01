@@ -42,7 +42,7 @@ netos_status ipv6_hdr::serialize(packet_buf *pkt_buf)
 netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
 {
     uint32_t first_word = 0;
-    
+
     // Manual Network Byte Order deserialization
     first_word  = (uint32_t)pkt_buf->buf_[pkt_buf->offset_ + 0] << 24;
     first_word |= (uint32_t)pkt_buf->buf_[pkt_buf->offset_ + 1] << 16;
@@ -51,7 +51,7 @@ netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
     pkt_buf->offset_ += 4;
 
     this->version = (first_word >> 28) & 0xF;
-    
+
     if (this->version != NETOS_IPV6_VERSION) {
          event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
                                             event_description::EVENT_DESC_INVAL_IPV6_VERSION,
@@ -67,8 +67,8 @@ netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
     pkt_buf->deserialize_byte(&this->nh);
     pkt_buf->deserialize_byte(&this->hop_limit);
 
-    pkt_buf->deserialize_bytes(this->src_addr, 16);
-    pkt_buf->deserialize_bytes(this->dst_addr, 16);
+    pkt_buf->deserialize_bytes(this->src_addr, NETOS_IPV6_ADDR_LEN);
+    pkt_buf->deserialize_bytes(this->dst_addr, NETOS_IPV6_ADDR_LEN);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

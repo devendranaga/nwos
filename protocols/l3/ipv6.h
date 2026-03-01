@@ -42,8 +42,8 @@ struct ipv6_hdr {
     {
     }
 
-    netos_status serialize(packet_buf *buf);
-    netos_status deserialize(packet_buf *buf);
+    [[nodiscard]] netos_status serialize(packet_buf *buf);
+    [[nodiscard]] netos_status deserialize(packet_buf *buf);
 };
 
 }

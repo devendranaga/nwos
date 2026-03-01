@@ -108,6 +108,9 @@ netos_status mka_potential_peer_header::deserialize(packet_buf *pkt_buf)
     paramset_body_len &= 0x0FFF;
 
     this->n_peers = paramset_body_len / sizeof(mka_peer);
+    if (this->n_peers == 0) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
 
     for (i = 0; i < this->n_peers; i++) {
         pkt_buf->deserialize_bytes(this->peers[i].peer_mi, MKA_MI_LEN);
@@ -133,6 +136,9 @@ netos_status mka_live_peer_header::deserialize(packet_buf *pkt_buf)
     paramset_body_len &= 0x0FFF;
 
     this->n_peers = paramset_body_len / sizeof(mka_peer);
+    if (this->n_peers == 0) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
 
     for (i = 0; i < this->n_peers; i++) {
         pkt_buf->deserialize_bytes(this->peers[i].peer_mi, MKA_MI_LEN);
@@ -188,6 +194,29 @@ netos_status mka_macsec_sak_header::deserialize(packet_buf *pkt_buf)
 
     this->opt.ptx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x80);
     this->opt.prx = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x40);
+
+    /**
+     * ltx lrx and otx orx can never be set to 1 at the same time.
+     */
+    if (this->opt.ltx &&
+        this->opt.lrx &&
+        this->opt.otx &&
+        this->opt.orx) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    /**
+     * ptx and prx are set and any of ltx lrx otx and orx are set.
+     */
+    if ((this->opt.ptx &&
+         this->opt.prx) &&
+        (this->opt.ltx ||
+         this->opt.lrx ||
+         this->opt.otx ||
+         this->opt.orx)) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     this->opt.dp = !!(pkt_buf->buf_[pkt_buf->offset_] & 0x10);
     this->opt.paramset_body_len =
                     ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 8) |
@@ -213,6 +242,45 @@ netos_status mka_header::serialize(packet_buf *pkt_buf)
     netos_status ret;
 
     ret = this->bh.serialize(pkt_buf);
+    if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    if (this->available_headers & MKA_POTENTIAL_PEER_PARAM_TYPE) {
+        ret = this->ph.serialize(pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
+    if (this->available_headers & MKA_LIVE_PEER_PARAM_TYPE) {
+        ret = this->lh.serialize(pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
+    if (this->available_headers & MKA_MACSEC_SAK_USE_PARAM_TYPE) {
+        ret = this->mh.serialize(pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
+    if (this->available_headers & MKA_DIST_SAK_PARAM_TYPE) {
+        ret = this->dh.serialize(pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
+    if (this->available_headers & MKA_ICV_PARAM_TYPE) {
+        ret = this->ih.serialize(pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
     return ret;
 }
 

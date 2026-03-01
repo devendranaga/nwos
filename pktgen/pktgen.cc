@@ -11,6 +11,7 @@
 #include "packet_buf.h"
 #include "ethertypes.h"
 #include "eth.h"
+#include "macsec.h"
 #include "arp_hdr.h"
 #include "vlan.h"
 #include "avtp.h"
@@ -21,27 +22,6 @@
 #include "pktgen.h"
 
 namespace netos {
-
-namespace ids {
-
-class pktgen {
-    public:
-        explicit pktgen() = default;
-        ~pktgen() = default;
-
-        void run(int argc, char **argv);
-
-    private:
-        void usage(const std::string &progname);
-        void gen_eth();
-        void gen_vlan();
-        void gen_arp();
-        void gen_avtp();
-        void gen_ipv4();
-        void gen_icmp();
-
-        std::shared_ptr<netos::lib::raw_socket> raw_fd_;
-};
 
 void pktgen::gen_eth()
 {
@@ -66,6 +46,56 @@ void pktgen::gen_eth()
 
         this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
         std::this_thread::sleep_for(std::chrono::nanoseconds(config->eth_config.pkt_intvl_nsec));
+
+        pktbuf->free_ptr();
+        free(pktbuf);
+    }
+}
+
+void pktgen::gen_macsec()
+{
+    packet_buf *pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i;
+
+    for (i = 0; i < config->macsec_config.count; i ++) {
+        uint8_t buf[1024] = {0};
+
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        memcpy(eh.src_mac, config->macsec_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->macsec_config.eth_dst_mac, NETOS_MACADDR_LEN);
+        eh.ethertype = NETOS_ETHERTYPE_MACSEC;
+        eh.serialize(pktbuf);
+
+        macsec_hdr mh;
+
+        mh.tci.ver = config->macsec_config.tci.version;
+        mh.tci.es = config->macsec_config.tci.es;
+        mh.tci.sc = config->macsec_config.tci.sc;
+        mh.tci.scb = config->macsec_config.tci.scb;
+        mh.tci.e = config->macsec_config.tci.e;
+        mh.tci.c = config->macsec_config.tci.c;
+        mh.tci.an = config->macsec_config.tci.an;
+        mh.short_len = config->macsec_config.short_len + 2;
+        mh.pn = config->macsec_config.pn;
+        memcpy(mh.sci.mac, config->macsec_config.sci_mac, NETOS_MACADDR_LEN);
+        mh.sci.port_id = config->macsec_config.sci_port_id;
+        mh.ethertype = config->macsec_config.macsec_ethertype;
+        mh.data = buf;
+        mh.data_len = config->macsec_config.short_len;
+        memcpy(mh.icv, config->macsec_config.icv, NETOS_MACSEC_ICV_LEN);
+        mh.serialize(pktbuf);
+
+        printf("offset %d\n", pktbuf->offset_);
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(config->macsec_config.pkt_intvl_nsec));
 
         pktbuf->free_ptr();
         free(pktbuf);
@@ -172,9 +202,7 @@ void pktgen::gen_arp()
 void pktgen::gen_avtp()
 {
     packet_buf *pktbuf;
-    pktgen_config *config = pktgen_config::instance();
     uint8_t dst_mac[6] = {};
-    uint32_t i = 0;
 
         pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
         if (!pktbuf) {
@@ -418,6 +446,9 @@ void pktgen::run(int argc, char **argv)
     if (config->eth_config.enable) {
         this->gen_eth();
     }
+    if (config->macsec_config.enable) {
+        this->gen_macsec();
+    }
     if (config->arp_config.enable) {
         this->gen_arp();
     }
@@ -430,16 +461,14 @@ void pktgen::run(int argc, char **argv)
     if (config->icmp_config.enable) {
         this->gen_icmp();
     }
-    this->gen_avtp();
-}
-
+    //this->gen_avtp();
 }
 
 }
 
 int main(int argc, char **argv)
 {
-    netos::ids::pktgen pgen;
+    netos::pktgen pgen;
 
     pgen.run(argc, argv);
 }

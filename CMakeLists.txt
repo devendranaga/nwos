@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.9)
 
 project(netos)
 
+find_package(jsoncpp REQUIRED)
+
 set(PLATFORM_SRC
 	platform/lib/linux/raw_socket.cc
 	platform/lib/linux/udp_socket.cc
@@ -85,13 +87,16 @@ set(ENCODING_CBOR_SRC
 set(TOOL_REPLAY_SRC
 	replay/replay.cc)
 
+set(TOOL_TCPDUMP_SRC
+	tcpdump/tcpdump.cc)
+
 set(TEST_CBOR_SRC
 	test/test_cbor.cc)
 
 set(TEST_QUEUE_SRC
 	test/test_queue.c)
 
-include_directories(
+set(INCL_DIR
 	platform/lib/helpers/
 	platform/lib/linux/
 	platform/lib/algorithms/
@@ -117,7 +122,10 @@ include_directories(
 	logger/src/
 	cloud_interface/
 	encoding/cbor/
-	replay/)
+	replay/
+	tcpdump/)
+
+include_directories(${INCL_DIR} ${JSONCPP_INCLUDE_DIRS})
 
 ## command line options
 #  -D NETOS_DEBUG_PKT_DECODE
@@ -147,13 +155,13 @@ endif()
 add_library(netos_platform ${PLATFORM_SRC})
 
 add_executable(netos_netwd ${NETWORKING_SRC})
-target_link_libraries(netos_netwd netos_platform pthread jsoncpp netos_cryptography ssl crypto wolfssl)
+target_link_libraries(netos_netwd netos_platform pthread JsonCpp::JsonCpp netos_cryptography ssl crypto wolfssl)
 
 add_executable(netos_logger ${LOGGER_SRC})
-target_link_libraries(netos_logger netos_platform pthread jsoncpp)
+target_link_libraries(netos_logger netos_platform pthread JsonCpp::JsonCpp)
 
 add_executable(netos_pktgen ${IDS_PKT_GEN_SRC})
-target_link_libraries(netos_pktgen netos_platform pthread jsoncpp)
+target_link_libraries(netos_pktgen netos_platform pthread JsonCpp::JsonCpp)
 
 add_library(netos_cryptography ${CRYPTOGRAPHY_SRC})
 target_link_libraries(netos_cryptography netos_platform pthread)
@@ -175,3 +183,7 @@ target_link_libraries(netos_test_queue netos_platform pthread)
 
 add_executable(netos_replay ${TOOL_REPLAY_SRC})
 target_link_libraries(netos_replay netos_platform pthread)
+
+add_executable(netos_tcpdump ${TOOL_TCPDUMP_SRC})
+target_link_libraries(netos_tcpdump netos_platform pthread)
+

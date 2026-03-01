@@ -5,6 +5,9 @@ namespace netos {
 
 namespace ids {
 
+/**
+ * @brief - Defines a List of ethertypes.
+ */
 #define NETOS_ETHERTYPE_IPV4                0x0800
 #define NETOS_ETHERTYPE_IPV6                0x86DD
 #define NETOS_ETHERTYPE_ARP                 0x0806

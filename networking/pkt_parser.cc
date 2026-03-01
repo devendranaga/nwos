@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "network_config.h"
 #include "ethertypes.h"
 #include "parsed_pkt.h"
 #include "protocols.h"
@@ -11,7 +12,9 @@ namespace netos {
 
 netos_status parsed_pkt::parse_frame()
 {
+    network_config *config = network_config::instance();
     netos_status ret = netos_status::NETOS_STATUS_SUCCESS;
+    uint32_t vlan_index = 0;
 
     stats->inc_eth_rx_count();
 
@@ -22,17 +25,56 @@ netos_status parsed_pkt::parse_frame()
 
     this->ethertype = this->eh.ethertype;
 
+    this->n_vlans = 0;
+
+    /**
+     * Parse VLAN and more tagged.
+     */
     if ((this->ethertype == NETOS_ETHERTYPE_VLAN) ||
         (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN)) {
 
+        uint32_t double_vlan_tag = 0;
+
+        /**
+         * If there are more than one VLAN header, keep
+         * parsing them until we have reached a max number of VLANs
+         * that we can parse.
+         *
+         * It can as well be that the number of such tags would be as
+         * many because of an attack.
+         */
+vlan_parse:
         stats->inc_vlan_rx_count();
 
-        ret = this->vh.deserialize(this->pkt_buf);
+        ret = this->vh[vlan_index].deserialize(this->pkt_buf);
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
             return ret;
         }
+
         this->pkt_types_present.has_vlan = 1;
-        this->ethertype = this->vh.ethertype;
+        this->ethertype = this->vh[vlan_index].ethertype;
+
+        if ((this->ethertype == NETOS_ETHERTYPE_VLAN) ||
+            (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN)) {
+
+            double_vlan_tag ++;
+
+            if (vlan_index >= MAX_VLAN_HEADERS) {
+                return netos_status::NETOS_STATUS_MALFORMED_PKT;
+            }
+            goto vlan_parse;
+        }
+
+        this->n_vlans = vlan_index + 1;
+
+        if ((double_vlan_tag >= 2) &&
+            (config->vlan_config_.drop_double_tagged_vlan)) {
+            event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                                event_description::EVENT_DESC_DBL_VLAN_TAG_DROP_DUE_TO_POLICY,
+                                                event_protocol_level::EVENT_PROTOCOL_L2_VLAN,
+                                                this->pkt_buf->len_);
+            return netos_status::NETOS_STATUS_MALFORMED_PKT;
+        }
     }
 
     if (this->ethertype == NETOS_ETHERTYPE_MACSEC) {
@@ -49,8 +91,11 @@ netos_status parsed_pkt::parse_frame()
 
     // Parse the L2 frame
     if (this->is_an_l2_frame() == netos_status::NETOS_STATUS_SUCCESS) {
-        return this->parse_l2_frame();
-    } else {
+        ret = this->parse_l2_frame();
+    }
+
+    if ((ret == netos_status::NETOS_STATUS_SUCCESS) &&
+        (this->is_an_l3_frame())) {
         ret = this->parse_l3_frame();
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
             return ret;
@@ -88,6 +133,11 @@ netos_status parsed_pkt::parse_l2_frame()
             ret = this->macsec_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_macsec = 1;
+            }
+
+            /* Get the Ethertype if it has only MACSEC ICV and no encryption. */
+            if (this->macsec_h.has_icv_only()) {
+                this->ethertype = this->macsec_h.ethertype;
             }
             return ret;
         break;

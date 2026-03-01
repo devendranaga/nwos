@@ -16,6 +16,17 @@
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
         },
+        "multi_vlan_tag": [
+            {
+                "vid": 10
+            },
+            {
+                "vid": 11
+            },
+            {
+                "vid": 12
+            }
+        ],
         "hw_type": 1,
         "protocol": "0x0800",
         "ha_len": 6,
@@ -25,6 +36,36 @@
         "sender_protocol_addr": "192.168.1.1",
         "target_hwaddr": "ff:ff:ff:ff:ff:ff",
         "target_protocol_addr": "192.168.1.2",
+        "randomize": false,
+        "repeat": true,
+        "count": 100000,
+        "pkt_intvl_nsec": 1000000
+    },
+    "macsec": {
+        "enable": false,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "tci": {
+            "version": 0,
+            "es": 0,
+            "sc": 0,
+            "scb": 0,
+            "e": 0,
+            "c": 0,
+            "an": 0
+        },
+        "macsec_ethertype": "0x0800",
+        "short_len": 30,
+        "pn": 12345678,
+        "sci": {
+            "mac": "00:01:02:00:00:00",
+            "port_id": 0
+        },
+        "icv": [
+            0, 10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
         "randomize": false,
         "repeat": true,
         "count": 1,

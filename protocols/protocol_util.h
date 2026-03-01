@@ -7,7 +7,7 @@ namespace netos {
 
 inline bool is_broadcast_mac(uint8_t *mac)
 {
-    uint8_t bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    const uint8_t bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     return memcmp(mac, bmac, sizeof(bmac)) == 0;
 }
@@ -19,7 +19,7 @@ inline bool is_multicast_mac(uint8_t *mac)
 
 inline bool is_zero_mac(uint8_t *mac)
 {
-    uint8_t zmac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    const uint8_t zmac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     return memcmp(mac, zmac, sizeof(zmac)) == 0;
 }

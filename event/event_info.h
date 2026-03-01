@@ -45,6 +45,9 @@ enum class event_description : uint32_t {
     /* Reserved vlan id in the frame. */
     EVENT_DESC_INVAL_VLAN_RESERVED                      = 0x00001101,
 
+    /* Double tagged or more dropped due to policy configuration. */
+    EVENT_DESC_DBL_VLAN_TAG_DROP_DUE_TO_POLICY          = 0x00001102,
+
     /* Short MACsec header. */
     EVENT_DESC_SHORT_MACSEC_HDR                         = 0x00001200,
 

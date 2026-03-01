@@ -24,6 +24,8 @@
 
 #include "statistics.h"
 
+#define MAX_VLAN_HEADERS 10
+
 namespace netos {
 
 /**
@@ -53,7 +55,8 @@ struct parsed_pkt {
     parsed_pkt_types            pkt_types_present;
     uint16_t                    ethertype;
     eth_hdr                     eh;
-    vlan_hdr                    vh;
+    vlan_hdr                    vh[MAX_VLAN_HEADERS];
+    uint32_t                    n_vlans;
     arp_hdr                     ah;
     macsec_hdr                  macsec_h;
     ieee8021x_header            dot1x_h;
@@ -96,7 +99,9 @@ struct parsed_pkt {
 
         netos_status is_an_l2_frame()
         {
-            if (ethertype == NETOS_ETHERTYPE_ARP) {
+            if ((ethertype == NETOS_ETHERTYPE_ARP) ||
+                (ethertype == NETOS_ETHERTYPE_MACSEC) ||
+                (ethertype == NETOS_ETHERTYPE_MKA)) {
                 return netos_status::NETOS_STATUS_SUCCESS;
             }
 

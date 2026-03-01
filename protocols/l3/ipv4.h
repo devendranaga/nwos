@@ -85,8 +85,8 @@ struct ipv4_hdr {
     {
     }
 
-    netos_status serialize(packet_buf *buf);
-    netos_status deserialize(packet_buf *buf);
+    [[nodiscard]] netos_status serialize(packet_buf *buf);
+    [[nodiscard]] netos_status deserialize(packet_buf *buf);
     uint16_t checksum(packet_buf *buf);
     void print();
 };

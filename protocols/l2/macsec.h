@@ -5,7 +5,7 @@
 #include "packet_buf.h"
 #include "error_codes.h"
 
-#define NETOS_MACSEC_IV_LEN 16
+#define NETOS_MACSEC_ICV_LEN 16
 #define NETOS_MACSEC_HDR_MIN_LEN 22 // includes 6 byte header no sci but with ICV
 
 namespace netos {
@@ -39,13 +39,14 @@ struct macsec_hdr {
     uint16_t      ethertype;
     uint16_t      data_len;
     uint8_t       *data;
-    uint8_t       iv[NETOS_MACSEC_IV_LEN];
+    uint8_t       icv[NETOS_MACSEC_ICV_LEN];
 
     explicit macsec_hdr() { }
     ~macsec_hdr() { }
 
     netos_status serialize(packet_buf *buf);
     netos_status deserialize(packet_buf *buf);
+    bool has_icv_only() { return ((this->tci.e == 0) && (this->tci.c == 0)); }
     void print();
 };
 

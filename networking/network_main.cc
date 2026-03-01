@@ -143,9 +143,8 @@ void network_interface::rx_thread()
             rx_pkt_pool_cond_.notify_one();
         }
         auto end = std::chrono::steady_clock::now();
-        //std::cout << "elapsed " <<
-        //             std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<
-        //             " microseconds" << std::endl;
+        this->stats_->set_rx_queue_time_ns(
+                            std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
     }
 }
 
@@ -168,6 +167,8 @@ void network_interface::parse_thread()
 
         // dequeue all the packets from the pool
         while (!this->rx_pkt_pool_.empty()) {
+            auto start = std::chrono::steady_clock::now();
+
             parsed_pkt *pkt = this->rx_pkt_pool_.front();
             this->rx_pkt_pool_.pop();
 
@@ -187,6 +188,10 @@ void network_interface::parse_thread()
             if (free_frame) {
                 parsed_pkt_pool::instance()->put_pkt(pkt);
             }
+
+            auto end = std::chrono::steady_clock::now();
+            this->stats_->set_parse_time_ns(
+                            std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
         }
     }
 }

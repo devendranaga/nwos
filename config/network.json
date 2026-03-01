@@ -48,7 +48,8 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "drop_double_tagged_vlan": true
         },
         "arp_config": {
             "arp_table_len": 64,

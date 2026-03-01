@@ -14,8 +14,6 @@
 
 namespace netos {
 
-namespace ids {
-
 int pktgen_eth_config::parse(const Json::Value &r)
 {
     this->enable         = r["enable"].asBool();
@@ -26,6 +24,42 @@ int pktgen_eth_config::parse(const Json::Value &r)
     this->repeat         = r["repeat"].asBool();
     this->count          = r["count"].asUInt();
     this->pkt_intvl_nsec = r["pkt_intvl_nsec"].asUInt64();
+
+    return 0;
+}
+
+int pktgen_macsec_config::parse(const Json::Value &r)
+{
+    this->enable            = r["enable"].asBool();
+
+    netos::lib::str_to_mac(r["eth"]["src_mac"].asString(), this->eth_src_mac);
+    netos::lib::str_to_mac(r["eth"]["dst_mac"].asString(), this->eth_dst_mac);
+    this->tci.version       = r["tci"]["version"].asUInt();
+    this->tci.es            = r["tci"]["es"].asUInt();
+    this->tci.sc            = r["tci"]["sc"].asUInt();
+    this->tci.scb           = r["tci"]["scb"].asUInt();
+    this->tci.e             = r["tci"]["e"].asUInt();
+    this->tci.c             = r["tci"]["c"].asUInt();
+    this->tci.an            = r["tci"]["an"].asUInt();
+
+    this->short_len         = r["short_len"].asUInt();
+    this->pn                = r["pn"].asUInt();
+    this->macsec_ethertype  = std::stoi(r["macsec_ethertype"].asString(), nullptr, 16);
+    netos::lib::str_to_mac(r["sci"]["mac"].asString(), this->sci_mac);
+    this->sci_port_id       = r["sci"]["port_id"].asUInt();
+
+    auto icv_array          = r["icv"];
+    uint32_t i = 0;
+
+    for (auto icv_byte : icv_array) {
+        this->icv[i] = icv_byte.asUInt();
+        i ++;
+    }
+
+    this->randomize         = r["randomize"].asBool();
+    this->repeat            = r["repeat"].asBool();
+    this->count             = r["count"].asUInt();
+    this->pkt_intvl_nsec    = r["pkt_intvl_nsec"].asUInt();
 
     return 0;
 }
@@ -169,6 +203,7 @@ int pktgen_config::parse(const std::string &config_file)
 
     this->interface = root["interface"].asString();
     this->eth_config.parse(root["eth"]);
+    this->macsec_config.parse(root["macsec"]);
     this->arp_config.parse(root["arp"]);
     this->vlan_config.parse(root["vlan"]);
     this->ipv4_config.parse(root["ipv4"]);
@@ -186,8 +221,6 @@ void pktgen_eth_config::print()
 {
     netos_log_info("pktgen: eth_config: {");
     netos_log_info("pktgen: \t enable: %d\n", this->enable);
-}
-
 }
 
 }

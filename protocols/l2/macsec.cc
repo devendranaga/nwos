@@ -39,24 +39,35 @@ netos_status macsec_hdr::deserialize(packet_buf *pkt_buf)
         pkt_buf->deserialize_2_bytes(&this->sci.port_id);
     }
 
-    this->data_len = pkt_buf->get_remaining_len() - NETOS_MACSEC_IV_LEN;
+    this->data_len = pkt_buf->get_remaining_len() - NETOS_MACSEC_ICV_LEN;
     this->data = &pkt_buf->buf_[pkt_buf->offset_];
 
+    /**
+     * TCI.E and TCI.S are 0's that means the frame has only ICV.
+     *
+     * This means decoding the frame further is possible.
+     *
+     * Lookup for the Ethertype.
+     */
+    if ((this->tci.e  == 0) && (this->tci.c == 0)) {
+        pkt_buf->deserialize_2_bytes(&this->ethertype);
+    }
+
     /* Decode the ICV, ICV is always last bytes - 16. */
-    auto icv_off = pkt_buf->len_ - NETOS_MACSEC_IV_LEN;
-    pkt_buf->deserialize_bytes(this->iv, icv_off);
+    auto icv_off = pkt_buf->len_ - NETOS_MACSEC_ICV_LEN;
+    memcpy(this->icv, &pkt_buf->buf_[icv_off], NETOS_MACSEC_ICV_LEN);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
 netos_status macsec_hdr::serialize(packet_buf *pkt_buf)
 {
-    pkt_buf->buf_[pkt_buf->offset_] = this->tci.ver;
-    pkt_buf->buf_[pkt_buf->offset_] |= this->tci.es;
-    pkt_buf->buf_[pkt_buf->offset_] |= this->tci.sc;
-    pkt_buf->buf_[pkt_buf->offset_] |= this->tci.scb;
-    pkt_buf->buf_[pkt_buf->offset_] |= this->tci.e;
-    pkt_buf->buf_[pkt_buf->offset_] |= this->tci.c;
+    pkt_buf->buf_[pkt_buf->offset_] = (this->tci.ver << 7);
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->tci.es << 6);
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->tci.sc << 5);
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->tci.scb << 4);
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->tci.e << 3);
+    pkt_buf->buf_[pkt_buf->offset_] |= (this->tci.c << 2);
     pkt_buf->buf_[pkt_buf->offset_] |= this->tci.an;
 
     pkt_buf->offset_ ++;
@@ -68,10 +79,12 @@ netos_status macsec_hdr::serialize(packet_buf *pkt_buf)
         pkt_buf->serialize_2_bytes(this->sci.port_id);
     }
 
-    memcpy(pkt_buf->buf_, this->data, this->data_len);
+    pkt_buf->serialize_2_bytes(this->ethertype);
+
+    memcpy(pkt_buf->buf_ + pkt_buf->offset_, this->data, this->data_len);
     pkt_buf->offset_ += this->data_len;
 
-    pkt_buf->serialize_bytes(this->iv, NETOS_MACSEC_IV_LEN);
+    pkt_buf->serialize_bytes(this->icv, NETOS_MACSEC_ICV_LEN);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

@@ -113,6 +113,8 @@ netos_status network_vlan_config::parse(Json::Value &root)
         this->vlan_mapping.push_back(vlan_mapping);
     }
 
+    this->drop_double_tagged_vlan = root["drop_double_tagged_vlan"].asBool();
+
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 

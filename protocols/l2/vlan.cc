@@ -22,7 +22,7 @@ netos_status vlan_hdr::serialize(packet_buf *pkt_buf)
 
 netos_status vlan_hdr::deserialize(packet_buf *pkt_buf)
 {
-    if ((pkt_buf->len_ - pkt_buf->offset_) > NETOS_VLAN_HDR_LEN) {
+    if ((pkt_buf->len_ - pkt_buf->offset_) < NETOS_VLAN_HDR_LEN) {
         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
                                             event_description::EVENT_DESC_INVAL_VLAN_HDR_LEN,
                                             event_protocol_level::EVENT_PROTOCOL_L2_VLAN,
