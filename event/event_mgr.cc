@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "signal_intf.h"
 #include "network_config.h"
 #include "rng_linux.h"
 #include "event_mgr.h"
@@ -21,8 +22,11 @@ void event_mgr::initialize()
     gcd_instance = gcd::instance();
     config = network_config::instance();
 
+    /* Create event forwarding timer. */
     if (config->ids_config_.event_config.event_fwd_enable) {
-        std::function<void()> fwd_timer = std::bind(&event_mgr::event_forwarding_timer, this);
+        std::function<void()> fwd_timer = std::bind(
+                                                &event_mgr::event_forwarding_timer,
+                                                this);
 
         gcd_instance->register_timer(0,
                                      config->ids_config_.event_config.timer_period_ms * 1000000,
@@ -70,6 +74,8 @@ void event_mgr::event_storage_thread()
     int rng_fd;
     uint32_t rng_val;
     int fd;
+
+    netos_block_term_signals();
 
     rng_fd = netos_rng_init();
     netos_rng_get_bytes(rng_fd, (uint8_t *)&rng_val, sizeof(rng_val));

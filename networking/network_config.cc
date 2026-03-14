@@ -23,6 +23,7 @@ netos_status network_arp_config::parse(Json::Value &root)
 {
     this->arp_table_len = root["arp_table_len"].asUInt();
     this->arp_query_timer_intvl_sec = root["arp_query_timer_intvl_sec"].asUInt();
+    this->arp_cache_mgmt_timer_intvl_sec = root["arp_cache_mgmt_timer_intvl_sec"].asUInt();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -83,6 +84,9 @@ netos_status network_ids_config::parse(Json::Value &root)
 netos_status network_filter_config::parse(Json::Value &root)
 {
     this->drop_ipv4_fragments = root["drop_ipv4_fragments"].asBool();
+    this->icmp_max_payload_len = root["icmp_max_payload_len"].asUInt();
+    this->bypass_ipv4_checksum_verification =
+              root["bypass_ipv4_checksum_verification"].asBool();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

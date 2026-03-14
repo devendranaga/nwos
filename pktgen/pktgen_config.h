@@ -165,6 +165,40 @@ struct pktgen_icmp_config {
     void print();
 };
 
+struct pktgen_tcp_config_flags {
+    uint32_t         cwr    :1;
+    uint32_t         ece    :1;
+    uint32_t         urg    :1;
+    uint32_t         ack    :1;
+    uint32_t         psh    :1;
+    uint32_t         rst    :1;
+    uint32_t         syn    :1;
+    uint32_t         fin    :1;
+} __attribute__ ((__packed__));
+
+struct pktgen_tcp_config {
+    bool                    enable;
+    uint8_t                 eth_src_mac[NETOS_MACADDR_LEN];
+    uint8_t                 eth_dst_mac[NETOS_MACADDR_LEN];
+    uint32_t                ipv4_src_addr;
+    uint32_t                ipv4_dst_addr;
+    uint32_t                src_port;
+    uint32_t                dst_port;
+    uint32_t                seq_no;
+    uint32_t                ack_no;
+    pktgen_tcp_config_flags flags;
+    uint32_t                window_size;
+    uint32_t                urg_ptr;
+    uint32_t                payload_len;
+    bool                    randomize;
+    bool                    repeat;
+    uint32_t                count;
+    uint64_t                pkt_intvl_nsec;
+
+    int parse(const Json::Value &r);
+    void print();
+};
+
 struct pktgen_config {
     ~pktgen_config() = default;
 
@@ -173,14 +207,15 @@ struct pktgen_config {
         return &config;
     }
 
-    std::string interface;
-    pktgen_eth_config eth_config;
-    pktgen_arp_config arp_config;
-    pktgen_macsec_config macsec_config;
-    pktgen_vlan_config vlan_config;
-    pktgen_ipv4_config ipv4_config;
-    pktgen_ipv6_config ipv6_config;
-    pktgen_icmp_config icmp_config;
+    std::string             interface;
+    pktgen_eth_config       eth_config;
+    pktgen_arp_config       arp_config;
+    pktgen_macsec_config    macsec_config;
+    pktgen_vlan_config      vlan_config;
+    pktgen_ipv4_config      ipv4_config;
+    pktgen_ipv6_config      ipv6_config;
+    pktgen_icmp_config      icmp_config;
+    pktgen_tcp_config       tcp_config;
 
     int parse(const std::string &filename);
     void print();

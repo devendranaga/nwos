@@ -160,8 +160,21 @@ int pktgen_ipv6_config::parse(const Json::Value &r)
     this->payload_len           = r["payload_len"].asUInt();
     this->nh                    = r["nh"].asUInt();
     this->hop_limit             = r["hop_limit"].asUInt();
+
+    struct in6_addr s_addr;
     auto s_addr_str             = r["src_addr"].asString();
+    auto ret = inet_pton(AF_INET6, s_addr_str.c_str(), &s_addr);
+    if (ret == 1) {
+        memcpy(this->src_addr, s_addr.s6_addr, NETOS_IPV6_ADDR_LEN);
+    }
+
+    struct in6_addr d_addr;
     auto d_addr_str             = r["dst_addr"].asString();
+    ret = inet_pton(AF_INET6, d_addr_str.c_str(), &d_addr);
+    if (ret == 1) {
+        memcpy(this->dst_addr, d_addr.s6_addr, NETOS_IPV6_ADDR_LEN);
+    }
+
     this->randomize             = r["randomize"].asBool();
     this->repeat                = r["repeat"].asBool();
     this->count                 = r["count"].asUInt();
@@ -207,6 +220,7 @@ int pktgen_config::parse(const std::string &config_file)
     this->arp_config.parse(root["arp"]);
     this->vlan_config.parse(root["vlan"]);
     this->ipv4_config.parse(root["ipv4"]);
+    this->ipv6_config.parse(root["ipv6"]);
     this->icmp_config.parse(root["icmp"]);
 
     return 0;

@@ -1,7 +1,7 @@
 {
     "network_config": {
         "interface_list": [
-            "dummy0",
+            "lo",
             "dummy1"
         ],
         "packet_buf_pool_len": 1000,
@@ -10,7 +10,8 @@
             "debug_log_server_ip": "127.0.0.1",
             "debug_log_server_port": 12000,
             "log_pcap": true,
-            "pcap_file_path": "./netos_pcap"
+            "pcap_file_path": "./netos_pcap",
+            "pcap_file_size_MB": 100
         },
         "vlan_config": {
             "vlan_mapping": [
@@ -49,14 +50,21 @@
                     ]
                 }
             ],
-            "drop_double_tagged_vlan": true
+            "drop_double_tagged_vlan": false
         },
         "arp_config": {
             "arp_table_len": 64,
-            "arp_query_timer_intvl_sec" : 1
+            "arp_query_timer_intvl_sec" : 1,
+            "arp_cache_mgmt_timer_intvl_sec": 30
+        },
+        "ipv4_config": {
+            "ipv4_ip_type": "static",
+            "ipv4_ip_address": "192.168.0.1"
         },
         "filter": {
-            "drop_ipv4_fragments": true
+            "drop_ipv4_fragments": true,
+            "icmp_max_payload_len": 0,
+            "bypass_ipv4_checksum_verification": false
         },
         "egress": {
             "number_of_queues": 8,

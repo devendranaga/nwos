@@ -2,6 +2,7 @@
 #include <thread>
 #include <memory>
 #include <getopt.h>
+#include <functional>
 
 #include "gcd.h"
 #include "crypto_srv.h"
@@ -18,6 +19,11 @@ cryptography_srv::cryptography_srv()
 cryptography_srv::~cryptography_srv()
 {
 
+}
+
+void cryptography_srv::termination_handler()
+{
+    printf("termination handler called\n");
 }
 
 void cryptography_srv::run(int argc, char **argv)
@@ -48,6 +54,10 @@ void cryptography_srv::run(int argc, char **argv)
                                          this,
                                          std::placeholders::_1);
     gcd_ctx->register_socket(this->udp_srv_->get_fd(), callback);
+
+    term_callback term_cb = std::bind(&cryptography_srv::termination_handler,
+                                      this);
+    gcd_ctx->register_term_signal(term_cb);
 
     gcd_ctx->run();
 }

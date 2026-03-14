@@ -7,6 +7,9 @@ using namespace netos::lib;
 
 namespace netos {
 
+/**
+ * @brief - Defines packet generator class.
+ */
 class pktgen {
     public:
         explicit pktgen() = default;
@@ -22,7 +25,9 @@ class pktgen {
         void gen_arp();
         void gen_avtp();
         void gen_ipv4();
+        void gen_ipv6();
         void gen_icmp();
+        void gen_tcp();
 
         std::shared_ptr<netos::lib::raw_socket> raw_fd_;
 };
@@ -30,3 +35,4 @@ class pktgen {
 }
 
 #endif
+

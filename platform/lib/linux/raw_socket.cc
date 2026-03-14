@@ -33,6 +33,10 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
 {
     int ret;
 
+    if (devname.size() >= IFNAMSIZ) {
+        throw std::runtime_error("interface name too long");
+    }
+
     fd_ = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     ERR_ON_SYSCALL(fd_, 0, "failed to socket");
 
@@ -66,14 +70,14 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
     strcpy(req.ifr_name, devname.c_str());
     ret = ioctl(fd_, SIOCGIFINDEX, &req);
     if (ret < 0) {
-        throw std::runtime_error("");
+        throw std::runtime_error("failed to get interface index");
     }
     ERR_ON_SYSCALL(ret, 0, "failed to get interface index");
 
     // bind to device name
     ret = setsockopt(fd_, SOL_SOCKET, SO_BINDTODEVICE, &req, sizeof(req));
     if (ret < 0) {
-        throw std::runtime_error("");
+        throw std::runtime_error("failed to bind to device");
     }
 
     ERR_ON_SYSCALL(ret, 0, "failed to SO_BINDTODEVICE");
@@ -185,33 +189,6 @@ int raw_socket::send_msg(const uint8_t *target, uint8_t *data, size_t data_len) 
     lladdr.sll_addr[5] = target[5];
 
     return sendto(fd_, data, data_len, 0, (struct sockaddr *)&lladdr, sizeof(struct sockaddr_ll));
-}
-
-int raw_socket::recv_msg(uint8_t *mac, uint16_t &ethertype, uint8_t *data, size_t data_size) noexcept
-{
-    int ret;
-    struct sockaddr_ll lladdr;
-    struct ether_header *eth;
-    uint8_t receive_msg[1500];
-    socklen_t len = sizeof(struct sockaddr_ll);
-
-    eth = (struct ether_header *)receive_msg;
-    ret = recvfrom(fd_, receive_msg, sizeof(receive_msg), 0, (struct sockaddr *)&lladdr, &len);
-    if (ret < 0) {
-        return -1;
-    }
-
-    mac[0] = eth->ether_shost[0];
-    mac[1] = eth->ether_shost[1];
-    mac[2] = eth->ether_shost[2];
-    mac[3] = eth->ether_shost[3];
-    mac[4] = eth->ether_shost[4];
-    mac[5] = eth->ether_shost[5];
-
-    ethertype = htons(eth->ether_type);
-
-    memcpy(data, receive_msg + sizeof(ether_header), ret - sizeof(ether_header));
-    return ret - sizeof(ether_header);
 }
 
 static int __recv_msg(int fd, uint8_t *mac, uint8_t *data, size_t data_size)

@@ -33,6 +33,9 @@ struct packet_buf {
     uint32_t len_;
     packet_buf *next;
 
+    explicit packet_buf() { }
+    ~packet_buf() { }
+
     netos_status allocate();
     void free_ptr();
 
@@ -50,6 +53,8 @@ struct packet_buf {
      * Return the raw buffer length.
      */
     uint32_t get_raw_buf_len() const;
+
+    uint32_t get_raw_buf_rx_len() const { return this->len_; }
 
     void serialize_bit(uint8_t bit_pos);
     void serialize_byte(uint8_t val);

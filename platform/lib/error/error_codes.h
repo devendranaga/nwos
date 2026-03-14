@@ -14,9 +14,12 @@ namespace lib {
 enum netos_status {
     NETOS_STATUS_SUCCESS                    = 0x00000000,
 
+    /* Incorrect input. */
     NETOS_STATUS_INVAL_INPUT                = 0x00000001,
     NETOS_STATUS_INVAL_MACADDR              = 0x00000002,
+    /* malloc/ calloc failures.. */
     NETOS_STATUS_ALLOC_FAILURE              = 0x00000003,
+    /* frame is incorrect. */
     NETOS_STATUS_MALFORMED_PKT              = 0x00000004,
     NETOS_STATUS_INVAL_HEXA_STR             = 0x00000005,
     NETOS_STATUS_INVAL_IPV4_ADDR            = 0x00000006,

@@ -21,7 +21,6 @@ void perf_event::capture_end()
     };
 
     diff = (diff_tv.tv_sec * 1000000) + (diff_tv.tv_nsec / 1000);
-    printf(" took %f sec\n", diff / 1000000.0);
 }
 
 std::shared_ptr<perf_event> perf_linux::add_event(const std::string &event)

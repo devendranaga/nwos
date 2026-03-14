@@ -3,11 +3,14 @@
 #include <getopt.h>
 #include <chrono>
 
+#include "signal_intf.h"
+#include "ioctl_nw.h"
 #include "gcd.h"
 #include "ethertypes.h"
 #include "logging.h"
 #include "arp.h"
 #include "vlan_membership.h"
+#include "cpu_setting.h"
 #include "network_main.h"
 #include "statistics.h"
 
@@ -18,6 +21,9 @@ static void usage(const char *progname)
     fprintf(stderr, "usage: %s <-f configuration file>\n", progname);
 }
 
+/**
+ * @brief - Parse command line arguments.
+ */
 int network_manager::parse_cmdargs(int argc, char **argv)
 {
     int ret;
@@ -41,12 +47,37 @@ int network_manager::parse_cmdargs(int argc, char **argv)
     return 0;
 }
 
+void network_manager::termination_handler()
+{
+    gcd *gcd_instance;
+
+    gcd_instance = gcd::instance();
+
+    netos_log_info("termination signal received\n");
+
+    for (auto it : this->iflist_) {
+        it->raise_signals();
+    }
+
+    gcd_instance->terminate();
+}
+
+void network_interface_config::initialize(const std::string &ifname)
+{
+    this->ifname = ifname;
+
+    netos_get_macaddr(ifname.c_str(), this->mac);
+    netos_get_ipaddr(ifname.c_str(), &this->ipaddr);
+}
+
 void network_manager::run(int argc, char **argv)
 {
     network_config *conf;
     gcd *gcd_instance;
     netos_status res;
     int ret;
+
+    auto start = std::chrono::steady_clock::now();
 
     gcd_instance = gcd::instance();
 
@@ -94,6 +125,7 @@ void network_manager::run(int argc, char **argv)
         std::shared_ptr<network_interface> netif;
 
         netif = std::make_shared<network_interface>();
+
         res = netif->initialize(ifname);
         if (res != netos_status::NETOS_STATUS_SUCCESS) {
             netos_log_error("failed to initialize egress instance for interface <%s>\n", ifname.c_str());
@@ -106,19 +138,31 @@ void network_manager::run(int argc, char **argv)
         this->iflist_.push_back(netif);
     }
 
-    while (1) {
-        gcd_instance->run();
-    }
+    term_callback term_cb = std::bind(&network_manager::termination_handler, this);
+    gcd_instance->register_term_signal(term_cb);
+
+    auto end = std::chrono::steady_clock::now();
+    auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    netos_log_info("Finished initialization in %d milliseconds\n", delta_ms);
+
+    gcd_instance->run();
 }
 
 void network_interface::rx_thread()
 {
     int ret;
 
-    netos_log_info("create rx thread for <%s> ok\n", this->ifname_.c_str());
+    netos_block_term_signals();
+
+    netos_log_info("create rx thread for <%s> ok\n", this->intf_config_->ifname.c_str());
 
     while (1) {
         parsed_pkt *pkt;
+
+        if (this->rx_thread_signalled_) {
+            break;
+        }
 
         // get an instance of the parsed packet buffer pool
         pkt = parsed_pkt_pool::instance()->get_pkt();
@@ -126,7 +170,7 @@ void network_interface::rx_thread()
             return;
         }
 
-        pkt->ifname = this->ifname_;
+        pkt->intf_config = this->intf_config_;
         pkt->stats = this->stats_;
         pkt->raw = this->raw_;
 
@@ -139,6 +183,9 @@ void network_interface::rx_thread()
 
             // queue the frame to the receive pool
             std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
+
+            // inc refcount before pushing to the pool
+            pkt->inc_ref_count();
             this->rx_pkt_pool_.push(pkt);
             rx_pkt_pool_cond_.notify_one();
         }
@@ -159,21 +206,32 @@ void network_interface::parse_thread()
 {
     netos_status ret;
 
+    netos_block_term_signals();
+
     while (1) {
         std::unique_lock<std::mutex> l(this->rx_pkt_pool_lock_);
         bool free_frame = false;
 
         rx_pkt_pool_cond_.wait(l);
 
+        if (this->parsed_thread_signalled_) {
+            break;
+        }
+
         // dequeue all the packets from the pool
         while (!this->rx_pkt_pool_.empty()) {
+#if defined(NETOS_PERF_TIME)
             auto start = std::chrono::steady_clock::now();
+#endif
 
             parsed_pkt *pkt = this->rx_pkt_pool_.front();
             this->rx_pkt_pool_.pop();
 
+
             // parse and dispatch them to the corresponding protocol layer
             ret = pkt->parse_frame();
+            pkt->dec_ref_count();
+
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->dispatch_pkt(pkt);
             } else {
@@ -182,16 +240,18 @@ void network_interface::parse_thread()
             }
 
             if (this->pcap_) {
-                this->pcap_->add_packet(pkt->pkt_buf);
+                this->pcap_->add_packet(pkt);
             }
 
             if (free_frame) {
                 parsed_pkt_pool::instance()->put_pkt(pkt);
             }
 
+#if defined(NETOS_PERF_TIME)
             auto end = std::chrono::steady_clock::now();
             this->stats_->set_parse_time_ns(
                             std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+#endif
         }
     }
 }
@@ -206,7 +266,8 @@ netos_status network_interface::initialize(const std::string &ifname)
 
     netos_log_info("created raw socket on <%s>\n", ifname.c_str());
 
-    this->ifname_ = ifname;
+    this->intf_config_ = std::make_shared<network_interface_config>();
+    this->intf_config_->initialize(ifname);
 
     this->stats_ = statistics::instance()->initialize(ifname);
 
@@ -217,16 +278,27 @@ netos_status network_interface::initialize(const std::string &ifname)
         netos_log_info("initialize pcap log for the interface <%s>\n", ifname.c_str());
     }
 
+    this->parsed_thread_signalled_ = false;
+    this->rx_thread_signalled_ = false;
+
     // create parser thread
     this->parse_thr_ = std::make_shared<std::thread>(
                                         &network_interface::parse_thread,
                                         this);
+
+    // tie the parser threads to the second core
+    netos_set_cpu_affinity(this->parse_thr_->native_handle(), 1);
+
     this->parse_thr_->detach();
 
     // create rx thread
     this->rx_thr_ = std::make_shared<std::thread>(
                                         &network_interface::rx_thread,
                                         this);
+
+    // tie the receive threads to the first core
+    netos_set_cpu_affinity(this->rx_thr_->native_handle(), 0);
+
     this->rx_thr_->detach();
 
     return netos_status::NETOS_STATUS_SUCCESS;
@@ -239,5 +311,7 @@ int main(int argc, char **argv)
     netos::network_manager netmgr;
 
     netmgr.run(argc, argv);
+
+    return 0;
 }
 

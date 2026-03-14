@@ -9,6 +9,7 @@
 #include "logging.h"
 #include "raw_socket.h"
 #include "packet_buf.h"
+#include "event_mgr.h"
 #include "ethertypes.h"
 #include "eth.h"
 #include "macsec.h"
@@ -16,6 +17,7 @@
 #include "vlan.h"
 #include "avtp.h"
 #include "ipv4.h"
+#include "ipv6.h"
 #include "icmp.h"
 #include "protocols.h"
 #include "pktgen_config.h"
@@ -338,6 +340,61 @@ void pktgen::gen_ipv4()
         free(buf);
 }
 
+void pktgen::gen_ipv6()
+{
+    packet_buf *pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i = 0;
+    uint8_t *buf = NULL;
+    netos_status ret;
+
+    if (config->ipv6_config.payload_len != 0) {
+        buf = (uint8_t *)calloc(1, config->ipv6_config.payload_len);
+        if (!buf) {
+            return;
+        }
+    }
+
+    for (i = 0; i < config->ipv6_config.count; i ++) {
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        ipv6_hdr ipv6_h;
+
+        memcpy(eh.src_mac, config->ipv6_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->ipv6_config.eth_dst_mac, NETOS_MACADDR_LEN);
+        eh.ethertype = NETOS_ETHERTYPE_IPV6;
+        eh.serialize(pktbuf);
+
+        ipv6_h.version = NETOS_IPV6_VERSION;
+        ipv6_h.traffic_class = config->ipv6_config.traffic_class;
+        ipv6_h.flow_label = config->ipv6_config.flow_label;
+        ipv6_h.payload_len = config->ipv6_config.payload_len;
+        ipv6_h.nh = config->ipv6_config.nh;
+        ipv6_h.hop_limit = config->ipv6_config.hop_limit;
+
+        memcpy(ipv6_h.src_addr, config->ipv6_config.src_addr, NETOS_IPV6_ADDR_LEN);
+        memcpy(ipv6_h.dst_addr, config->ipv6_config.dst_addr, NETOS_IPV6_ADDR_LEN);
+        ipv6_h.frag_hdr = NULL;
+
+        ret = ipv6_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return;
+        }
+
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(config->ipv4_config.pkt_intvl_nsec));
+
+        pktbuf->free_ptr();
+        free(pktbuf);
+    }
+}
+
 void pktgen::gen_icmp()
 {
     packet_buf *pktbuf;
@@ -397,24 +454,40 @@ void pktgen::gen_icmp()
         icmp_h.type = config->icmp_config.type;
         icmp_h.code = config->icmp_config.code;
 
-        icmp_h.echo_request = std::make_shared<icmp_echo>();
-        icmp_h.echo_request->identifier = config->icmp_config.identifier;
-        icmp_h.echo_request->sequence_number = config->icmp_config.sequence_number;
+        if (icmp_h.is_echo_req()) {
+
+            icmp_h.echo_request.identifier = config->icmp_config.identifier;
+            icmp_h.echo_request.sequence_number = config->icmp_config.sequence_number;
+
+        } else if (icmp_h.is_echo_reply()) {
+
+            icmp_h.echo_reply.identifier = config->icmp_config.identifier;
+            icmp_h.echo_reply.sequence_number = config->icmp_config.sequence_number;
+
+        } else {
+            goto free_pktbuf;
+        }
+
         ret = icmp_h.serialize(pktbuf);
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
-            return;
+            goto free_pktbuf;
         }
 
         this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
         std::this_thread::sleep_for(
                         std::chrono::nanoseconds(config->icmp_config.pkt_intvl_nsec));
 
+free_pktbuf:
         pktbuf->free_ptr();
         free(pktbuf);
     }
 
     if (buf)
         free(buf);
+}
+
+void pktgen::gen_tcp()
+{
 }
 
 void pktgen::usage(const std::string &progname)
@@ -460,6 +533,12 @@ void pktgen::run(int argc, char **argv)
     }
     if (config->icmp_config.enable) {
         this->gen_icmp();
+    }
+    if (config->tcp_config.enable) {
+        this->gen_tcp();
+    }
+    if (config->ipv6_config.enable) {
+        this->gen_ipv6();
     }
     //this->gen_avtp();
 }

@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
+
+#include "signal_intf.h"
 #include "logging.h"
 #include "ioctl_nw.h"
 #include "eth.h"
@@ -8,6 +10,7 @@
 #include "protocol_util.h"
 #include "ethertypes.h"
 #include "event_mgr.h"
+#include "statistics.h"
 #include "network_egress_intf.h"
 #include "network_config.h"
 #include "gcd.h"
@@ -67,8 +70,17 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
 void arp_context::add_rx_frame(parsed_pkt *rx_frame)
 {
     std::unique_lock<std::mutex> l(this->process_thr_lock_);
+    rx_frame->inc_ref_count();
     this->arp_rx_queue_.push(rx_frame);
     this->process_cond_lock_.notify_one();
+}
+
+void arp_context::arp_statistics_inc_buffer_full(const std::string &ifname)
+{
+    statistics *st = statistics::instance();
+    stats_intf *intf = st->get_stats_intf(ifname);
+
+    intf->inc_egress_drop_buffer_full();
 }
 
 void arp_context::arp_frame_prepare(parsed_pkt *frame,
@@ -78,11 +90,13 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
     network_egress_intf intf;
     eth_hdr eh;
     arp_hdr ah;
+    std::string ifname = frame->intf_config->ifname;
 
-    intf.ifname = frame->ifname;
+    intf.ifname = ifname;
     intf.raw_fd_ = frame->raw;
     intf.pkt = packet_buf_pool::instance()->get_pkt();
     if (!intf.pkt) {
+        this->arp_statistics_inc_buffer_full(ifname);
         return;
     }
 
@@ -91,15 +105,10 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
     eh.ethertype = NETOS_ETHERTYPE_ARP;
     eh.serialize(intf.pkt);
 
-    ah.hw_type = ARP_HW_TYPE_ETHERNET;
-    ah.protocol_type = NETOS_ETHERTYPE_IPV4;
-    ah.ha_len = ARP_HA_LEN;
-    ah.proto_len = ARP_PROTOCOL_LEN;
-    memcpy(ah.sender_hwaddr, macaddr, NETOS_MACADDR_LEN);
-    ah.sender_protocol_addr = ntohl(ipaddr);
-    memcpy(ah.target_hwaddr, frame->eh.src_mac, NETOS_MACADDR_LEN);
-    ah.target_protocol_addr = frame->ah.sender_protocol_addr;
-    ah.op = NETOS_ARP_OP_ARP_REPLY;
+    ah.arp_reply_defaults(macaddr,
+                          frame->eh.src_mac,
+                          ntohl(ipaddr),
+                          frame->ah.sender_protocol_addr);
     ah.serialize(intf.pkt);
 
     network_egress::instance()->egress_enque(intf);
@@ -110,17 +119,14 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
     uint8_t mac[6] = {0};
     uint32_t ipaddr = 0;
     void *res;
-    int ret;
 
-    ret = netos_get_macaddr(rx_frame->ifname.c_str(), mac);
-    if (ret != 0) {
+    // we do not have any ip address
+    if (rx_frame->intf_config->ipaddr == 0) {
+        parsed_pkt_pool::instance()->put_pkt(rx_frame);
         return;
     }
 
-    ret = netos_get_ipaddr(rx_frame->ifname.c_str(), &ipaddr);
-    if (ret != 0) {
-        return;
-    }
+    ipaddr = rx_frame->intf_config->ipaddr;
 
     // Packet is directed to us.. do not drop it.
     if ((rx_frame->ah.op == NETOS_ARP_OP_ARP_REQUEST) &&
@@ -135,7 +141,7 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
             entry->last_updated = time(0);
         } else {
             // Add the entry.
-            this->cache_.update(rx_frame->ifname,
+            this->cache_.update(rx_frame->intf_config->ifname,
                             arp_state::ARP_STATE_RESOLVED,
                             rx_frame->ah.sender_hwaddr,
                             rx_frame->ah.sender_protocol_addr);
@@ -148,6 +154,8 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
 
 void arp_context::arp_process_thread()
 {
+    netos_block_term_signals();
+
     while (1) {
         std::unique_lock<std::mutex> l(this->process_thr_lock_);
         this->process_cond_lock_.wait(l);
@@ -162,7 +170,10 @@ void arp_context::arp_process_thread()
 
 void arp_context::arp_query_timer_handler()
 {
-    printf("arp query timer\n");
+}
+
+void arp_context::arp_cache_mgmt_timer_handler()
+{
 }
 
 netos_status arp_context::init()
@@ -170,11 +181,21 @@ netos_status arp_context::init()
     network_config *config = network_config::instance();
     gcd *gcd_instance = gcd::instance();
 
+    /* Create ARP query timer. */
     std::function<void()> query_timer_cb = std::bind(&arp_context::arp_query_timer_handler, this);
 
     gcd_instance->register_timer(config->arp_config_.arp_query_timer_intvl_sec,
                                  0,
                                  query_timer_cb);
+
+    /* Create ARP cache management timer. */
+    std::function<void()> cache_mgmt_timer_cb = std::bind(&arp_context::arp_cache_mgmt_timer_handler, this);
+
+    gcd_instance->register_timer(config->arp_config_.arp_cache_mgmt_timer_intvl_sec,
+                                 0,
+                                 cache_mgmt_timer_cb);
+
+    /* Create Receive thread. */
     monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
     monitor_thr_->detach();
 

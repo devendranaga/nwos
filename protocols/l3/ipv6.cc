@@ -1,5 +1,5 @@
-#include "ipv6.h"
 #include "event_mgr.h"
+#include "ipv6.h"
 #include <cstring>
 
 namespace netos {
@@ -13,7 +13,7 @@ netos_status ipv6_hdr::serialize(packet_buf *pkt_buf)
     // 0       4       8       12      16      20      24      28      31
     // |-------|-------|-------|-------|-------|-------|-------|-------|
     // |Ver(4) | TrCls(8)      | Flow Label(20)                        |
-    
+
     uint32_t first_word = 0;
 
     first_word |= (static_cast<uint32_t>(this->version) & 0xF) << 28;
@@ -39,8 +39,38 @@ netos_status ipv6_hdr::serialize(packet_buf *pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status ipv6_frag_hdr::deserialize(packet_buf *pkt_buf,
+                                        event_mgr *evt_mgr,
+                                        uint8_t *nh)
+{
+    uint16_t val16 = 0;
+
+    if ((pkt_buf->offset_ + NETOS_IPV6_FRAG_HDR_LEN) > pkt_buf->len_) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_IPV6_SHORT_FRAG_HDR,
+                              event_protocol_level::EVENT_PROTOCOL_L3_IPV6,
+                              pkt_buf->len_);
+        return NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    pkt_buf->deserialize_byte(&this->next_hdr);
+    *nh = this->next_hdr;
+
+    pkt_buf->deserialize_byte(&this->reserved);
+    pkt_buf->deserialize_2_bytes(&val16);
+
+    this->frag_off          = (val16 & 0xFFF8) >> 3;
+    this->reserved_2        = (val16 & 0x0006) >> 1;
+    this->more_fragments    = !!(val16 & 0x0001);
+
+    pkt_buf->deserialize_4_bytes(&this->identification);
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
 {
+    event_mgr *evt_mgr = event_mgr::instance();
     uint32_t first_word = 0;
 
     // Manual Network Byte Order deserialization
@@ -53,10 +83,10 @@ netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
     this->version = (first_word >> 28) & 0xF;
 
     if (this->version != NETOS_IPV6_VERSION) {
-         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
-                                            event_description::EVENT_DESC_INVAL_IPV6_VERSION,
-                                            event_protocol_level::EVENT_PROTOCOL_L3_IPV6,
-                                            pkt_buf->len_);
+         evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                               event_description::EVENT_DESC_INVAL_IPV6_VERSION,
+                               event_protocol_level::EVENT_PROTOCOL_L3_IPV6,
+                               pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
@@ -64,11 +94,45 @@ netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
     this->flow_label = first_word & 0xFFFFF;
 
     pkt_buf->deserialize_2_bytes(&this->payload_len);
+    if (this->payload_len == 0) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_IPV6_PAYLOAD_ZERO,
+                              event_protocol_level::EVENT_PROTOCOL_L3_IPV6,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_byte(&this->nh);
     pkt_buf->deserialize_byte(&this->hop_limit);
+    if (this->hop_limit == 0) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_IPV6_HOP_LIMIT_ZERO,
+                              event_protocol_level::EVENT_PROTOCOL_L3_IPV6,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
 
     pkt_buf->deserialize_bytes(this->src_addr, NETOS_IPV6_ADDR_LEN);
     pkt_buf->deserialize_bytes(this->dst_addr, NETOS_IPV6_ADDR_LEN);
+
+    while ((pkt_buf->offset_ < pkt_buf->len_) > 0) {
+        switch (this->nh) {
+            case NETOS_IPV6_NH_FRAG_HDR: {
+                this->frag_hdr = (ipv6_frag_hdr *)calloc(1, sizeof(ipv6_frag_hdr));
+                if (!this->frag_hdr) {
+                    return netos_status::NETOS_STATUS_ALLOC_FAILURE;
+                }
+                if (this->frag_hdr->deserialize(pkt_buf, evt_mgr, &this->nh) !=
+                                        netos_status::NETOS_STATUS_SUCCESS) {
+                    free(this->frag_hdr);
+                    this->frag_hdr = NULL;
+                    return netos_status::NETOS_STATUS_MALFORMED_PKT;
+                }
+            } break;
+            default:
+                break;
+        }
+    }
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

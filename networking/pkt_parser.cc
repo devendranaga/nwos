@@ -5,6 +5,7 @@
 #include "parsed_pkt.h"
 #include "protocols.h"
 #include "event_mgr.h"
+#include "checksum.h"
 #include "statistics.h"
 #include "logging.h"
 
@@ -26,6 +27,20 @@ netos_status parsed_pkt::parse_frame()
     this->ethertype = this->eh.ethertype;
 
     this->n_vlans = 0;
+
+    if (this->ethertype == NETOS_ETHERTYPE_MACSEC) {
+
+        stats->inc_macsec_rx_count();
+
+        ret = this->macsec_h.deserialize(this->pkt_buf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+        this->pkt_types_present.has_macsec = 1;
+        if (this->macsec_h.has_icv_only()) { /* decode the ethertype. */
+            this->ethertype = this->macsec_h.ethertype;
+        }
+    }
 
     /**
      * Parse VLAN and more tagged.
@@ -77,25 +92,14 @@ vlan_parse:
         }
     }
 
-    if (this->ethertype == NETOS_ETHERTYPE_MACSEC) {
-
-        stats->inc_macsec_rx_count();
-
-        ret = this->macsec_h.deserialize(this->pkt_buf);
-        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
-            return ret;
-        }
-        this->pkt_types_present.has_macsec = 1;
-        this->ethertype = this->macsec_h.ethertype;
-    }
-
     // Parse the L2 frame
     if (this->is_an_l2_frame() == netos_status::NETOS_STATUS_SUCCESS) {
         ret = this->parse_l2_frame();
     }
 
+    // parse the L3 frame
     if ((ret == netos_status::NETOS_STATUS_SUCCESS) &&
-        (this->is_an_l3_frame())) {
+        (this->is_an_l3_frame() == netos_status::NETOS_STATUS_SUCCESS)) {
         ret = this->parse_l3_frame();
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {
             return ret;
@@ -124,20 +128,6 @@ netos_status parsed_pkt::parse_l2_frame()
             ret = this->ah.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_arp = 1;
-            }
-            return ret;
-        break;
-        case NETOS_ETHERTYPE_MACSEC:
-            stats->inc_macsec_rx_count();
-
-            ret = this->macsec_h.deserialize(this->pkt_buf);
-            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
-                this->pkt_types_present.has_macsec = 1;
-            }
-
-            /* Get the Ethertype if it has only MACSEC ICV and no encryption. */
-            if (this->macsec_h.has_icv_only()) {
-                this->ethertype = this->macsec_h.ethertype;
             }
             return ret;
         break;
@@ -237,6 +227,30 @@ netos_status parsed_pkt::parse_l4_frame()
                 this->pkt_types_present.has_icmp = 1;
             }
         break;
+        case NETOS_IP_PROTOCOL_ICMPV6:
+            stats->inc_icmpv6_rx_count();
+
+            ret = this->icmpv6_h.deserialize(this->pkt_buf);
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->pkt_types_present.has_icmpv6 = 1;
+
+                checksum_pseudo_hdr pseudo_hdr;
+
+                pseudo_hdr.fill_icmpv6(this->icmpv6_h.start_off,
+                                       this->ipv6_h.src_addr,
+                                       this->ipv6_h.dst_addr);
+
+                /* validate received ICMPv6 checksum. */
+                this->icmpv6_h.checksum = checksum(this->pkt_buf, &pseudo_hdr);
+                if (this->icmpv6_h.checksum != 0) {
+                    event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                                        event_description::EVENT_DESC_INVAL_ICMPV6_CHECKSUM,
+                                                        event_protocol_level::EVENT_PROTOCOL_L4_ICMPV6,
+                                                        pkt_buf->len_);
+                    return netos_status::NETOS_STATUS_MALFORMED_PKT;
+                }
+            }
+        break;
         default:
             return netos_status::NETOS_STATUS_UNSUPPORTED_L4_PROTOCOL;
     }
@@ -245,3 +259,4 @@ netos_status parsed_pkt::parse_l4_frame()
 }
 
 }
+

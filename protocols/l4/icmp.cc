@@ -1,4 +1,6 @@
-#include <icmp.h>
+#include "network_config.h"
+#include "event_mgr.h"
+#include "icmp.h"
 
 namespace netos {
 
@@ -25,10 +27,10 @@ netos_status icmp_hdr::serialize(packet_buf *pkt_buf)
 
     switch (this->type) {
         case static_cast<uint8_t>(icmp_type::ECHO_REPLY):
-            this->echo_reply->serialize(pkt_buf);
+            this->echo_reply.serialize(pkt_buf);
         break;
         case static_cast<uint8_t>(icmp_type::ECHO_REQUEST):
-            this->echo_request->serialize(pkt_buf);
+            this->echo_request.serialize(pkt_buf);
         break;
         default:
             return netos_status::NETOS_STATUS_UNSUPPORTED_ICMP_TYPE;
@@ -108,6 +110,9 @@ netos_status icmp_echo::deserialize(packet_buf *pkt_buf)
     pkt_buf->deserialize_2_bytes(&this->identifier);
     pkt_buf->deserialize_2_bytes(&this->sequence_number);
 
+    this->icmp_data_len = pkt_buf->len_ - pkt_buf->offset_;
+    this->icmp_data = (uint8_t *)pkt_buf->buf_ + pkt_buf->offset_;
+
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
@@ -123,6 +128,8 @@ netos_status icmp_identification::deserialize(packet_buf *pkt_buf)
 
 netos_status icmp_hdr::deserialize(packet_buf *pkt_buf)
 {
+    event_mgr *evt_mgr = event_mgr::instance();
+    const network_config *config = network_config::instance();
     netos_status ret;
 
     this->start_off = pkt_buf->offset_;
@@ -134,48 +141,46 @@ netos_status icmp_hdr::deserialize(packet_buf *pkt_buf)
 
     switch (this->type) {
         case static_cast<uint32_t>(icmp_type::ECHO_REPLY):
-            this->echo_reply = std::make_shared<icmp_echo>();
-            this->echo_reply->deserialize(pkt_buf);
+            this->echo_reply.deserialize(pkt_buf);
+
+            /* ICMP echo reply payload length is beyond configured policy. */
+            if (this->echo_reply.icmp_data_len > config->filter_config_.icmp_max_payload_len) {
+                evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                                      event_description::EVENT_DESC_ICMP_PAYLOAD_LEN_POLICY,
+                                      event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
+                                      pkt_buf->len_);
+                return netos_status::NETOS_STATUS_MALFORMED_PKT;
+            }
         break;
         case static_cast<uint32_t>(icmp_type::DEST_UNREACHABLE):
-            this->dest_unreachable = std::make_shared<icmp_dest_unreachable>();
-            this->dest_unreachable->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::SOURCE_QUENCH):
-            this->source_quench = std::make_shared<icmp_source_quench>();
-            this->source_quench->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::REDIRECT_MSG):
-            this->redirect = std::make_shared<icmp_redirect>();
-            this->redirect->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::ECHO_REQUEST):
-            this->echo_request = std::make_shared<icmp_echo>();
-            this->echo_request->deserialize(pkt_buf);
+            this->echo_request.deserialize(pkt_buf);
+
+            /* ICMP echo request payload length is beyond configured policy. */
+            if (this->echo_request.icmp_data_len > config->filter_config_.icmp_max_payload_len) {
+                evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                                      event_description::EVENT_DESC_ICMP_PAYLOAD_LEN_POLICY,
+                                      event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
+                                      pkt_buf->len_);
+                return netos_status::NETOS_STATUS_MALFORMED_PKT;
+            }
         break;
         case static_cast<uint32_t>(icmp_type::TIME_EXCEEDED):
-            this->time_exceeded = std::make_shared<icmp_time_exceeded>();
-            this->time_exceeded->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::PARAMETER_PROBLEM):
-            this->param_problem = std::make_shared<icmp_parameter_problem>();
-            this->param_problem->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::TIMESTAMP):
-            this->timestamp = std::make_shared<icmp_timestamp>();
-            this->timestamp->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::TIMESTAMP_REPLY):
-            this->timestamp_reply = std::make_shared<icmp_timestamp>();
-            this->timestamp_reply->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::IDENTIFICATION_REQ):
-            this->identification_req = std::make_shared<icmp_identification>();
-            this->identification_req->deserialize(pkt_buf);
         break;
         case static_cast<uint32_t>(icmp_type::IDENTIFICATION_REPLY):
-            this->identification_reply = std::make_shared<icmp_identification>();
-            this->identification_reply->deserialize(pkt_buf);
         break;
         default:
             return netos_status::NETOS_STATUS_UNSUPPORTED_ICMP_TYPE;
@@ -184,10 +189,10 @@ netos_status icmp_hdr::deserialize(packet_buf *pkt_buf)
     ret = this->verify_checksum(pkt_buf);
     /* Raise if checksum is invalid. */
     if (ret != netos_status::NETOS_STATUS_SUCCESS) {
-        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
-                                            event_description::EVENT_DESEC_INVAL_ICMP_CHECKSUM,
-                                            event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
-                                            pkt_buf->len_);
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_INVAL_ICMP_CHECKSUM,
+                              event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
+                              pkt_buf->len_);
         return ret;
     }
 

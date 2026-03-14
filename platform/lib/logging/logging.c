@@ -19,6 +19,32 @@ typedef enum {
     NETOS_LOG_TYPE_ERROR   = 4,
 } netos_log_type_t;
 
+static const struct log_type_str {
+    netos_log_type_t log_type;
+    const char *log_type_str;
+} log_type_str_list[] = {
+    {
+        NETOS_LOG_TYPE_VERBOSE,
+        "Verbose",
+    },
+    {
+        NETOS_LOG_TYPE_INFO,
+        "Info",
+    },
+    {
+        NETOS_LOG_TYPE_DEBUG,
+        "Debug",
+    },
+    {
+        NETOS_LOG_TYPE_WARNING,
+        "Warning",
+    },
+    {
+        NETOS_LOG_TYPE_ERROR,
+        "Error",
+    }
+};
+
 struct logging_context {
     int server_fd;
     struct sockaddr_in server_addr;
@@ -45,14 +71,14 @@ static void netos_log_msg(netos_log_type_t type, const char *fmt, va_list ap)
     // write to the data portion after the header fields.
     ret = vsnprintf((char *)(log_info->data), data_len, fmt, ap);
     LOG_MSG_PREPARE(log_info, type, tp.tv_sec, tp.tv_nsec, ret);
+    pthread_mutex_unlock(&ctx.lock);
     sendto(ctx.server_fd,
            buf,
            sizeof(struct netos_log_info) + ret,
            0,
            (struct sockaddr *)&ctx.server_addr,
            sizeof(ctx.server_addr));
-    printf("%s", (char *)(log_info->data));
-    pthread_mutex_unlock(&ctx.lock);
+    fprintf(stderr, "<%s>: %s", log_type_str_list[type].log_type_str, (char *)(log_info->data));
 }
 
 void netos_log_verbose(const char *fmt, ...)

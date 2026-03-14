@@ -129,6 +129,9 @@ struct icmp_redirect {
     void print();
 };
 
+/**
+ * @brief - Echo Request and Reply look the same.
+ */
 struct icmp_echo {
     uint16_t identifier;
     uint16_t sequence_number;
@@ -172,17 +175,23 @@ struct icmp_hdr {
     uint32_t end_off;
     uint32_t checksum_off;
 
-    std::shared_ptr<icmp_dest_unreachable> dest_unreachable;
-    std::shared_ptr<icmp_time_exceeded> time_exceeded;
-    std::shared_ptr<icmp_parameter_problem> param_problem;
-    std::shared_ptr<icmp_source_quench> source_quench;
-    std::shared_ptr<icmp_redirect> redirect;
-    std::shared_ptr<icmp_echo> echo_request;
-    std::shared_ptr<icmp_echo> echo_reply;
-    std::shared_ptr<icmp_timestamp> timestamp;
-    std::shared_ptr<icmp_timestamp> timestamp_reply;
-    std::shared_ptr<icmp_identification> identification_req;
-    std::shared_ptr<icmp_identification> identification_reply;
+    inline bool is_echo_req() { return (this->type == static_cast<uint8_t>(icmp_type::ECHO_REQUEST)) &&
+                                       (this->code == static_cast<uint8_t>(icmp_code::ECHO_REQUEST)); }
+
+    inline bool is_echo_reply() { return (this->type == static_cast<uint8_t>(icmp_type::ECHO_REPLY)) &&
+                                         (this->code == static_cast<uint8_t>(icmp_code::ECHO_REPLY)); }
+
+    icmp_dest_unreachable       dest_unreachable;
+    icmp_time_exceeded          time_exceeded;
+    icmp_parameter_problem      param_problem;
+    icmp_source_quench          source_quench;
+    icmp_redirect               redirect;
+    icmp_echo                   echo_request;
+    icmp_echo                   echo_reply;
+    icmp_timestamp              timestamp;
+    icmp_timestamp              timestamp_reply;
+    icmp_identification         identification_req;
+    icmp_identification         identification_reply;
 
     netos_status serialize(packet_buf *pkt_buf);
     netos_status deserialize(packet_buf *pkt_buf);

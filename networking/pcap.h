@@ -11,8 +11,9 @@
 #include <time.h>
 
 #include <error_codes.h>
-#include <packet_buf.h>
+#include <parsed_pkt.h>
 #include <pcap_lib.h>
+#include <fileio_mem.h>
 
 using namespace netos::lib;
 
@@ -29,7 +30,7 @@ namespace netos {
  */
 class pcap_mod {
     public:
-        explicit pcap_mod() { }
+        explicit pcap_mod() : terminate_(false), filesize_bytes_(0) { }
         ~pcap_mod() { }
 
         /**
@@ -44,14 +45,25 @@ class pcap_mod {
         /**
          * Queue the frame to the packet queue.
          */
-        void add_packet(packet_buf *pkt);
+        void add_packet(parsed_pkt *pkt);
+
+        void terminate() {
+            std::unique_lock<std::mutex> l(this->pkt_queue_lock_);
+
+            this->terminate_ = true;
+
+            printf("set terminate to true\n");
+            this->pkt_queue_cond_.notify_one();
+        }
 
     private:
         std::shared_ptr<pcap_writer> pcap_wr_;
-        std::queue<packet_buf *> pkt_queue_;
+        std::queue<parsed_pkt *> pkt_queue_;
         std::mutex pkt_queue_lock_;
         std::condition_variable pkt_queue_cond_;
         std::shared_ptr<std::thread> pcap_thr_;
+        bool terminate_;
+        uint32_t filesize_bytes_;
 
         /**
          * Process the frame.
@@ -59,8 +71,12 @@ class pcap_mod {
          * 2. dequeue each frame and calls pcap_wr_->write_packet.
          */
         void pcap_thread();
+        netos_status make_filename(const std::string &pcap_filename,
+                                   const std::string &ifname,
+                                   std::string &filename_str);
 };
 
 }
 
 #endif
+

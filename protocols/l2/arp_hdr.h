@@ -12,14 +12,16 @@
 
 using namespace netos::lib;
 
-#define ARP_HW_TYPE_ETHERNET 1
-#define ARP_HA_LEN 6
-#define ARP_PROTOCOL_LEN 4
+/* ARP header constants. */
+#define ARP_HW_TYPE_ETHERNET            1
+#define ARP_HA_LEN                      6
+#define ARP_PROTOCOL_LEN                4
 
 #define NETOS_ARP_HWTYPE                1
 #define NETOS_ARP_HW_ADDR_LEN           6
 #define NETOS_ARP_PROTOCOL_ADDR_LEN     4
 
+/* ARP op valid values. */
 #define NETOS_ARP_OP_ARP_REQUEST        1
 #define NETOS_ARP_OP_ARP_REPLY          2
 #define NETOS_ARP_OP_RARP_REQ           3
@@ -32,6 +34,9 @@ using namespace netos::lib;
 
 namespace netos {
 
+/**
+ * @brief - Defines ARP header.
+ */
 struct arp_hdr {
     uint16_t                hw_type;
     uint16_t                protocol_type;
@@ -45,6 +50,38 @@ struct arp_hdr {
 
     explicit arp_hdr() { }
     ~arp_hdr() { }
+
+    void arp_reply_defaults(uint8_t *my_macaddr,
+                            uint8_t *target_mac,
+                            uint32_t my_protocol_addr,
+                            uint32_t target_protocol_addr)
+    {
+        this->hw_type               = ARP_HW_TYPE_ETHERNET;
+        this->protocol_type         = NETOS_ETHERTYPE_IPV4;
+        this->ha_len                = ARP_HA_LEN;
+        this->proto_len             = ARP_PROTOCOL_LEN;
+        memcpy(this->sender_hwaddr, my_macaddr, NETOS_MACADDR_LEN);
+        this->sender_protocol_addr  = my_protocol_addr;
+        memcpy(this->target_hwaddr, target_mac, NETOS_MACADDR_LEN);
+        this->target_protocol_addr  = target_protocol_addr;
+        this->op                    = NETOS_ARP_OP_ARP_REPLY;
+    }
+
+    void arp_request_defaults(uint8_t *my_macaddr,
+                              uint8_t *target_mac,
+                              uint32_t my_protocol_addr,
+                              uint32_t target_protocol_addr)
+    {
+        this->hw_type               = ARP_HW_TYPE_ETHERNET;
+        this->protocol_type         = NETOS_ETHERTYPE_IPV4;
+        this->ha_len                = ARP_HA_LEN;
+        this->proto_len             = ARP_PROTOCOL_LEN;
+        memcpy(this->sender_hwaddr, my_macaddr, NETOS_MACADDR_LEN);
+        this->sender_protocol_addr  = my_protocol_addr;
+        memcpy(this->target_hwaddr, target_mac, NETOS_MACADDR_LEN);
+        this->target_protocol_addr  = target_protocol_addr;
+        this->op                    = NETOS_ARP_OP_ARP_REQUEST;
+    }
 
     netos_status serialize(packet_buf *buf);
     netos_status deserialize(packet_buf *buf);

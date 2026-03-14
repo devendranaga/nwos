@@ -6,32 +6,34 @@
 #include "event_mgr.h"
 #include "error_codes.h"
 
-#define IEEE8021X_VERSION_2010              0x03
-#define IEEE8021X_TYPE_MKA                  0x05
+#define IEEE8021X_VERSION_2010                              0x03
+#define IEEE8021X_TYPE_MKA                                  0x05
 
-#define MKA_POTENTIAL_HDR                   0x0001
-#define MKA_LIVE_PEER_HDR                   0x0002
-#define MKA_DIST_SAK_HDR                    0x0004
-#define MKA_MACSEC_SAK_HDR                  0x0008
-#define MKA_ICV_HDR                         0x0010
+#define MKA_MACSEC_CAPABILITY_WITH_CONF_OFFSET_0_30_50      3
 
-#define MKA_SCI_LEN                         6
-#define MKA_MI_LEN                          12
-#define MKA_CKN_LEN                         32
-#define MKA_ICV_LEN                         16
-#define MKA_BASIC_PARAM_LEN_NO_CKN          (4 + MKA_SCI_LEN + MKA_MI_LEN + 4 + 4)
-#define MKA_AES_WRAP_LEN                    40
-#define MKA_MAX_PEERS                       16
-#define MKA_MACSEC_DIST_PARAM_LEN_DEFAULT   40
+#define MKA_POTENTIAL_HDR                                   0x0001
+#define MKA_LIVE_PEER_HDR                                   0x0002
+#define MKA_DIST_SAK_HDR                                    0x0004
+#define MKA_MACSEC_SAK_HDR                                  0x0008
+#define MKA_ICV_HDR                                         0x0010
+
+#define MKA_SCI_LEN                                         6
+#define MKA_MI_LEN                                          12
+#define MKA_CKN_LEN                                         32
+#define MKA_ICV_LEN                                         16
+#define MKA_BASIC_PARAM_LEN_NO_CKN                          (4 + MKA_SCI_LEN + MKA_MI_LEN + 4 + 4)
+#define MKA_AES_WRAP_LEN                                    40
+#define MKA_MAX_PEERS                                       16
+#define MKA_MACSEC_DIST_PARAM_LEN_DEFAULT                   40
 
 /**
  * @brief - Defines parameter set types in MKA 2020.
  */
-#define MKA_LIVE_PEER_PARAM_TYPE            1
-#define MKA_POTENTIAL_PEER_PARAM_TYPE       2
-#define MKA_MACSEC_SAK_USE_PARAM_TYPE       3
-#define MKA_DIST_SAK_PARAM_TYPE             4
-#define MKA_ICV_PARAM_TYPE                  255
+#define MKA_LIVE_PEER_PARAM_TYPE                            1
+#define MKA_POTENTIAL_PEER_PARAM_TYPE                       2
+#define MKA_MACSEC_SAK_USE_PARAM_TYPE                       3
+#define MKA_DIST_SAK_PARAM_TYPE                             4
+#define MKA_ICV_PARAM_TYPE                                  255
 
 namespace netos {
 

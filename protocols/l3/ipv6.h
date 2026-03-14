@@ -12,6 +12,27 @@ namespace netos {
 
 #define NETOS_IPV6_VERSION          6
 
+#define NETOS_IPV6_NH_FRAG_HDR      44
+#define NETOS_IPV6_NH_ICMPV6        58
+
+#define NETOS_IPV6_FRAG_HDR_LEN     8
+
+struct ipv6_frag_hdr {
+    uint8_t     next_hdr;           /* 1 byte. */
+    uint8_t     reserved;           /* 1 byte. */
+    uint16_t    frag_off;           /* 13 bits. */
+    uint8_t     reserved_2;         /* 2 bits. */
+    uint8_t     more_fragments;     /* 1 bit. */
+    uint32_t    identification;     /* 4 bytes. */
+
+    explicit ipv6_frag_hdr() { }
+    ~ipv6_frag_hdr() { }
+
+    netos_status serialize(packet_buf *buf);
+    netos_status deserialize(packet_buf *buf, event_mgr *evt_mgr, uint8_t *nh);
+    void print();
+};
+
 struct ipv6_hdr {
     uint32_t            version:4;
     uint32_t            traffic_class:8;
@@ -24,6 +45,8 @@ struct ipv6_hdr {
 
     uint16_t            start_off;
     uint16_t            end_off;
+
+    ipv6_frag_hdr       *frag_hdr;
 
     explicit ipv6_hdr() : version(0),
                           traffic_class(0),

@@ -4,11 +4,13 @@
  * @author - Devendra Naga.
  * @copyright - 2023-present All rights reserved.
  */
-#ifndef __FW_RAW_SOCKET_H__
-#define __FW_RAW_SOCKET_H__
+#ifndef NETOS_RAW_SOCKET_H
+#define NETOS_RAW_SOCKET_H
 
 #include <cstdint>
 #include <string>
+
+#include "netos_macros.h"
 
 namespace netos {
 
@@ -49,7 +51,6 @@ class raw_socket {
          * @return -1 on failure.
          */
         int send_msg(const uint8_t *dest, uint8_t *data, size_t data_len) noexcept;
-        int recv_msg(uint8_t *mac, uint16_t &ethertype, uint8_t *data, size_t data_len) noexcept;
 
         /**
          * @brief - Receive message via the raw socket.
@@ -77,7 +78,7 @@ class raw_socket {
         int fd_;
         std::string dev_;
         int ifindex_;
-        uint8_t devmac_[6];
+        uint8_t devmac_[NETOS_MACADDR_LEN];
 };
 
 }

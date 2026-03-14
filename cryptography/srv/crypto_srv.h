@@ -15,6 +15,7 @@ class cryptography_srv {
         void run(int argc, char **argv);
     private:
         void receive_callback(int fd);
+        void termination_handler();
 
         std::string config_ipaddr_;
         uint32_t config_port_;

@@ -1,3 +1,4 @@
+#include "signal_intf.h"
 #include "netos_macros.h"
 #include "network_egress_intf.h"
 #include "parsed_pkt.h"
@@ -8,6 +9,8 @@ namespace netos {
 void network_egress_interface_ctx::egress_tx_thread()
 {
     uint8_t dst[NETOS_MACADDR_LEN] = {0};
+
+    netos_block_term_signals();
 
     while (1) {
         std::unique_lock<std::mutex> l(this->egress_queue_lock_);

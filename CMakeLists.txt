@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(netos)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
 
-find_package(jsoncpp REQUIRED)
+project(netos)
 
 set(PLATFORM_SRC
 	platform/lib/linux/raw_socket.cc
@@ -16,7 +17,8 @@ set(PLATFORM_SRC
 	platform/lib/linux/pcap_lib.cc
 	platform/lib/gcd/gcd.cc
 	platform/lib/linux/socket_helper.c
-	platform/lib/linux/perf_linux.cc)
+	platform/lib/linux/perf_linux.cc
+	platform/lib/linux/fileio_mem.c)
 
 set(LOGGER_SRC
 	logger/src/logger.cc)
@@ -37,6 +39,7 @@ set(IDS_COMMON_SRC
 	protocols/l4/icmp.cc
 	protocols/l4/icmpv6.cc
 	protocols/app/dlt_header.cc
+	protocols/checksum/checksum.cc
 	event/event_mgr.cc
 	pkt/parsed_pkt_pool.cc)
 
@@ -110,6 +113,7 @@ set(INCL_DIR
 	protocols/l3/
 	protocols/l4/
 	protocols/app/
+	protocols/checksum/
 	event/
 	networking/
 	statistics/
@@ -128,17 +132,18 @@ set(INCL_DIR
 include_directories(${INCL_DIR} ${JSONCPP_INCLUDE_DIRS})
 
 ## command line options
-#  -D NETOS_DEBUG_PKT_DECODE
-set(CMAKE_DEBUG_OPT "-fsanitize=address -DNETOS_DEBUG_PKT_DECODE")
+#  -D NETOS_DEBUG_PKT_DECODE - packet decode debugging
+#  -D NETOS_PERF_TIME - perf counters for base level statistics reporting
+set(CMAKE_DEBUG_OPT "-fsanitize=address -DNETOS_DEBUG_PKT_DECODE -DNETOS_PERF_TIME")
 
 if(CMAKE_DEBUG_BIN)
 set(NETOS_BIN_OPT "-g -ggdb")
 else()
-set(NETOS_BIN_OPT "-O2 -flto -fPIC -Wl,-z,noexecstack")
+set(NETOS_BIN_OPT "-O2 -flto -fPIC -Wl,-z,noexecstack -Wno-unused-command-line-argument")
 endif()
 
-set(CMAKE_C_FLAGS "-fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
-set(CMAKE_CXX_FLAGS "-fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_C_FLAGS "-static -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_CXX_FLAGS "-static -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
 
 ## Use clang compiler
 
@@ -154,36 +159,47 @@ endif()
 
 add_library(netos_platform ${PLATFORM_SRC})
 
+# build network daemon
 add_executable(netos_netwd ${NETWORKING_SRC})
-target_link_libraries(netos_netwd netos_platform pthread JsonCpp::JsonCpp netos_cryptography ssl crypto wolfssl)
+target_link_libraries(netos_netwd netos_platform pthread ${JSONCPP_LIBRARIES} netos_cryptography ssl crypto wolfssl)
 
+# build logger daemon
 add_executable(netos_logger ${LOGGER_SRC})
-target_link_libraries(netos_logger netos_platform pthread JsonCpp::JsonCpp)
+target_link_libraries(netos_logger netos_platform pthread ${JSONCPP_LIBRARIES})
 
+# build packet generator
 add_executable(netos_pktgen ${IDS_PKT_GEN_SRC})
-target_link_libraries(netos_pktgen netos_platform pthread JsonCpp::JsonCpp)
+target_link_libraries(netos_pktgen netos_platform pthread ${JSONCPP_LIBRARIES})
 
+# build crypto library
 add_library(netos_cryptography ${CRYPTOGRAPHY_SRC})
 target_link_libraries(netos_cryptography netos_platform pthread)
 
+# build crypto service
 add_executable(netos_crypto_srv ${CRYPTO_SRV_SRC})
 target_link_libraries(netos_crypto_srv netos_platform pthread netos_cryptography ssl crypto wolfssl)
 
+# build crypto cli
 add_executable(netos_crypto_cli ${CRYPTO_CLI_SRC})
 target_link_libraries(netos_crypto_cli netos_platform pthread netos_cryptography ssl crypto wolfssl)
 
+# build cbor library
 add_library(netos_cbor ${ENCODING_CBOR_SRC})
 target_link_libraries(netos_cbor netos_platform pthread)
 
+# build test tool for cbor
 add_executable(netos_test_cbor ${TEST_CBOR_SRC})
 target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)
 
+# build test tool for queueing
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue netos_platform pthread)
 
+# build test tool for packet replay
 add_executable(netos_replay ${TOOL_REPLAY_SRC})
 target_link_libraries(netos_replay netos_platform pthread)
 
+# build test tool for tcpdump
 add_executable(netos_tcpdump ${TOOL_TCPDUMP_SRC})
 target_link_libraries(netos_tcpdump netos_platform pthread)
 

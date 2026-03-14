@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/timerfd.h>
+#include <sys/signalfd.h>
 
+#include "signal_intf.h"
 #include "gcd.h"
 #include "error_codes.h"
 
@@ -84,6 +86,10 @@ void gcd_worker_thread::initialize(uint32_t thread_id)
  */
 void gcd_worker_thread::worker_thread()
 {
+    uint32_t signals[] = {SIGINT, SIGTERM};
+
+    netos_block_signals(signals, 2);
+
     while (1) {
         std::unique_lock<std::mutex> lock(this->lock_);
         this->cond_.wait(lock);
@@ -91,7 +97,6 @@ void gcd_worker_thread::worker_thread()
         while (this->task_queue_.empty() == false) {
             task_callback cb;
 
-            printf("deque and execute from %d\n", this->thread_id_);
             cb = this->task_queue_.front();
             this->task_queue_.pop();
             cb();
@@ -151,6 +156,49 @@ void gcd::register_socket(int fd, socket_callback &cb)
     FD_SET(fd, &this->allfd_);
 }
 
+void gcd::register_term_signal(term_callback &cb)
+{
+    sigset_t sigmask;
+
+    this->term_cb_ = cb;
+
+    sigemptyset(&sigmask);
+    sigaddset(&sigmask, SIGINT);
+    sigaddset(&sigmask, SIGTERM);
+
+    sigprocmask(SIG_BLOCK, &sigmask, NULL);
+
+    this->sig_fd_ = signalfd(-1, &sigmask, 0);
+    if (this->sig_fd_ < 0) {
+        return;
+    }
+
+    if (this->sig_fd_ > this->max_fd_) {
+        this->max_fd_ = this->sig_fd_;
+    }
+
+    FD_SET(this->sig_fd_, &this->allfd_);
+}
+
+gcd::~gcd()
+{
+    for (auto it : this->timers_) {
+        it.deinitialize();
+    }
+}
+
+void gcd_timer::deinitialize()
+{
+    if (this->timer_fd_ > 0) {
+        close(this->timer_fd_);
+    }
+}
+
+void gcd::terminate()
+{
+    this->terminate_ = true;
+}
+
 void gcd::initialize_thr_pool(uint32_t n_threads)
 {
     this->thr_pool_.initialize(n_threads);
@@ -165,7 +213,9 @@ void gcd::run()
 {
     fd_set read_set;
 
-    while (1) {
+    this->terminate_ = false;
+
+    while (this->terminate_ == false) {
         int ret;
 
         read_set = this->allfd_;
@@ -173,6 +223,21 @@ void gcd::run()
         ret = select(this->max_fd_ + 1, &read_set, NULL, NULL, NULL);
         if (ret < 0) {
             return;
+        }
+
+        /**
+         * Handle the termination signals.
+         */
+        if (FD_ISSET(this->sig_fd_, &read_set)) {
+            struct signalfd_siginfo siginfo;
+            ret = read(this->sig_fd_, &siginfo, sizeof(siginfo));
+            if (ret < 0) {
+                return;
+            }
+
+            if ((siginfo.ssi_signo == SIGINT) || (siginfo.ssi_signo == SIGTERM)) {
+                this->term_cb_();
+            }
         }
 
         for (auto it : this->timers_) {
@@ -184,14 +249,18 @@ void gcd::run()
                     return;
                 }
                 auto cb = it.get_cb();
-                cb();
+                if (cb) {
+                    cb();
+                }
             }
         }
 
         for (auto it : this->sockets_) {
             if (FD_ISSET(it.get_fd(), &read_set)) {
                 auto cb = it.get_cb();
-                cb(it.get_fd());
+                if (cb) {
+                    cb(it.get_fd());
+                }
             }
         }
     }

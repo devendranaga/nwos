@@ -12,8 +12,8 @@
 static void usage(const char *progname)
 {
     fprintf(stderr, "<%s> f:s \n"
-                    "-f <filename> provide the pcap filename\n"
-                    "-s <ifname> interface to replay the pcap files\n", progname);
+                    "\t -f <filename> provide the pcap filename\n"
+                    "\t -s <ifname> interface to replay the pcap files\n", progname);
 }
 
 int main(int argc, char **argv)

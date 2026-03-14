@@ -89,11 +89,14 @@ netos_status tcp_hdr::serialize(packet_buf *pkt_buf)
 
 netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
 {
-    if (pkt_buf->len_ < NETOS_TCP_HLEN_MIN) {
-         event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
-                                            event_description::EVENT_DESC_INVAL_TCP_HDR_LEN,
-                                            event_protocol_level::EVENT_PROTOCOL_L4_TCP,
-                                            pkt_buf->len_);
+    event_mgr *evt_mgr = event_mgr::instance();
+
+    // TCP header length is multiple of word length.
+    if ((pkt_buf->offset_ + pkt_buf->len_) > (NETOS_TCP_HLEN_MIN * 4)) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_INVAL_TCP_HDR_LEN,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
@@ -101,6 +104,16 @@ netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
 
     pkt_buf->deserialize_2_bytes(&this->src_port);
     pkt_buf->deserialize_2_bytes(&this->dst_port);
+
+    // both source and destination ports are same.
+    if (this->src_port == this->dst_port) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_SRC_DST_PORTS_SAME,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_4_bytes(&this->seq_num);
     pkt_buf->deserialize_4_bytes(&this->ack_num);
 
@@ -116,6 +129,52 @@ netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
     this->flags.rst = (pkt_buf->buf_[pkt_buf->offset_] & 0x04) >> 2;
     this->flags.syn = (pkt_buf->buf_[pkt_buf->offset_] & 0x02) >> 1;
     this->flags.fin = (pkt_buf->buf_[pkt_buf->offset_] & 0x01) >> 0;
+
+    // TCP all flags are set.
+    if (this->flags.all_flags_set()) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_ALL_FLAGS_SET,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    // TCP no flags are set.
+    if (this->flags.no_flags_set()) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_NO_FLAGS_SET,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    // TCP SYN + FIN are set.
+    if (this->flags.syn_fin_set()) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_SYN_FIN_SET,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    // TCP FIN + PSH + ACK are set.
+    if (this->flags.fin_psh_ack_set()) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_FIN_PSH_ACK_SET,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
+    // TCP SYN + RST are set.
+    if (this->flags.syn_rst_set()) {
+        evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
+                              event_description::EVENT_DESC_TCP_SYN_RST_SET,
+                              event_protocol_level::EVENT_PROTOCOL_L4_TCP,
+                              pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->offset_ ++;
 
     pkt_buf->deserialize_2_bytes(&this->win_size);
@@ -130,6 +189,7 @@ netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+#if defined(NETOS_DEBUG_PKT_DECODE)
 void tcp_flags::print()
 {
     netos_log_info("\t flags:\n");
@@ -141,7 +201,6 @@ void tcp_flags::print()
     netos_log_info("\t\t fin: %d\n", this->fin);
 }
 
-#if defined(NETOS_DEBUG_PKT_DECODE)
 void tcp_hdr::print()
 {
     netos_log_info("tcp_hdr:\n");

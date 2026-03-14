@@ -19,7 +19,11 @@ namespace netos {
 typedef std::function<void()>       timer_callback;
 typedef std::function<void(int)>    socket_callback;
 typedef std::function<void()>       task_callback;
+typedef std::function<void()>       term_callback;
 
+/**
+ * @brief - Implements worker thread class.
+ */
 class gcd_worker_thread {
     public:
         explicit gcd_worker_thread() = default;
@@ -58,6 +62,7 @@ class gcd_timer {
         ~gcd_timer() = default;
 
         netos_status initialize(uint32_t sec, uint64_t nsec, timer_callback &cb);
+        void deinitialize();
         int get_fd() { return this->timer_fd_; }
         timer_callback get_cb() { return this->cb_; }
 
@@ -89,7 +94,15 @@ class gcd {
             static gcd instance;
             return &instance;
         }
-        ~gcd() { }
+        ~gcd();
+
+        inline void initialize()
+        {
+            FD_ZERO(&this->allfd_);
+            this->max_fd_ = -1;
+            this->terminate_ = false;
+        }
+
         /**
          * @brief - Initialize the thread pool given the number of threads.
          *
@@ -114,6 +127,8 @@ class gcd {
          */
         void register_socket(int fd, socket_callback &cb);
 
+        void register_term_signal(term_callback &cb);
+
         /**
          * @brief - Queue a work.
          *
@@ -126,6 +141,8 @@ class gcd {
          */
         void run();
 
+        void terminate();
+
     private:
         explicit gcd() { }
         gcd(const gcd &other) = delete;
@@ -133,11 +150,15 @@ class gcd {
 
         std::vector<gcd_timer> timers_;
         std::vector<gcd_socket> sockets_;
+        term_callback term_cb_;
         gcd_thread_pool thr_pool_;
+        int sig_fd_;
         int max_fd_;
         fd_set allfd_;
+        bool terminate_;
 };
 
 }
 
 #endif
+

@@ -36,6 +36,35 @@ struct tcp_flags {
     ~tcp_flags()
     {
     }
+
+    inline bool all_flags_set() {
+        return this->fin &&
+               this->syn &&
+               this->rst &&
+               this->psh &&
+               this->ack &&
+               this->urg &&
+               this->ece &&
+               this->cwr &&
+               this->ecn;
+    }
+
+    inline bool no_flags_set() {
+        return (this->fin == 0) &&
+               (this->syn == 0) &&
+               (this->rst == 0) &&
+               (this->psh == 0) &&
+               (this->ack == 0) &&
+               (this->urg == 0) &&
+               (this->ece == 0) &&
+               (this->cwr == 0) &&
+               (this->ecn == 0);
+    }
+
+    inline bool syn_fin_set() { return this->syn && this->fin; }
+    inline bool fin_psh_ack_set() { return this->fin && this->psh && this->ack; }
+    inline bool syn_rst_set() { return this->syn && this->rst; }
+
     void print();
 } __attribute__ ((__packed__));
 

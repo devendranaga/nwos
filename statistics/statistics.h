@@ -4,10 +4,13 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <atomic>
 
 #include "stats_interface.h"
 #include "arp_statistics.h"
 #include "performance_statistics.h"
+#include "ingress_statistics.h"
+#include "egress_statistics.h"
 
 namespace netos {
 
@@ -15,16 +18,18 @@ namespace netos {
  * @brief - Interface statistics
  */
 struct stats_intf {
-    std::string         ifname;
-    stats_intf_rx_t     rx;
-    stats_intf_tx_t     tx;
-    arp_statistics_t    arp;
-    perf_statistics_t   perf;
-    std::mutex          lock;
-    struct stats_intf   *next;
+    std::string             ifname;
+    stats_intf_rx_t         rx;
+    stats_intf_tx_t         tx;
+    arp_statistics_t        arp;
+    perf_statistics_t       perf;
+    egress_statistics_t     egress;
+    struct stats_intf       *next;
 
-    stats_intf() {
-        this->ifname = "";
+    stats_intf() { }
+    void initialize(const std::string &ifname)
+    {
+        this->ifname = ifname;
         this->rx.rx_count = 0;
         this->rx.n_eth_rx = 0;
         this->rx.n_vlan_rx = 0;
@@ -55,6 +60,8 @@ struct stats_intf {
 
         this->perf.rx.rx_queue_time_ns = 0;
         this->perf.rx.parse_time_ns = 0;
+
+        this->egress.egress_drop_buffer_full = 0;
     }
     ~stats_intf() { }
 
@@ -70,6 +77,7 @@ struct stats_intf {
     void inc_tcp_rx_count();
     void inc_udp_rx_count();
     void inc_icmp_rx_count();
+    void inc_icmpv6_rx_count();
     void set_rx_queue_time_ns(uint64_t time_ns);
     void set_parse_time_ns(uint64_t time_ns);
 
@@ -84,25 +92,30 @@ struct stats_intf {
     void inc_tcp_tx_count();
     void inc_udp_tx_count();
     void inc_icmp_tx_count();
+    void inc_icmpv6_tx_count();
     void inc_n_deny_tx();
+
+    void inc_egress_drop_buffer_full();
 
     void print();
 };
 
 class statistics {
     public:
-        static statistics *instance() {
+        [[nodiscard]] static statistics *instance() {
             static statistics instance;
             return &instance;
         }
-        stats_intf *initialize(const std::string &ifname);
-        struct stats_intf *get_stats_intf(const std::string &ifname);
+        [[nodiscard]] stats_intf *initialize(const std::string &ifname);
+        [[nodiscard]] stats_intf *get_stats_intf(const std::string &ifname);
         ~statistics() { }
 
         void print();
 
     private:
         stats_intf *stats_list_;
+
+        /* Lock for get_stats_intf and possible others in future. */
         std::mutex lock_;
         explicit statistics() { }
         explicit statistics(const statistics &) = delete;

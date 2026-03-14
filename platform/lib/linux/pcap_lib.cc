@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/time.h>
+#include <fileio_mem.h>
 #include <pcap_lib.h>
 #include <logging.h>
 
@@ -19,24 +20,30 @@ namespace netos {
 
 namespace lib {
 
-pcap_writer::pcap_writer(const std::string &filename)
+int pcap_writer::create_file(const std::string &filename, size_t filesize)
 {
     pcap_hdr_t glob_hdr;
 
     glob_hdr = format_default_glob_header();
 
-    fp = fopen(filename.c_str(), "w");
-    if (!fp) {
-        throw std::system_error(errno, std::generic_category());
+    this->file_offset_ = 0;
+
+    this->map_info_ = netos_map_file_write(filename.c_str(), filesize);
+    if (!this->map_info_) {
+        return -1;
     }
 
-    fwrite(&glob_hdr, sizeof(glob_hdr), 1, fp);
+    memcpy(this->map_info_->mapped_mem, &glob_hdr, sizeof(glob_hdr));
+    this->file_offset_ += sizeof(glob_hdr);
+
+    return 0;
 }
 
-pcap_writer::~pcap_writer()
+void pcap_writer::close_file()
 {
-    if (fp != nullptr) {
-        fclose(fp);
+    if (this->map_info_) {
+        netos_map_file_sync(this->map_info_, this->file_offset_);
+        netos_unmap_file(this->map_info_);
     }
 }
 
@@ -60,15 +67,15 @@ int pcap_writer::write_packet(const pcaprec_hdr_t *rec, const uint8_t *buf)
 {
     int ret;
 
-    ret = fwrite(rec, sizeof(*rec), 1, fp);
-    if (ret != 1) {
+    if ((this->file_offset_ + sizeof(*rec) + rec->incl_len) > this->map_info_->size) {
         return -1;
     }
 
-    ret = fwrite(buf, rec->incl_len, 1, fp);
-    if (ret != 1) {
-        return -1;
-    }
+    memcpy((uint8_t *)(this->map_info_->mapped_mem) + this->file_offset_, rec, sizeof(*rec));
+    this->file_offset_ += sizeof(*rec);
+
+    memcpy((uint8_t *)(this->map_info_->mapped_mem) + this->file_offset_, buf, rec->incl_len);
+    this->file_offset_ += rec->incl_len;
 
     return 0;
 }

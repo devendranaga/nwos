@@ -81,6 +81,8 @@ class arp_context {
         void arp_process_packet(parsed_pkt *rx_frame);
         void arp_frame_prepare(parsed_pkt *rx_frame, uint8_t *mac, uint32_t ipaddr);
         void arp_query_timer_handler();
+        void arp_cache_mgmt_timer_handler();
+        void arp_statistics_inc_buffer_full(const std::string &ifname);
 };
 
 }

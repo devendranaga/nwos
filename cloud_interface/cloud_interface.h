@@ -5,10 +5,6 @@
 
 #include "stats_interface.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define CLOUD_INTF_VERSION 1
 
 enum cloud_interface_type {
@@ -46,9 +42,5 @@ inline uint32_t cloud_interface_msg_get_stats_tx_len(cloud_interface_msg_t *msg)
     return sizeof(cloud_interface_msg_t) +
            stats_interface_get_tx_msg_len();
 }
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif

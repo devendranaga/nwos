@@ -17,6 +17,8 @@ netos_status parsed_pkt_pool::initialize(uint32_t size)
             return netos_status::NETOS_STATUS_ALLOC_FAILURE;
         }
 
+        pkt->ref_count = 0;
+
         pkt->pkt_buf = (packet_buf *)calloc(1, sizeof(packet_buf));
         if (!pkt->pkt_buf) {
             free(pkt);
@@ -54,8 +56,10 @@ parsed_pkt *parsed_pkt_pool::get_pkt()
     pkt = this->head_;
     this->head_ = this->head_->next;
 
+    // Initialize packet state before incrementing ref_count
     pkt->pkt_buf->offset_ = 0;
     pkt->pkt_buf->len_ = 0;
+    pkt->ref_count.store(1, std::memory_order_relaxed);  // Set to 1 instead of incrementing from unknown value
 
     return pkt;
 }
@@ -66,13 +70,19 @@ void parsed_pkt_pool::put_pkt(parsed_pkt *pkt)
         return;
     }
 
-    pkt->pkt_buf->offset_ = 0;
-    pkt->pkt_buf->len_ = 0;
+    // Use fetch_sub to get the previous value atomically
+    uint32_t prev_count = pkt->ref_count.fetch_sub(1, std::memory_order_acq_rel);
 
-    std::unique_lock<std::mutex> l(this->lock_);
+    // Only return to pool when ref_count reaches 0 (prev_count was 1)
+    if (prev_count == 1) {
+        std::unique_lock<std::mutex> l(this->lock_);
+        pkt->pkt_buf->offset_ = 0;
+        pkt->pkt_buf->len_ = 0;
+        pkt->ref_count.store(0, std::memory_order_relaxed);  // Reset to 0
 
-    pkt->next = this->head_;
-    this->head_ = pkt;
+        pkt->next = this->head_;
+        this->head_ = pkt;
+    }
 }
 
 }

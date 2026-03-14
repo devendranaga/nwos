@@ -6,6 +6,7 @@
 #ifndef NETOS_PCAP_LIB_H
 #define NETOS_PCAP_LIB_H
 
+#include "fileio_mem.h"
 
 namespace netos {
 
@@ -34,13 +35,17 @@ typedef struct pcaprec_hdr_s {
 // writer interface
 class pcap_writer {
     public:
-        explicit pcap_writer(const std::string &filename);
-        ~pcap_writer();
+        explicit pcap_writer() { }
+        ~pcap_writer() { }
+
         pcaprec_hdr_t format_pcap_pkthdr(size_t pktsize);
+        int create_file(const std::string &filename, size_t filesize);
         int write_packet(const pcaprec_hdr_t *rec, const uint8_t *buf);
+        void close_file();
 
     private:
-        FILE *fp;
+        fileio_map_info *map_info_;
+        uint32_t file_offset_;
         pcap_hdr_t format_default_glob_header();
 };
 

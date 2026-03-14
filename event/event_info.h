@@ -28,6 +28,7 @@ enum class event_protocol_level : uint32_t {
     EVENT_PROTOCOL_L4_TCP       = 0x0000000A,
     EVENT_PROTOCOL_L4_UDP       = 0x0000000B,
     EVENT_PROTOCOL_L4_ICMP      = 0x0000000C,
+    EVENT_PROTOCOL_L4_ICMPV6    = 0x0000000D,
 };
 
 /**
@@ -129,8 +130,20 @@ enum class event_description : uint32_t {
     /* IPV4 short header length. */
     EVENT_DESC_IPV4_SHORT_HDR_LEN                       = 0x00002207,
 
+    /* IPv4 total length is 0. */
+    EVENT_DESC_IPV4_TOTAL_LEN_ZERO                      = 0x00002208,
+
     /* Invalid IPV6 version. */
     EVENT_DESC_INVAL_IPV6_VERSION                       = 0x00002302,
+
+    /* Invalid IPv6 payload. */
+    EVENT_DESC_IPV6_PAYLOAD_ZERO                        = 0x00002303,
+
+    /* Zero IPv6 hoplimit. */
+    EVENT_DESC_IPV6_HOP_LIMIT_ZERO                      = 0x00002304,
+
+    /* Short fragmentation header length. */
+    EVENT_DESC_IPV6_SHORT_FRAG_HDR                      = 0x00002305,
 
     /* Invalid TCP header length. */
     EVENT_DESC_INVAL_TCP_HDR_LEN                        = 0x00002400,
@@ -138,11 +151,50 @@ enum class event_description : uint32_t {
     /* Invalid TCP checksum. */
     EVENT_DESC_INVAL_TCP_CHECKSUM                       = 0x00002401,
 
+    /* TCP src and dst ports are same. */
+    EVENT_DESC_TCP_SRC_DST_PORTS_SAME                   = 0x00002402,
+
+    /* TCP all flags are set. */
+    EVENT_DESC_TCP_ALL_FLAGS_SET                        = 0x00002403,
+
+    /* TCP no flags are set. */
+    EVENT_DESC_TCP_NO_FLAGS_SET                         = 0x00002404,
+
+    /* TCP SYN + FIN are set. */
+    EVENT_DESC_TCP_SYN_FIN_SET                          = 0x00002405,
+
+    /* TCP FIN + PSH are set. */
+    EVENT_DESC_TCP_FIN_PSH_ACK_SET                      = 0x00002406,
+
+    /* TCP SYN + RST are set. */
+    EVENT_DESC_TCP_SYN_RST_SET                          = 0x00002407,
+
     /* Invalid UDP header length. */
     EVENT_DESC_INVAL_UDP_HDR_LEN                        = 0x00002500,
 
     /* Invalid ICMP checksum. */
-    EVENT_DESEC_INVAL_ICMP_CHECKSUM                     = 0x00002600,
+    EVENT_DESC_INVAL_ICMP_CHECKSUM                      = 0x00002600,
+
+    /* ICMP payload policy triggered. */
+    EVENT_DESC_ICMP_PAYLOAD_LEN_POLICY                  = 0x00002601,
+
+    /* ICMP type is unknown. */
+    EVENT_DESC_ICMP_UNKNOWN_TYPE                        = 0x00002602,
+
+    /* ICMPv6 short header length. */
+    EVENT_DESC_ICMPV6_SHORT_HDR_LEN                     = 0x00002700,
+
+    /* ICMPv6 unknown type. */
+    EVENT_DESC_ICMPV6_UNKNOWN_TYPE                      = 0x00002701,
+
+    /* ICMPv6 echo request short header length. */
+    EVENT_DESC_ICMPV6_ECHO_REQ_SHORT_HDR_LEN            = 0x00002702,
+
+    /* ICMPv6 echo reply short header length. */
+    EVENT_DESC_ICMPV6_ECHO_REPLY_SHORT_HDR_LEN          = 0x00002703,
+
+    /* ICMPv6 invalid checksum. */
+    EVENT_DESC_INVAL_ICMPV6_CHECKSUM                    = 0x00002704,
 };
 
 /**
