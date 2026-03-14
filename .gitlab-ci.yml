@@ -28,6 +28,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compile complete."
     - apt update
     - apt install -y libssl-dev libpcap-dev libjsoncpp-dev libwolfssl-dev cmake clang
+    - cp jsoncpp_static_lib/libjsoncpp.a /usr/local/lib/
     - mkdir build
     - cd build
     - cmake .. -DCLANG_COMPILER=ON
