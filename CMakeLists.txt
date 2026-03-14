@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.9)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
-
 project(netos)
+
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(JSONCPP jsoncpp)
+find_package(jsoncpp REQUIRED)
 
 set(PLATFORM_SRC
 	platform/lib/linux/raw_socket.cc
@@ -158,6 +159,8 @@ set(CMAKE_CXX_COMPILER "g++")
 endif()
 
 add_library(netos_platform ${PLATFORM_SRC})
+
+set(JSONCPP_LIBRARIES JsonCpp::JsonCpp)
 
 # build network daemon
 add_executable(netos_netwd ${NETWORKING_SRC})
