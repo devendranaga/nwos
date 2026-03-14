@@ -143,8 +143,14 @@ else()
 set(NETOS_BIN_OPT "-O2 -flto -fPIC -Wl,-z,noexecstack -Wno-unused-command-line-argument")
 endif()
 
-set(CMAKE_C_FLAGS "-static -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
-set(CMAKE_CXX_FLAGS "-static -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+if(STATIC_BUILD)
+set(BUILD_FLAGS "-static")
+else()
+set(BUILD_FLAGS "")
+endif()
+
+set(CMAKE_C_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_CXX_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
 
 ## Use clang compiler
 
