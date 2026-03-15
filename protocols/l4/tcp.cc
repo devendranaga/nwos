@@ -92,7 +92,7 @@ netos_status tcp_hdr::deserialize(packet_buf *pkt_buf)
     event_mgr *evt_mgr = event_mgr::instance();
 
     // TCP header length is multiple of word length.
-    if ((pkt_buf->offset_ + pkt_buf->len_) > (NETOS_TCP_HLEN_MIN * 4)) {
+    if ((pkt_buf->offset_ + pkt_buf->len_) < (NETOS_TCP_HLEN_MIN * 4)) {
         evt_mgr->insert_event(IDS_EVENT_TYPE_DENY,
                               event_description::EVENT_DESC_INVAL_TCP_HDR_LEN,
                               event_protocol_level::EVENT_PROTOCOL_L4_TCP,

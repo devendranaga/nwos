@@ -87,6 +87,8 @@ netos_status ipv4_hdr::deserialize(packet_buf *pkt_buf)
         return netos_status::NETOS_STATUS_MALFORMED_PKT;
     }
 
+    this->start_off = pkt_buf->offset_;
+
     this->version = (pkt_buf->buf_[pkt_buf->offset_] & 0xF0) >> 4;
 
     /* Invalid IPV4 version. */
@@ -175,6 +177,8 @@ netos_status ipv4_hdr::deserialize(packet_buf *pkt_buf)
     pkt_buf->deserialize_2_bytes(&this->hdr_chksum);
     pkt_buf->deserialize_4_bytes(&this->src_addr);
     pkt_buf->deserialize_4_bytes(&this->dst_addr);
+
+    this->end_off = pkt_buf->offset_;
 
     /* Checksum is invalid. Malformed. */
     if ((conf->filter_config_.bypass_ipv4_checksum_verification == false) &&

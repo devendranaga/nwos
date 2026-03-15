@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <iostream>
 
 #include "network_config.h"
@@ -189,6 +190,32 @@ netos_status parsed_pkt::parse_l3_frame()
     return ret;
 }
 
+int parsed_pkt::checksum_tcp4()
+{
+    checksum_pseudo_hdr pseudo_hdr;
+    uint32_t src_addr_endian = htonl(this->ipv4_h.src_addr);
+    uint32_t dst_addr_endian = htonl(this->ipv4_h.dst_addr);
+
+    pseudo_hdr.fill_tcp(this->tcp_h.start_off,
+                        (uint8_t *)&src_addr_endian,
+                        (uint8_t *)&dst_addr_endian);
+
+    return netos::checksum(this->pkt_buf, &pseudo_hdr);
+}
+
+int parsed_pkt::checksum_udp4()
+{
+    checksum_pseudo_hdr pseudo_hdr;
+    uint32_t src_addr_endian = htonl(this->ipv4_h.src_addr);
+    uint32_t dst_addr_endian = htonl(this->ipv4_h.dst_addr);
+
+    pseudo_hdr.fill_udp(this->udp_h.start_off,
+                        (uint8_t *)&src_addr_endian,
+                        (uint8_t *)&dst_addr_endian);
+
+    return netos::checksum(this->pkt_buf, &pseudo_hdr);
+}
+
 /**
  * Parse the following L4 headers.
  *
@@ -201,24 +228,40 @@ netos_status parsed_pkt::parse_l4_frame()
     netos_status ret = netos_status::NETOS_STATUS_SUCCESS;
 
     switch (this->get_protocol()) {
-        case NETOS_IP_PROTOCOL_TCP:
+        case NETOS_IP_PROTOCOL_TCP: {
+            int verify_checksum = -1;
+
             stats->inc_tcp_rx_count();
 
             ret = this->tcp_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_tcp = 1;
-            }
 
-            this->tcp_h.checksum(this->pkt_buf, (uint8_t *)&(this->ipv4_h.src_addr), (uint8_t *)&(this->ipv4_h.dst_addr));
-        break;
-        case NETOS_IP_PROTOCOL_UDP:
+                if (this->pkt_types_present.has_ipv4) {
+                    verify_checksum = this->checksum_tcp4();
+                }
+                if (verify_checksum != 0) {
+                    return netos_status::NETOS_STATUS_MALFORMED_PKT;
+                }
+            }
+        } break;
+        case NETOS_IP_PROTOCOL_UDP: {
+            int verify_checksum = -1;
+
             stats->inc_udp_rx_count();
 
             ret = this->udp_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_udp = 1;
+
+                if (this->pkt_types_present.has_ipv4) {
+                    verify_checksum = this->checksum_udp4();
+                }
+                if (verify_checksum != 0) {
+                    return netos_status::NETOS_STATUS_MALFORMED_PKT;
+                }
             }
-        break;
+        } break;
         case NETOS_IP_PROTOCOL_ICMP:
             stats->inc_icmp_rx_count();
 
@@ -241,8 +284,8 @@ netos_status parsed_pkt::parse_l4_frame()
                                        this->ipv6_h.dst_addr);
 
                 /* validate received ICMPv6 checksum. */
-                this->icmpv6_h.checksum = checksum(this->pkt_buf, &pseudo_hdr);
-                if (this->icmpv6_h.checksum != 0) {
+                auto verify_checksum = netos::checksum(this->pkt_buf, &pseudo_hdr);
+                if (verify_checksum != 0) {
                     event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
                                                         event_description::EVENT_DESC_INVAL_ICMPV6_CHECKSUM,
                                                         event_protocol_level::EVENT_PROTOCOL_L4_ICMPV6,

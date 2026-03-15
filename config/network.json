@@ -1,7 +1,7 @@
 {
     "network_config": {
         "interface_list": [
-            "lo",
+            "dummy0",
             "dummy1"
         ],
         "packet_buf_pool_len": 1000,

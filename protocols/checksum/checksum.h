@@ -24,6 +24,17 @@ struct checksum_pseudo_hdr {
      * @param [in] dst_addr - destination ip (v4 or v6) address.
      */
     void fill_icmpv6(uint32_t start_off, uint8_t *src_addr, uint8_t *dst_addr);
+
+    /**
+     * @brief - Fill the UDP related contents in the Pseudo header.
+     *
+     * @param [in] start_off - start offset in the pkt_buffer.
+     * @param [in] src_addr - source ip address.
+     * @param [in] dst_addr - destination ip address.
+     */
+    void fill_udp(uint32_t start_off, uint8_t *src_addr, uint8_t *dst_addr);
+
+    void fill_tcp(uint32_t start_off, uint8_t *src_addr, uint8_t *dst_addr);
 };
 
 uint16_t checksum(packet_buf *pkt_buf, checksum_pseudo_hdr *pseudo_hdr);

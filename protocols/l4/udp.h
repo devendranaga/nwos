@@ -17,6 +17,8 @@ struct udp_hdr {
     uint16_t len;
     uint16_t checksum;
 
+    uint32_t start_off;
+
     explicit udp_hdr() : src_port(0),
                          dst_port(0),
                          len(0),
@@ -28,9 +30,9 @@ struct udp_hdr {
     {
     }
 
-    netos_status serialize(packet_buf *pkt_buf);
-    netos_status deserialize(packet_buf *pkt_buf);
-    uint16_t calc_checksum(packet_buf *pkt_buf);
+    [[nodiscard]] netos_status serialize(packet_buf *pkt_buf);
+    [[nodiscard]] netos_status deserialize(packet_buf *pkt_buf);
+    [[nodiscard]] uint16_t calc_checksum(packet_buf *pkt_buf);
 };
 
 }

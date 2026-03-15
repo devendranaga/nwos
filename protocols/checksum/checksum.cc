@@ -59,4 +59,27 @@ void checksum_pseudo_hdr::fill_icmpv6(uint32_t start_off,
     this->protocol          = NETOS_IP_PROTOCOL_ICMPV6;
 }
 
+void checksum_pseudo_hdr::fill_udp(uint32_t start_off,
+                                   uint8_t *src_addr,
+                                   uint8_t *dst_addr)
+{
+    this->hdr_start_off     = start_off;
+    this->src_ipaddr        = src_addr;
+    this->dst_ipaddr        = dst_addr;
+    this->ipaddr_len        = NETOS_IPV4_ADDR_LEN;
+    this->protocol          = NETOS_IP_PROTOCOL_UDP;
 }
+
+void checksum_pseudo_hdr::fill_tcp(uint32_t start_off,
+                                   uint8_t *src_addr,
+                                   uint8_t *dst_addr)
+{
+    this->hdr_start_off     = start_off;
+    this->src_ipaddr        = src_addr;
+    this->dst_ipaddr        = dst_addr;
+    this->ipaddr_len        = NETOS_IPV4_ADDR_LEN;
+    this->protocol          = NETOS_IP_PROTOCOL_TCP;
+}
+
+}
+

@@ -120,6 +120,9 @@ struct parsed_pkt {
 
             return netos_status::NETOS_STATUS_GENERIC_ERROR;
         }
+
+        int checksum_tcp4();
+        int checksum_udp4();
 };
 
 class parsed_pkt_pool {
