@@ -208,7 +208,3 @@ target_link_libraries(netos_test_queue netos_platform pthread)
 add_executable(netos_replay ${TOOL_REPLAY_SRC})
 target_link_libraries(netos_replay netos_platform pthread)
 
-# build test tool for tcpdump
-add_executable(netos_tcpdump ${TOOL_TCPDUMP_SRC})
-target_link_libraries(netos_tcpdump netos_platform pthread)
-
