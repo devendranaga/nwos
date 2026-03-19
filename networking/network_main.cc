@@ -120,6 +120,9 @@ void network_manager::run(int argc, char **argv)
     // initialize the event manager
     event_mgr::instance()->initialize();
 
+    this->cloud_tx_ = std::make_shared<cloud_interface_tx>();
+    this->cloud_tx_->initialize();
+
     for (auto ifname : conf->if_config_.ifname) {
         network_egress *egress;
         std::shared_ptr<network_interface> netif;

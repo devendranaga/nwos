@@ -35,3 +35,7 @@ Ingress processing is done as follows:
 
 # Egress
 
+
+# Cloud interface
+
+## protocol definition

@@ -33,6 +33,7 @@ set(IDS_COMMON_SRC
 	protocols/l2/macsec.cc
 	protocols/l2/mka.cc
 	protocols/l2/avtp.cc
+	protocols/l2/ieee8021br.cc
 	protocols/l3/ipv4.cc
 	protocols/l3/ipv6.cc
 	protocols/l4/udp.cc

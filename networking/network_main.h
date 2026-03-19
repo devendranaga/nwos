@@ -15,6 +15,7 @@
 #include "pcap.h"
 #include "perf_linux.h"
 #include "network_egress_intf.h"
+#include "cloud_interface_tx.h"
 #include "statistics.h"
 
 using namespace netos::lib;
@@ -83,6 +84,7 @@ class network_manager {
         int parse_cmdargs(int argc, char **argv);
         network_cmdargs cmdargs_;
         std::vector<std::shared_ptr<network_interface>> iflist_;
+        std::shared_ptr<cloud_interface_tx> cloud_tx_;
 };
 
 }

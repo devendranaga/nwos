@@ -141,6 +141,7 @@ class parsed_pkt_pool {
         uint32_t size_;
         parsed_pkt *head_;
         std::mutex lock_;
+        uint8_t *packet_pool_ptr_;
         explicit parsed_pkt_pool() {}
 };
 

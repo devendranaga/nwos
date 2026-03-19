@@ -6,6 +6,7 @@
 #include <memory>
 #include "udp_socket.h"
 #include "error_codes.h"
+#include "gcd.h"
 #include "stats_interface_tx.h"
 
 using namespace netos::lib;
@@ -17,10 +18,11 @@ class cloud_interface_tx {
         explicit cloud_interface_tx() { }
         ~cloud_interface_tx() { }
 
-        netos_status initialize(const char *ipaddr, uint32_t port);
-        netos_status send_tx_stats(stats_intf_tx_t *tx_stats);
+        netos_status initialize();
 
     private:
+        void netos_cloud_intf_stats_send_timer();
+        netos_status send_tx_stats();
         std::shared_ptr<udp_client_socket> client_sock_;
         struct sockaddr_in server_addr_;
 };
@@ -28,3 +30,4 @@ class cloud_interface_tx {
 }
 
 #endif
+

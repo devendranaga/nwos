@@ -6,7 +6,17 @@ namespace netos {
 
 netos_status ieee8021x_header::serialize(packet_buf *pkt_buf)
 {
-    return netos_status::NETOS_STATUS_SUCCESS;
+    netos_status ret = netos_status::NETOS_STATUS_UNSUPPORTED_IEEE8021X_TYPE;
+
+    pkt_buf->serialize_byte(this->version);
+    pkt_buf->serialize_byte(this->type);
+    pkt_buf->serialize_2_bytes(this->len);
+
+    if (this->type == IEEE8021X_TYPE_MKA) {
+        ret = this->mh.serialize(pkt_buf);
+    }
+
+    return ret;
 }
 
 netos_status mka_icv_header::serialize(packet_buf *pkt_buf)
@@ -20,7 +30,7 @@ netos_status mka_icv_header::deserialize(packet_buf *pkt_buf)
 
     pkt_buf->offset_ ++;
 
-    len = ((pkt_buf->buf_[pkt_buf->offset_] & 0x0F) >> 8) +
+    len = ((uint32_t)(pkt_buf->buf_[pkt_buf->offset_] & 0x0F) << 8) +
            (pkt_buf->buf_[pkt_buf->offset_ + 1]);
     pkt_buf->offset_ += 2;
 
@@ -68,6 +78,16 @@ netos_status mka_basic_header::deserialize(packet_buf *pkt_buf)
     pkt_buf->deserialize_bytes(this->mi, MKA_MI_LEN);
     pkt_buf->deserialize_4_bytes(&this->mn);
     pkt_buf->deserialize_4_bytes(&this->algorithm_agility);
+
+    /**
+     * paramset_body_len informs how many of bytes pending in basic param set header.
+     *
+     * if this is smaller than basic parameter set without looking at the CKN, this means
+     * that the frame is malformed.
+     */
+    if (this->opts.paramset_body_len < MKA_BASIC_PARAM_LEN_NO_CKN) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
 
     remaining_len = this->opts.paramset_body_len - MKA_BASIC_PARAM_LEN_NO_CKN;
 

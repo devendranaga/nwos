@@ -84,6 +84,12 @@
                     "storage_path": "./"
                 }
             }
+        },
+        "cloud_interface": {
+            "method": "udp",
+            "server_ip": "192.168.1.1",
+            "server_port": 21000,
+            "stats_tx_interval_sec": 1,
         }
     }
 }

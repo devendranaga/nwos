@@ -148,20 +148,36 @@ struct network_vlan_config {
     netos_status parse(Json::Value &root);
 };
 
+enum class cloud_intf_method {
+    UDP,
+    MQTT,
+    protobuf,
+};
+
+struct network_cloud_intf_config {
+    cloud_intf_method   method;
+    std::string         server_ip;
+    uint32_t            server_port;
+    uint32_t            stats_tx_interval_sec;
+
+    netos_status parse(Json::Value &root);
+};
+
 /**
  * @brief - Network configuration
  */
 struct network_config {
     public:
-        network_if_config       if_config_;
-        uint32_t                packet_buf_pool_len;
-        uint32_t                parsed_pkt_buf_pool_len;
-        network_vlan_config     vlan_config_;
-        network_arp_config      arp_config_;
-        network_log_config      log_config_;
-        network_filter_config   filter_config_;
-        network_egress_config   egress_config_;
-        network_ids_config      ids_config_;
+        network_if_config           if_config_;
+        uint32_t                    packet_buf_pool_len;
+        uint32_t                    parsed_pkt_buf_pool_len;
+        network_vlan_config         vlan_config_;
+        network_arp_config          arp_config_;
+        network_log_config          log_config_;
+        network_filter_config       filter_config_;
+        network_egress_config       egress_config_;
+        network_ids_config          ids_config_;
+        network_cloud_intf_config   cloud_config_;
 
         ~network_config() { }
 

@@ -32,7 +32,6 @@ struct udp_hdr {
 
     [[nodiscard]] netos_status serialize(packet_buf *pkt_buf);
     [[nodiscard]] netos_status deserialize(packet_buf *pkt_buf);
-    [[nodiscard]] uint16_t calc_checksum(packet_buf *pkt_buf);
 };
 
 }

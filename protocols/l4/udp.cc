@@ -27,7 +27,17 @@ netos_status udp_hdr::deserialize(packet_buf *pkt_buf)
 
     pkt_buf->deserialize_2_bytes(&this->src_port);
     pkt_buf->deserialize_2_bytes(&this->dst_port);
+
+    if (this->src_port == this->dst_port) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_2_bytes(&this->len);
+
+    if (this->len == 0) {
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->deserialize_2_bytes(&this->checksum);
 
     return netos_status::NETOS_STATUS_SUCCESS;

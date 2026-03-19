@@ -116,7 +116,6 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
 
 void arp_context::arp_process_packet(parsed_pkt *rx_frame)
 {
-    uint8_t mac[6] = {0};
     uint32_t ipaddr = 0;
     void *res;
 
@@ -146,7 +145,7 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
                             rx_frame->ah.sender_hwaddr,
                             rx_frame->ah.sender_protocol_addr);
         }
-        this->arp_frame_prepare(rx_frame, mac, ipaddr);
+        this->arp_frame_prepare(rx_frame, rx_frame->intf_config->mac, ipaddr);
     } else {
         // Drop the frame and cleanup.
     }

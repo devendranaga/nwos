@@ -9,7 +9,7 @@
 
 namespace netos {
 
-#define NETOS_VLAN_HDR_LEN 4
+#define NETOS_VLAN_HDR_LEN      4
 
 #define NETOS_VLAN_ID_0         0
 #define NETOS_VLAN_ID_MAX       4095

@@ -8,6 +8,12 @@ netos_status parsed_pkt_pool::initialize(uint32_t size)
 
     this->size_ = size;
 
+    /* Allocate pool pointer first. */
+    this->packet_pool_ptr_ = (uint8_t *)calloc(1, NETOS_PACKET_BUF_SIZE * size);
+    if (!this->packet_pool_ptr_) {
+        return netos_status::NETOS_STATUS_ALLOC_FAILURE;
+    }
+
     for (i = 0; i < size; i ++) {
         parsed_pkt *pkt;
         netos_status status;
@@ -25,8 +31,8 @@ netos_status parsed_pkt_pool::initialize(uint32_t size)
             return netos_status::NETOS_STATUS_ALLOC_FAILURE;
         }
 
-        status = pkt->pkt_buf->allocate();
-        if (status != netos_status::NETOS_STATUS_SUCCESS) {
+        pkt->pkt_buf->buf_ = (uint8_t *)(this->packet_pool_ptr_ + (i * NETOS_PACKET_BUF_SIZE));
+        if (!pkt->pkt_buf->buf_) {
             free(pkt->pkt_buf);
             free(pkt);
             return status;

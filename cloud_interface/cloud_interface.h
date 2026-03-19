@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "stats_interface.h"
+#include "stats_interface_tx.h"
 
 #define CLOUD_INTF_VERSION 1
 
@@ -40,7 +40,7 @@ typedef struct __attribute__ ((__packed__)) {
 inline uint32_t cloud_interface_msg_get_stats_tx_len(cloud_interface_msg_t *msg)
 {
     return sizeof(cloud_interface_msg_t) +
-           stats_interface_get_tx_msg_len();
+           netos_stats_intf_get_tx_msg_len();
 }
 
 #endif

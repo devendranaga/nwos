@@ -122,6 +122,27 @@ netos_status network_vlan_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+netos_status network_cloud_intf_config::parse(Json::Value &root)
+{
+    auto method = root["method"].asString();
+    if (method == "udp") {
+        this->method = cloud_intf_method::UDP;
+    } else if (method == "mqtt") {
+        this->method = cloud_intf_method::MQTT;
+    } else if (method == "protobuf") {
+        this->method = cloud_intf_method::protobuf;
+    } else {
+        return netos_status::NETOS_STATUS_INVAL_CONFIG;
+    }
+
+    this->server_ip = root["server_ip"].asString();
+    this->server_port = root["server_port"].asUInt();
+
+    this->stats_tx_interval_sec = root["stats_tx_interval_sec"].asUInt();
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status network_config::parse(const std::string &config)
 {
     netos_status ret;
@@ -154,6 +175,9 @@ netos_status network_config::parse(const std::string &config)
 
     auto ids_config = root["network_config"]["ids"];
     this->ids_config_.parse(ids_config);
+
+    auto cloud_intf_config = root["network_config"]["cloud_interface"];
+    this->cloud_config_.parse(cloud_intf_config);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
