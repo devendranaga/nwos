@@ -35,6 +35,10 @@ int netos_queue_add_item(struct netos_queue_context *context, void *item)
 {
     uint32_t index;
 
+    if (!context) {
+        return -1;
+    }
+
     pthread_mutex_lock(&context->lock);
 
     index = context->tail % context->n_items;
@@ -52,6 +56,10 @@ void *netos_queue_get_item(struct netos_queue_context *context)
 {
     void *item = NULL;
     uint32_t index;
+
+    if (!context) {
+        return NULL;
+    }
 
     pthread_mutex_lock(&context->lock);
 

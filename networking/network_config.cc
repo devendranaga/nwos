@@ -4,6 +4,7 @@
 
 #include <jsoncpp/json/json.h>
 
+#include "logging.h"
 #include "network_config.h"
 
 using namespace netos::lib;
@@ -19,6 +20,14 @@ netos_status network_if_config::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+void network_if_config::print()
+{
+    netos_log_verbose("Interface Configuration:\n");
+    for (auto ifname : this->ifname) {
+        netos_log_verbose("\t %s\n", ifname.c_str());
+    }
+}
+
 netos_status network_arp_config::parse(Json::Value &root)
 {
     this->arp_table_len = root["arp_table_len"].asUInt();
@@ -26,6 +35,16 @@ netos_status network_arp_config::parse(Json::Value &root)
     this->arp_cache_mgmt_timer_intvl_sec = root["arp_cache_mgmt_timer_intvl_sec"].asUInt();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_arp_config::print()
+{
+    netos_log_verbose("ARP Configuration:\n");
+    netos_log_verbose("\t ARP Table Length: %u\n", this->arp_table_len);
+    netos_log_verbose("\t ARP Query Timer Interval (sec): %u\n",
+                      this->arp_query_timer_intvl_sec);
+    netos_log_verbose("\t ARP Cache Management Timer Interval (sec): %u\n",
+                      this->arp_cache_mgmt_timer_intvl_sec);
 }
 
 netos_status network_log_config::parse(Json::Value &root)
@@ -36,6 +55,15 @@ netos_status network_log_config::parse(Json::Value &root)
     this->pcap_file_path = root["pcap_file_path"].asString();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_log_config::print()
+{
+    netos_log_verbose("Logging Configuration:\n");
+    netos_log_verbose("\t Debug Log Server IP: %s\n", this->debug_log_server_ip.c_str());
+    netos_log_verbose("\t Debug Log Server Port: %u\n", this->debug_log_server_port);
+    netos_log_verbose("\t Log PCAP: %s\n", this->log_pcap ? "true" : "false");
+    netos_log_verbose("\t PCAP File Path: %s\n", this->pcap_file_path.c_str());
 }
 
 netos_status network_egress_config::parse(Json::Value &root)
@@ -49,6 +77,13 @@ netos_status network_egress_config::parse(Json::Value &root)
     }
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_egress_config::print()
+{
+    netos_log_verbose("Egress Configuration:\n");
+    netos_log_verbose("\t Number of Egress Queues: %u\n", this->number_of_queues);
+    netos_log_verbose("\t Egress Algorithm: %s\n", this->algorithm_str().c_str());
 }
 
 netos_status network_ids_config::parse(Json::Value &root)
@@ -77,8 +112,31 @@ netos_status network_ids_config::parse(Json::Value &root)
                         event_storage_config["enable"].asBool();
     this->event_config.event_storage_path =
                         event_storage_config["storage_path"].asString();
+    this->event_config.event_storage_file_prefix =
+                        event_storage_config["log_storage_prefix"].asString();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_ids_config::print()
+{
+    netos_log_verbose("IDS Configuration:\n");
+    netos_log_verbose("\t Event Forwarding Enable: %s\n",
+                      this->event_config.event_fwd_enable ? "true" : "false");
+    netos_log_verbose("\t Event Forwarding Server IP: %s\n",
+                      this->event_config.event_fwd_ip.c_str());
+    netos_log_verbose("\t Event Forwarding Server Port: %u\n",
+                      this->event_config.event_fwd_port);
+    netos_log_verbose("\t Event Forwarding Protocol: %s\n",
+                      this->event_config.event_fwd_protocol_str().c_str());
+    netos_log_verbose("\t Event Forwarding Timer Period (ms): %u\n",
+                      this->event_config.timer_period_ms);
+    netos_log_verbose("\t Event Storage Enable: %s\n",
+                      this->event_config.event_storage_enable ? "true" : "false");
+    netos_log_verbose("\t Event Storage Path: %s\n",
+                      this->event_config.event_storage_path.c_str());
+    netos_log_verbose("\t Event Storage File Prefix: %s\n",
+                      this->event_config.event_storage_file_prefix.c_str());
 }
 
 netos_status network_filter_config::parse(Json::Value &root)
@@ -89,6 +147,16 @@ netos_status network_filter_config::parse(Json::Value &root)
               root["bypass_ipv4_checksum_verification"].asBool();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_filter_config::print()
+{
+    netos_log_verbose("Filter Configuration:\n");
+    netos_log_verbose("\t Drop IPv4 Fragments: %s\n",
+                      this->drop_ipv4_fragments ? "true" : "false");
+    netos_log_verbose("\t ICMP Max Payload Length: %u\n", this->icmp_max_payload_len);
+    netos_log_verbose("\t Bypass IPv4 Checksum Verification: %s\n",
+                      this->bypass_ipv4_checksum_verification ? "true" : "false");
 }
 
 netos_status network_vlan_mapping::parse(Json::Value &root)
@@ -106,6 +174,16 @@ netos_status network_vlan_mapping::parse(Json::Value &root)
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
+void network_vlan_mapping::print()
+{
+    netos_log_verbose("\t Interface Name: %s\n", this->ifname.c_str());
+    for (auto vlan_id_map : this->vlan_id_map) {
+        netos_log_verbose("\t\t Ingress VLAN ID: %u, Egress VLAN ID: %u\n",
+                          vlan_id_map.ingress_vlan_id,
+                          vlan_id_map.egress_vlan_id);
+    }
+}
+
 netos_status network_vlan_config::parse(Json::Value &root)
 {
     auto vlan_map_config = root["vlan_mapping"];
@@ -120,6 +198,16 @@ netos_status network_vlan_config::parse(Json::Value &root)
     this->drop_double_tagged_vlan = root["drop_double_tagged_vlan"].asBool();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_vlan_config::print()
+{
+    netos_log_verbose("VLAN Mapping:\n");
+    for (auto vlan_mapping : this->vlan_mapping) {
+        vlan_mapping.print();
+    }
+    netos_log_verbose("\t Drop Double Tagged VLAN: %s\n",
+                      this->drop_double_tagged_vlan ? "true" : "false");
 }
 
 netos_status network_cloud_intf_config::parse(Json::Value &root)
@@ -141,6 +229,16 @@ netos_status network_cloud_intf_config::parse(Json::Value &root)
     this->stats_tx_interval_sec = root["stats_tx_interval_sec"].asUInt();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_cloud_intf_config::print()
+{
+    netos_log_verbose("Cloud Interface Configuration:\n");
+    netos_log_verbose("\t Cloud Interface Method: %s\n", this->method_str().c_str());
+    netos_log_verbose("\t Cloud Interface Server IP: %s\n", this->server_ip.c_str());
+    netos_log_verbose("\t Cloud Interface Server Port: %u\n", this->server_port);
+    netos_log_verbose("\t Cloud Interface Stats Tx Interval (sec): %u\n",
+                      this->stats_tx_interval_sec);
 }
 
 netos_status network_config::parse(const std::string &config)
@@ -177,9 +275,31 @@ netos_status network_config::parse(const std::string &config)
     this->ids_config_.parse(ids_config);
 
     auto cloud_intf_config = root["network_config"]["cloud_interface"];
-    this->cloud_config_.parse(cloud_intf_config);
+    ret = this->cloud_config_.parse(cloud_intf_config);
+    if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    this->print();
 
     return netos_status::NETOS_STATUS_SUCCESS;
+}
+
+void network_config::print()
+{
+    netos_log_verbose("Network Configuration:\n");
+    netos_log_verbose("------------------------------------------------\n");
+    this->if_config_.print();
+    this->vlan_config_.print();
+    this->arp_config_.print();
+    netos_log_verbose("\t Packet Buffer Pool Length: %u\n", this->packet_buf_pool_len);
+    netos_log_verbose("\t Parsed Packet Buffer Pool Length: %u\n", this->parsed_pkt_buf_pool_len);
+    this->log_config_.print();
+    this->filter_config_.print();
+    this->egress_config_.print();
+    this->ids_config_.print();
+    this->cloud_config_.print();
+    netos_log_verbose("------------------------------------------------\n");
 }
 
 }

@@ -17,6 +17,8 @@ namespace netos {
 
 #define NETOS_IPV6_FRAG_HDR_LEN     8
 
+#define NETOS_IPV6_HDR_OPT_FRAG_HDR 0x01
+
 struct ipv6_frag_hdr {
     uint8_t     next_hdr;           /* 1 byte. */
     uint8_t     reserved;           /* 1 byte. */
@@ -46,7 +48,9 @@ struct ipv6_hdr {
     uint16_t            start_off;
     uint16_t            end_off;
 
-    ipv6_frag_hdr       *frag_hdr;
+    uint32_t            options;
+
+    ipv6_frag_hdr       frag_hdr;
 
     explicit ipv6_hdr() : version(0),
                           traffic_class(0),

@@ -81,7 +81,8 @@
                 },
                 "event_storage": {
                     "enable": true,
-                    "storage_path": "./"
+                    "storage_path": "./",
+                    "log_storage_prefix": "netos_ids_events"
                 }
             }
         },
@@ -89,7 +90,7 @@
             "method": "udp",
             "server_ip": "192.168.1.1",
             "server_port": 21000,
-            "stats_tx_interval_sec": 1,
+            "stats_tx_interval_sec": 1
         }
     }
 }

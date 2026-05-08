@@ -16,7 +16,7 @@ namespace netos {
 
 void event_mgr::initialize()
 {
-    network_config *config;
+    const network_config *config;
     gcd *gcd_instance;
 
     gcd_instance = gcd::instance();
@@ -84,8 +84,9 @@ void event_mgr::event_storage_thread()
 
     snprintf(event_filename,
              sizeof(event_filename),
-             "%s_event_data_%u.bin",
+             "%s_%s_event_data_%u.bin",
              conf->ids_config_.event_config.event_storage_path.c_str(),
+             conf->ids_config_.event_config.event_storage_file_prefix.c_str(),
              rng_val);
 
 

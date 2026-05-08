@@ -31,7 +31,7 @@ void netos_list_add(void *ptr, void *data)
 
     node = calloc(1, sizeof(struct netos_list));
     if (!node) {
-        return -1;
+        return;
     }
 
     node->data = data;

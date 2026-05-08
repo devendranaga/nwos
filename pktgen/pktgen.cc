@@ -380,7 +380,7 @@ void pktgen::gen_ipv6()
 
         memcpy(ipv6_h.src_addr, config->ipv6_config.src_addr, NETOS_IPV6_ADDR_LEN);
         memcpy(ipv6_h.dst_addr, config->ipv6_config.dst_addr, NETOS_IPV6_ADDR_LEN);
-        ipv6_h.frag_hdr = NULL;
+        ipv6_h.options = 0;
 
         ret = ipv6_h.serialize(pktbuf);
         if (ret != netos_status::NETOS_STATUS_SUCCESS) {

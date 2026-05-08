@@ -18,7 +18,9 @@ udp_server_socket::udp_server_socket(const char *ipaddr, uint16_t port)
     }
 
     struct sockaddr_in addr;
-    addr.sin_addr.s_addr = inet_addr(ipaddr);
+    if (inet_pton(AF_INET, ipaddr, &addr.sin_addr) <= 0) {
+        throw std::system_error(errno, std::generic_category(), "invalid IP address");
+    }
     addr.sin_port = htons(port);
     addr.sin_family = AF_INET;
 

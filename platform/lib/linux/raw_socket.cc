@@ -33,7 +33,7 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
 {
     int ret;
 
-    if (devname.size() >= IFNAMSIZ) {
+    if (devname.size() >= IFNAMSIZ - 1) {
         throw std::runtime_error("interface name too long");
     }
 
@@ -44,7 +44,8 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
 
     // get interface flags for promisc
     std::memset(&req, 0, sizeof(struct ifreq));
-    strcpy(req.ifr_name, devname.c_str());
+    strncpy(req.ifr_name, devname.c_str(), IFNAMSIZ - 1);
+    req.ifr_name[IFNAMSIZ - 1] = '\0';
     ret = ioctl(fd_, SIOCGIFFLAGS, &req);
     ERR_ON_SYSCALL(ret, 0, "failed to SIOCGIFFLAGS");
 
@@ -55,7 +56,8 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
 
     // get hardware address for transmit packet
     std::memset(&req, 0, sizeof(struct ifreq));
-    strcpy(req.ifr_name, devname.c_str());
+    strncpy(req.ifr_name, devname.c_str(), IFNAMSIZ - 1);
+    req.ifr_name[IFNAMSIZ - 1] = '\0';
     ret = ioctl(fd_, SIOCGIFHWADDR, &req);
     ERR_ON_SYSCALL(ret, 0, "failed to SIOCGIFHWADDR");
 
@@ -67,7 +69,8 @@ raw_socket::raw_socket(const std::string devname, uint16_t ethertype):
     devmac_[5] = ((uint8_t *)&req.ifr_hwaddr.sa_data)[5];
 
     std::memset(&req, 0, sizeof(req));
-    strcpy(req.ifr_name, devname.c_str());
+    strncpy(req.ifr_name, devname.c_str(), IFNAMSIZ - 1);
+    req.ifr_name[IFNAMSIZ - 1] = '\0';
     ret = ioctl(fd_, SIOCGIFINDEX, &req);
     if (ret < 0) {
         throw std::runtime_error("failed to get interface index");
@@ -105,7 +108,8 @@ raw_socket::~raw_socket()
 
         // get  promisc
         std::memset(&req, 0, sizeof(struct ifreq));
-        strcpy(req.ifr_name, dev_.c_str());
+        strncpy(req.ifr_name, dev_.c_str(), IFNAMSIZ - 1);
+        req.ifr_name[IFNAMSIZ - 1] = '\0';
         ret = ioctl(fd_, SIOCGIFFLAGS, &req);
         if (ret < 0) {
             return;

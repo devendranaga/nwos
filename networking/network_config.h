@@ -25,6 +25,7 @@ struct network_arp_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 /**
@@ -40,6 +41,7 @@ struct network_if_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 /**
@@ -57,6 +59,7 @@ struct network_filter_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 enum class egress_algorithm {
@@ -70,6 +73,15 @@ struct network_egress_config {
     uint32_t            number_of_queues;
     egress_algorithm    algorithm;
 
+    std::string algorithm_str() const {
+        switch (algorithm) {
+            case egress_algorithm::ROUND_ROBIN:
+                return "Round Robin";
+            default:
+                return "Unknown";
+        }
+    }
+
     /**
      * @brief - Parse the egress configuration
      *
@@ -77,6 +89,7 @@ struct network_egress_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 enum class event_fwd_protocol {
@@ -94,6 +107,18 @@ struct network_event_config {
     uint32_t            timer_period_ms;
     bool                event_storage_enable;
     std::string         event_storage_path;
+    std::string         event_storage_file_prefix;
+
+    std::string event_fwd_protocol_str() const {
+        switch (fwd_protocol) {
+            case event_fwd_protocol::MQTT:
+                return "MQTT";
+            default:
+                return "Unknown";
+        }
+    }
+
+    void print();
 };
 
 /**
@@ -109,6 +134,7 @@ struct network_ids_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 /**
@@ -127,11 +153,14 @@ struct network_log_config {
      * @return netos_status
      */
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 struct network_vlan_id_map {
     uint16_t ingress_vlan_id;
     uint16_t egress_vlan_id;
+
+    void print();
 };
 
 struct network_vlan_mapping {
@@ -139,6 +168,7 @@ struct network_vlan_mapping {
     std::vector<network_vlan_id_map> vlan_id_map;
 
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 struct network_vlan_config {
@@ -146,6 +176,7 @@ struct network_vlan_config {
     bool drop_double_tagged_vlan;
 
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 enum class cloud_intf_method {
@@ -160,7 +191,21 @@ struct network_cloud_intf_config {
     uint32_t            server_port;
     uint32_t            stats_tx_interval_sec;
 
+    std::string method_str() const {
+        switch (method) {
+            case cloud_intf_method::UDP:
+                return "UDP";
+            case cloud_intf_method::MQTT:
+                return "MQTT";
+            case cloud_intf_method::protobuf:
+                return "Protobuf";
+            default:
+                return "Unknown";
+        }
+    }
+
     netos_status parse(Json::Value &root);
+    void print();
 };
 
 /**
@@ -198,6 +243,7 @@ struct network_config {
          * @return netos_status
          */
         netos_status parse(const std::string &config);
+        void print();
 
     private:
         explicit network_config() { }

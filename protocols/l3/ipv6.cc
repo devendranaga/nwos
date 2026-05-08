@@ -115,17 +115,14 @@ netos_status ipv6_hdr::deserialize(packet_buf *pkt_buf)
     pkt_buf->deserialize_bytes(this->src_addr, NETOS_IPV6_ADDR_LEN);
     pkt_buf->deserialize_bytes(this->dst_addr, NETOS_IPV6_ADDR_LEN);
 
-    while ((pkt_buf->offset_ < pkt_buf->len_) > 0) {
+    this->options = 0;
+
+    while (pkt_buf->offset_ < pkt_buf->len_) {
         switch (this->nh) {
             case NETOS_IPV6_NH_FRAG_HDR: {
-                this->frag_hdr = (ipv6_frag_hdr *)calloc(1, sizeof(ipv6_frag_hdr));
-                if (!this->frag_hdr) {
-                    return netos_status::NETOS_STATUS_ALLOC_FAILURE;
-                }
-                if (this->frag_hdr->deserialize(pkt_buf, evt_mgr, &this->nh) !=
+                this->options |= NETOS_IPV6_HDR_OPT_FRAG_HDR;
+                if (this->frag_hdr.deserialize(pkt_buf, evt_mgr, &this->nh) !=
                                         netos_status::NETOS_STATUS_SUCCESS) {
-                    free(this->frag_hdr);
-                    this->frag_hdr = NULL;
                     return netos_status::NETOS_STATUS_MALFORMED_PKT;
                 }
             } break;

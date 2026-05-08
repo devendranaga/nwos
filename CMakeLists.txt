@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.9)
 
 project(netos)
 
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(JSONCPP jsoncpp)
-find_package(jsoncpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+#find_package(jsoncpp REQUIRED)
 
 set(PLATFORM_SRC
 	platform/lib/linux/raw_socket.cc
@@ -33,7 +33,7 @@ set(IDS_COMMON_SRC
 	protocols/l2/macsec.cc
 	protocols/l2/mka.cc
 	protocols/l2/avtp.cc
-	protocols/l2/ieee8021br.cc
+  protocols/l2/ieee8021br.cc
 	protocols/l3/ipv4.cc
 	protocols/l3/ipv6.cc
 	protocols/l4/udp.cc
@@ -150,8 +150,8 @@ else()
 set(BUILD_FLAGS "")
 endif()
 
-set(CMAKE_C_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
-set(CMAKE_CXX_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_C_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_CXX_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
 
 ## Use clang compiler
 
@@ -167,7 +167,7 @@ endif()
 
 add_library(netos_platform ${PLATFORM_SRC})
 
-set(JSONCPP_LIBRARIES JsonCpp::JsonCpp)
+#set(JSONCPP_LIBRARIES JsonCpp::JsonCpp)
 
 # build network daemon
 add_executable(netos_netwd ${NETWORKING_SRC})
