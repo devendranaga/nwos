@@ -81,7 +81,7 @@ void network_manager::run(int argc, char **argv)
 
     gcd_instance = gcd::instance();
 
-    // initialize 4 threads for the pool
+    // initialize 8 threads for the pool
     gcd_instance->initialize_thr_pool(8);
 
     // parse command line arguments

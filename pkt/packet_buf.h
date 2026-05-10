@@ -28,10 +28,10 @@ using namespace netos::lib;
  * only set in receive path.
  */
 struct packet_buf {
-    uint8_t *buf_;
-    uint32_t offset_;
-    uint32_t len_;
-    packet_buf *next;
+    uint8_t     *buf_;
+    uint32_t    offset_;
+    uint32_t    len_;
+    packet_buf  *next;
 
     explicit packet_buf() { }
     ~packet_buf() { }

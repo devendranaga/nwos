@@ -25,6 +25,15 @@ netos_status macsec_hdr::deserialize(packet_buf *pkt_buf)
     this->tci.c     = val & 0x04;
     this->tci.an    = val & 0x03;
 
+    /* Validate TCI. */
+    if (this->tci.validate()) {
+        event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_MACSEC_TCI_INVAL,
+                                            event_protocol_level::EVENT_PROTOCOL_L2_MACSEC,
+                                            pkt_buf->len_);
+        return netos_status::NETOS_STATUS_MALFORMED_PKT;
+    }
+
     pkt_buf->offset_ ++;
 
     /* Decode the short length */
@@ -43,13 +52,13 @@ netos_status macsec_hdr::deserialize(packet_buf *pkt_buf)
     this->data = &pkt_buf->buf_[pkt_buf->offset_];
 
     /**
-     * TCI.E and TCI.S are 0's that means the frame has only ICV.
+     * TCI.E is 0 that means the frame has only ICV.
      *
      * This means decoding the frame further is possible.
      *
      * Lookup for the Ethertype.
      */
-    if ((this->tci.e  == 0) && (this->tci.c == 0)) {
+    if (this->tci.e  == 0) {
         pkt_buf->deserialize_2_bytes(&this->ethertype);
     }
 

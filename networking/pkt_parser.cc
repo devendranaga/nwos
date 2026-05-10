@@ -240,6 +240,7 @@ netos_status parsed_pkt::parse_l4_frame()
                 if (this->pkt_types_present.has_ipv4) {
                     verify_checksum = this->checksum_tcp4();
                 }
+                /* FIXME: handle ipv6 checksum verification. */
                 if (verify_checksum != 0) {
                     return netos_status::NETOS_STATUS_MALFORMED_PKT;
                 }
@@ -264,10 +265,16 @@ netos_status parsed_pkt::parse_l4_frame()
         } break;
         case NETOS_IP_PROTOCOL_ICMP:
             stats->inc_icmp_rx_count();
-
-            ret = this->icmp_h.deserialize(this->pkt_buf);
-            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
-                this->pkt_types_present.has_icmp = 1;
+            if (this->pkt_types_present.has_ipv6) {
+                event_mgr::instance()->insert_event(IDS_EVENT_TYPE_DENY,
+                                            event_description::EVENT_DESC_ICMP_INVAL_L3_PROTOCOL,
+                                            event_protocol_level::EVENT_PROTOCOL_L4_ICMP,
+                                            pkt_buf->len_);
+            } else {
+                ret = this->icmp_h.deserialize(this->pkt_buf);
+                if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                    this->pkt_types_present.has_icmp = 1;
+                }
             }
         break;
         case NETOS_IP_PROTOCOL_ICMPV6:

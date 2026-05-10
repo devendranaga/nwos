@@ -10,6 +10,9 @@
 
 namespace netos {
 
+/**
+ * @brief - Defines MACsec TCI AN.
+ */
 struct macsec_tci {
     uint32_t ver :1;
     uint32_t es  :1;
@@ -21,6 +24,24 @@ struct macsec_tci {
 
     explicit macsec_tci() { }
     ~macsec_tci() { }
+
+    bool validate()
+    {
+        if (this->ver != 0) {
+            return false;
+        }
+
+        if (this->es && this->sc && this->scb) {
+            return false;
+        }
+
+        /* We cannot have changed text 0 for encrypted frame. */
+        if (this->e && (this->c == 0)) {
+            return false;
+        }
+
+        return true;
+    }
 };
 
 struct macsec_sci {

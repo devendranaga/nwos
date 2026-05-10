@@ -52,6 +52,9 @@ enum class event_description : uint32_t {
     /* Short MACsec header. */
     EVENT_DESC_SHORT_MACSEC_HDR                         = 0x00001200,
 
+    /* Invalid MACsec TCI. */
+    EVENT_DESC_MACSEC_TCI_INVAL                         = 0x00001201,
+
     /* Short MKA basic parameters. */
     EVENT_DESC_SHORT_MKA_BASIC_PARAMS                   = 0x00001300,
 
@@ -180,6 +183,9 @@ enum class event_description : uint32_t {
 
     /* ICMP type is unknown. */
     EVENT_DESC_ICMP_UNKNOWN_TYPE                        = 0x00002602,
+
+    /* ICMP frame came in ipv6 packet. */
+    EVENT_DESC_ICMP_INVAL_L3_PROTOCOL                   = 0x00002603,
 
     /* ICMPv6 short header length. */
     EVENT_DESC_ICMPV6_SHORT_HDR_LEN                     = 0x00002700,
