@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <arpa/inet.h>
 
 #include <iostream>
 #include <memory>
@@ -19,6 +20,8 @@
 #include "ipv4.h"
 #include "ipv6.h"
 #include "icmp.h"
+#include "udp.h"
+#include "checksum.h"
 #include "protocols.h"
 #include "pktgen_config.h"
 #include "pktgen.h"
@@ -112,6 +115,8 @@ void pktgen::gen_vlan()
     uint32_t i = 0;
 
     for (i = 0; i < config->vlan_config.count; i ++) {
+        uint32_t n_vlans = 0;
+
         pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
         if (!pktbuf) {
             return;
@@ -127,8 +132,14 @@ void pktgen::gen_vlan()
         for (auto it : config->vlan_config.vlan_ids) {
             vlan_hdr vh;
 
+            n_vlans ++;
+
             vh.vid = it;
-            vh.ethertype = config->vlan_config.ethertype;
+            if (n_vlans == config->vlan_config.vlan_ids.size()) {
+                vh.ethertype = config->vlan_config.ethertype;
+            } else {
+                vh.ethertype = NETOS_ETHERTYPE_VLAN;
+            }
             vh.serialize(pktbuf);
         }
 
@@ -490,6 +501,104 @@ void pktgen::gen_tcp()
 {
 }
 
+void pktgen::gen_udp()
+{
+    packet_buf *pktbuf;
+    pktgen_config *config = pktgen_config::instance();
+    uint8_t dst_mac[6] = {};
+    uint32_t i = 0;
+    uint8_t *buf = NULL;
+    netos_status ret;
+
+    if (config->udp_config.payload_len != 0) {
+        buf = (uint8_t *)calloc(1, config->udp_config.payload_len);
+        if (!buf) {
+            return;
+        }
+    }
+
+    for (i = 0; i < config->udp_config.count; i ++) {
+        pktbuf = (packet_buf *)calloc(1, sizeof(packet_buf));
+        if (!pktbuf) {
+            return;
+        }
+        pktbuf->allocate();
+
+        eth_hdr eh;
+        ipv4_hdr ipv4_h;
+
+        memcpy(eh.src_mac, config->udp_config.eth_src_mac, NETOS_MACADDR_LEN);
+        memcpy(eh.dst_mac, config->udp_config.eth_dst_mac, NETOS_MACADDR_LEN);
+        eh.ethertype = NETOS_ETHERTYPE_IPV4;
+        eh.serialize(pktbuf);
+
+        ipv4_h.version = NETOS_IPV4_VERSION;
+        ipv4_h.ihl = NETOS_IPV4_IHL_DEFAULT;
+        ipv4_h.dscp = 0;
+        ipv4_h.ecn = 0;
+        ipv4_h.total_len = (NETOS_IPV4_IHL_DEFAULT * 4) +
+                            NETOS_UDP_HDR_LEN_DEFAULT +
+                            config->udp_config.payload_len;
+        ipv4_h.id = 0x1212;
+        ipv4_h.flags.reserved = 0;
+        ipv4_h.flags.df = 0;
+        ipv4_h.flags.mf = 0;
+        ipv4_h.ttl = 64;
+        ipv4_h.protocol = NETOS_IP_PROTOCOL_UDP;
+
+        ipv4_h.hdr_chksum = 0;
+
+        ipv4_h.frag_off = 0;
+        ipv4_h.src_addr = config->udp_config.src_addr;
+        ipv4_h.dst_addr = config->udp_config.dst_addr;
+        ret = ipv4_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            return;
+        }
+
+        udp_hdr udp_h;
+        checksum_pseudo_hdr pseudo_hdr;
+        uint32_t src_addr_endian = htonl(config->udp_config.src_addr);
+        uint32_t dst_addr_endian = htonl(config->udp_config.dst_addr);
+        uint32_t checksum_val;
+
+        udp_h.src_port = config->udp_config.src_port;
+        udp_h.dst_port = config->udp_config.dst_port;
+        udp_h.len = NETOS_UDP_HDR_LEN_DEFAULT + config->udp_config.payload_len;
+        udp_h.checksum = 0;
+
+        ret = udp_h.serialize(pktbuf);
+        if (ret != netos_status::NETOS_STATUS_SUCCESS) {
+            goto free_pktbuf;
+        }
+
+        if (config->udp_config.payload_len > 0) {
+            memcpy(&pktbuf->buf_[pktbuf->offset_], buf, config->udp_config.payload_len);
+            pktbuf->offset_ += config->udp_config.payload_len;
+        }
+
+        pktbuf->len_ = pktbuf->offset_;
+
+        pseudo_hdr.fill_udp(udp_h.start_off,
+                            (uint8_t *)&src_addr_endian,
+                            (uint8_t *)&dst_addr_endian);
+        checksum_val = netos::checksum(pktbuf, &pseudo_hdr);
+        pktbuf->buf_[udp_h.checksum_off] = (checksum_val & 0xFF00) >> 8;
+        pktbuf->buf_[udp_h.checksum_off + 1] = checksum_val & 0xFF;
+
+        this->raw_fd_->send_msg(dst_mac, pktbuf->buf_, pktbuf->offset_);
+        std::this_thread::sleep_for(
+                        std::chrono::nanoseconds(config->icmp_config.pkt_intvl_nsec));
+
+free_pktbuf:
+        pktbuf->free_ptr();
+        free(pktbuf);
+    }
+
+    if (buf)
+        free(buf);
+}
+
 void pktgen::usage(const std::string &progname)
 {
     netos_log_info("%s: -f <config file>\n", progname.c_str());
@@ -539,6 +648,9 @@ void pktgen::run(int argc, char **argv)
     }
     if (config->ipv6_config.enable) {
         this->gen_ipv6();
+    }
+    if (config->udp_config.enable) {
+        this->gen_udp();
     }
     //this->gen_avtp();
 }

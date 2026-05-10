@@ -11,7 +11,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "arp": {
-        "enable": true,
+        "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -38,7 +38,7 @@
         "target_protocol_addr": "192.168.1.2",
         "randomize": false,
         "repeat": true,
-        "count": 1000000,
+        "count": 1,
         "pkt_intvl_nsec": 1000000
     },
     "macsec": {
@@ -87,7 +87,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "vlan": {
-        "enable": false,
+        "enable": true,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04",
@@ -97,10 +97,22 @@
         "multi_vlan_tag": [
             {
                 "vid": 10
+            },
+            {
+                "vid": 11
+            },
+            {
+                "vid": 12
+            },
+            {
+                "vid": 13
+            },
+            {
+                "vid": 14
             }
         ],
         "repeat": true,
-        "count": 1,
+        "count": 10,
         "pkt_intvl_nsec": 1
     },
     "ipv4": {
@@ -213,6 +225,24 @@
         "window_size": 65535,
         "urg_ptr": 0,
         "payload_len": 0,
+        "randomize": false,
+        "repeat": true,
+        "count": 1,
+        "pkt_intvl_nsec": 1
+    },
+    "udp": {
+        "enable": false,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:03:04"
+        },
+        "ipv4": {
+            "src_addr": "192.168.0.1",
+            "dst_addr": "192.168.0.12"
+        },
+        "src_port": 12345,
+        "dst_port": 80,
+        "payload_len": 200,
         "randomize": false,
         "repeat": true,
         "count": 1,

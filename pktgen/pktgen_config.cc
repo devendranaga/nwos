@@ -202,8 +202,27 @@ int pktgen_icmp_config::parse(const Json::Value &r)
     this->repeat                = r["repeat"].asBool();
     this->count                 = r["count"].asUInt();
     this->pkt_intvl_nsec        = r["pkt_intvl_nsec"].asUInt64();
-    this->payload_len           = r["payload_len"].asUInt();
+    this->payload_len           = r["payload_len"].asUInt64();
 
+    return 0;
+}
+
+int pktgen_udp_config::parse(const Json::Value &r)
+{
+    this->enable                = r["enable"].asBool();
+    netos::lib::str_to_mac(r["eth"]["src_mac"].asString(), this->eth_src_mac);
+    netos::lib::str_to_mac(r["eth"]["dst_mac"].asString(), this->eth_dst_mac);
+    auto s_addr_str             = r["ipv4"]["src_addr"].asString();
+    netos::lib::ipaddr_str_to_uint(s_addr_str, &this->src_addr);
+    auto d_addr_str             = r["ipv4"]["dst_addr"].asString();
+    netos::lib::ipaddr_str_to_uint(d_addr_str, &this->dst_addr);
+    this->src_port              = r["src_port"].asUInt();
+    this->dst_port              = r["dst_port"].asUInt();
+    this->payload_len           = r["payload_len"].asUInt();
+    this->randomize             = r["randomize"].asBool();
+    this->repeat                = r["repeat"].asBool();
+    this->count                 = r["count"].asUInt();
+    this->pkt_intvl_nsec        = r["payload_len"].asUInt64();
     return 0;
 }
 
@@ -222,6 +241,7 @@ int pktgen_config::parse(const std::string &config_file)
     this->ipv4_config.parse(root["ipv4"]);
     this->ipv6_config.parse(root["ipv6"]);
     this->icmp_config.parse(root["icmp"]);
+    this->udp_config.parse(root["udp"]);
 
     return 0;
 }
