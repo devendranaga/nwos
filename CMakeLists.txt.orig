@@ -7,128 +7,133 @@ pkg_check_modules(JSONCPP jsoncpp)
 #find_package(jsoncpp REQUIRED)
 
 set(PLATFORM_SRC
-    platform/lib/linux/raw_socket.cc
-    platform/lib/linux/udp_socket.cc
-    platform/lib/linux/rng_linux.c
-    platform/lib/linux/ioctl_nw.c
-    platform/lib/logging/logging.c
-    platform/lib/helpers/conversion.cc
-    platform/lib/algorithms/queue.c
-    platform/lib/linux/pcap_lib.cc
-    platform/lib/gcd/gcd.cc
-    platform/lib/linux/socket_helper.c
-    platform/lib/linux/perf_linux.cc
-    platform/lib/linux/fileio_mem.c)
+	platform/lib/linux/raw_socket.cc
+	platform/lib/linux/udp_socket.cc
+	platform/lib/linux/rng_linux.c
+	platform/lib/linux/ioctl_nw.c
+	platform/lib/logging/logging.c
+	platform/lib/helpers/conversion.cc
+	platform/lib/algorithms/hash_table.c
+	platform/lib/algorithms/queue.c
+	platform/lib/linux/pcap_lib.cc
+	platform/lib/gcd/gcd.cc
+	platform/lib/linux/socket_helper.c
+	platform/lib/linux/perf_linux.cc
+	platform/lib/linux/fileio_mem.c)
 
 set(LOGGER_SRC
-    logger/src/logger.cc)
+	logger/src/logger.cc)
 
 set(IDS_COMMON_SRC
-    pkt/packet_buf.cc
-    protocols/l2/eth.cc
-    protocols/l2/arp_hdr.cc
-    protocols/l2/vlan.cc
-    protocols/l2/vlan_membership.cc
-    protocols/l2/macsec.cc
-    protocols/l2/mka.cc
-    protocols/l2/avtp.cc
+	pkt/packet_buf.cc
+	protocols/l2/eth.cc
+	protocols/l2/arp_hdr.cc
+	protocols/l2/vlan.cc
+	protocols/l2/vlan_membership.cc
+	protocols/l2/macsec.cc
+	protocols/l2/mka.cc
+	protocols/l2/avtp.cc
+<<<<<<< Updated upstream
+	protocols/l2/ieee8021br.cc
+=======
     protocols/l2/ieee8021br.cc
-    protocols/l3/ipv4.cc
-    protocols/l3/ipv6.cc
-    protocols/l4/udp.cc
-    protocols/l4/tcp.cc
-    protocols/l4/icmp.cc
-    protocols/l4/icmpv6.cc
-    protocols/app/dlt_header.cc
-    protocols/checksum/checksum.cc
-    event/event_mgr.cc
-    pkt/parsed_pkt_pool.cc)
+>>>>>>> Stashed changes
+	protocols/l3/ipv4.cc
+	protocols/l3/ipv6.cc
+	protocols/l4/udp.cc
+	protocols/l4/tcp.cc
+	protocols/l4/icmp.cc
+	protocols/l4/icmpv6.cc
+	protocols/app/dlt_header.cc
+	protocols/checksum/checksum.cc
+	event/event_mgr.cc
+	pkt/parsed_pkt_pool.cc)
 
 set(NETOS_PROTOCOLS_SRC
-    protocols/l2/arp.cc)
+	protocols/l2/arp.cc)
 
 set(STATISTICS_SRC
-    statistics/statistics.cc)
+	statistics/statistics.cc)
 
 set(IDS_PKT_GEN_SRC
-    ${IDS_COMMON_SRC}
-    pktgen/pktgen.cc
-    pktgen/pktgen_config.cc)
+	${IDS_COMMON_SRC}
+	pktgen/pktgen.cc
+	pktgen/pktgen_config.cc)
 
 set(CLOUD_INTERFACE_SRC
-    cloud_interface/stats_interface_tx.cc
-    cloud_interface/events_interface_tx.cc
-    cloud_interface/cloud_interface_tx.cc)
+	cloud_interface/stats_interface_tx.cc
+	cloud_interface/events_interface_tx.cc
+	cloud_interface/cloud_interface_tx.cc)
 
 set(NETWORKING_SRC
-    ${IDS_COMMON_SRC}
-    ${NETOS_PROTOCOLS_SRC}
-    networking/network_main.cc
-    networking/network_config.cc
-    networking/pkt_parser.cc
-    networking/network_egress_intf.cc
-    networking/pcap.cc
-    networking/egress_queue.cc
-    ${STATISTICS_SRC}
-    ${CLOUD_INTERFACE_SRC})
+	${IDS_COMMON_SRC}
+	${NETOS_PROTOCOLS_SRC}
+	networking/network_main.cc
+	networking/network_config.cc
+	networking/pkt_parser.cc
+	networking/network_egress_intf.cc
+	networking/pcap.cc
+	networking/egress_queue.cc
+	${STATISTICS_SRC}
+	${CLOUD_INTERFACE_SRC})
 
 set(CRYPTOGRAPHY_SRC
-    cryptography/openssl/openssl_hash.cc
-    cryptography/openssl/openssl_rsa.cc
-    cryptography/wolfssl/wolfssl_hash.cc
-    cryptography/interface/cryptography_methods.cc)
+	cryptography/openssl/openssl_hash.cc
+	cryptography/openssl/openssl_rsa.cc
+	cryptography/wolfssl/wolfssl_hash.cc
+	cryptography/interface/cryptography_methods.cc)
 
 set(CRYPTO_SRV_SRC
-    cryptography/srv/crypto_srv.cc
-    cryptography/srv/crypto_srv_op.cc)
+	cryptography/srv/crypto_srv.cc
+	cryptography/srv/crypto_srv_op.cc)
 
 set(CRYPTO_CLI_SRC
-    cryptography/cli/crypto_cli.cc)
+	cryptography/cli/crypto_cli.cc)
 
 set(ENCODING_CBOR_SRC
-    encoding/cbor/cbor_enc_dec.cc)
+	encoding/cbor/cbor_enc_dec.cc)
 
 set(TOOL_REPLAY_SRC
-    replay/replay.cc)
+	replay/replay.cc)
 
 set(TOOL_TCPDUMP_SRC
-    tcpdump/tcpdump.cc)
+	tcpdump/tcpdump.cc)
 
 set(TEST_CBOR_SRC
-    test/test_cbor.cc)
+	test/test_cbor.cc)
 
 set(TEST_QUEUE_SRC
-    test/test_queue.c)
+	test/test_queue.c)
 
 set(INCL_DIR
-    platform/lib/helpers/
-    platform/lib/linux/
-    platform/lib/algorithms/
-    platform/lib/error/
-    platform/lib/logging/
-    platform/lib/gcd/
-    pkt/
-    protocols/
-    protocols/macros/
-    protocols/l2/
-    protocols/l3/
-    protocols/l4/
-    protocols/app/
-    protocols/checksum/
-    event/
-    networking/
-    statistics/
-    cryptography/interface/
-    cryptography/openssl/
-    cryptography/wolfssl/
-    cryptography/srv/
-    cryptography/cli_interface/
-    cryptography/cli/
-    logger/src/
-    cloud_interface/
-    encoding/cbor/
-    replay/
-    tcpdump/)
+	platform/lib/helpers/
+	platform/lib/linux/
+	platform/lib/algorithms/
+	platform/lib/error/
+	platform/lib/logging/
+	platform/lib/gcd/
+	pkt/
+	protocols/
+	protocols/macros/
+	protocols/l2/
+	protocols/l3/
+	protocols/l4/
+	protocols/app/
+	protocols/checksum/
+	event/
+	networking/
+	statistics/
+	cryptography/interface/
+	cryptography/openssl/
+	cryptography/wolfssl/
+	cryptography/srv/
+	cryptography/cli_interface/
+	cryptography/cli/
+	logger/src/
+	cloud_interface/
+	encoding/cbor/
+	replay/
+	tcpdump/)
 
 include_directories(${INCL_DIR} ${JSONCPP_INCLUDE_DIRS})
 
@@ -149,8 +154,8 @@ else()
 set(BUILD_FLAGS "")
 endif()
 
-set(CMAKE_C_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
-set(CMAKE_CXX_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_C_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_CXX_FLAGS "${STATIC_BUILD} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
 
 ## Use clang compiler
 
