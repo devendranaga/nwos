@@ -22,6 +22,8 @@
 
 namespace netos {
 
+using namespace netos::lib;
+
 enum class arp_state : uint32_t {
     ARP_STATE_INIT = 1,
     ARP_STATE_RESOLVED,
@@ -40,14 +42,16 @@ struct arp_entry {
 
 class arp_cache {
     public:
-        explicit arp_cache();
-        ~arp_cache();
+        explicit arp_cache() { }
+        ~arp_cache() { }
 
+        int initialize();
+        void deinitialize();
         void update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr);
-        netos_hash_table *get() { return arp_cache_; }
+        bool find(uint32_t ipaddr, arp_entry **entry) { return this->arp_cache_.find(ipaddr, entry); }
 
     private:
-        netos_hash_table *arp_cache_;
+        hash_table<uint32_t , arp_entry *> arp_cache_;
 };
 
 /**

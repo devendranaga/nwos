@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 
+#include "hash_table.h"
 #include "signal_intf.h"
 #include "logging.h"
 #include "ioctl_nw.h"
@@ -15,38 +16,43 @@
 #include "network_config.h"
 #include "gcd.h"
 
-static uint32_t arp_macaddr_hash(void *macaddr_ptr)
-{
-    uint8_t *macaddr = (uint8_t *)macaddr_ptr;
-    uint32_t hash_val = 0;
-    uint32_t i;
-
-    for (i = 0; i < NETOS_MACADDR_LEN; i++) {
-        hash_val = (hash_val << 4) + macaddr[i];
-    }
-    return hash_val;
-}
-
-static bool arp_ipaddr_compare(void *ip1, void *ip2)
-{
-    uint32_t *ip_1 = (uint32_t *)ip1;
-    uint32_t *ip_2 = (uint32_t *)ip2;
-
-    return (*ip_1 == *ip_2);
-}
-
 namespace netos {
 
-arp_cache::arp_cache()
+using namespace netos::lib;
+
+uint32_t arp_cache_hash_fn(uint32_t ipaddr)
+{
+    printf("%s %u\n", __func__, __LINE__);
+    return ((ipaddr & 0xFF000000) >> 24) +
+           ((ipaddr & 0x00FF0000) >> 16) +
+           ((ipaddr & 0x0000FF00) >> 8) +
+           ipaddr & 0x000000FF;
+}
+
+bool arp_cache_find_fn(uint32_t ipaddr1, uint32_t ipaddr2)
+{
+    return ipaddr1 == ipaddr2;
+}
+
+bool arp_cache_delete_fn(uint32_t ipaddr, arp_entry *entry)
+{
+    return true;
+}
+
+int arp_cache::initialize()
 {
     network_config *config = network_config::instance();
 
-    arp_cache_ = netos_hash_table_init(config->arp_config_.arp_table_len);
+    printf("%s %u\n", __func__, __LINE__);
+    return this->arp_cache_.initialize(config->arp_config_.arp_table_len,
+                                 arp_cache_hash_fn,
+                                 arp_cache_find_fn,
+                                 arp_cache_delete_fn);
 }
 
-arp_cache::~arp_cache()
+void arp_cache::deinitialize()
 {
-    netos_hash_table_free(arp_cache_, nullptr);
+    arp_cache_.deinitialize();
 }
 
 void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr)
@@ -64,7 +70,9 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
     entry->ipaddr = ipaddr;
     entry->last_updated = time(0);
 
-    netos_hash_table_add_item(arp_cache_, entry, macaddr, arp_macaddr_hash);
+    printf("%s %u\n", __func__, __LINE__);
+    this->arp_cache_.add(ipaddr, entry);
+    printf("%s %u\n", __func__, __LINE__);
 }
 
 void arp_context::add_rx_frame(parsed_pkt *rx_frame)
@@ -117,7 +125,6 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
 void arp_context::arp_process_packet(parsed_pkt *rx_frame)
 {
     uint32_t ipaddr = 0;
-    void *res;
 
     // we do not have any ip address
     if (rx_frame->intf_config->ipaddr == 0) {
@@ -130,13 +137,14 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
     // Packet is directed to us.. do not drop it.
     if ((rx_frame->ah.op == NETOS_ARP_OP_ARP_REQUEST) &&
         (ntohl(ipaddr) == rx_frame->ah.target_protocol_addr)) {
-        res = netos_hash_table_search(this->cache_.get(),
-                                      &rx_frame->ah.sender_protocol_addr,
-                                      arp_ipaddr_compare,
-                                      arp_macaddr_hash);
+        struct arp_entry *entry = nullptr;
+        bool res;
+
+    printf("%s %u\n", __func__, __LINE__);
+        res = this->cache_.find(rx_frame->ah.sender_protocol_addr, &entry);
+    printf("%s %u %d %s\n", __func__, __LINE__, res, entry);
         if (res) {
             // Update the entry.
-            arp_entry *entry = (arp_entry *)res;
             entry->last_updated = time(0);
         } else {
             // Add the entry.
@@ -197,6 +205,7 @@ netos_status arp_context::init()
     /* Create Receive thread. */
     monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);
     monitor_thr_->detach();
+    cache_.initialize();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

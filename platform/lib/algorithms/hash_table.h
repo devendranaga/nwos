@@ -1,60 +1,175 @@
 #ifndef LIB_ALGORITHMS_HASH_H
 #define LIB_ALGORITHMS_HASH_H
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+#include <stdio.h>
+#include <stdint.h>
+#include <functional>
 
-// Defines a hash item in the hash bucket
-//
-// item is the value to be stored and the key is where
-// the searching can be used to perform the match.
-struct netos_hash_item {
-    void *item;
-    void *key;
-    struct netos_hash_item *next;
+namespace netos {
+
+namespace lib {
+
+template <typename key_t>
+using hash_fn = std::function<uint32_t(key_t)>;
+
+template <typename key_t>
+using find_fn = std::function<uint32_t(key_t, key_t)>;
+
+template <typename key_t, typename val_t>
+using del_fn = std::function<void(key_t, val_t)>;
+
+template <typename key_t, typename val_t>
+struct hash_entry {
+    bool active;
+    key_t key;
+    val_t val;
+    struct hash_entry *next;
 };
 
-// Defines a hash table with a set of buckets
-//
-// Each bucket then is a linked list.
-struct netos_hash_table {
-    struct netos_hash_item **buckets;
-    uint32_t size;
+template <typename key_t, typename val_t>
+class hash_table {
+    public:
+        explicit hash_table() = default;
+        ~hash_table() = default;
+
+        inline int initialize(uint32_t n_buckets,
+                       hash_fn<key_t> hfn,
+                       find_fn<key_t> ffn,
+                       del_fn<key_t, val_t> dfn)
+        {
+            this->n_buckets_ = n_buckets;
+            this->buckets_ = new hash_entry<key_t, val_t>[n_buckets];
+            if (!this->buckets_) {
+                return -1;
+            }
+
+            this->hash_fn_ = hfn;
+            this->find_fn_ = ffn;
+            this->del_fn_ = dfn;
+
+            for (uint32_t i = 0; i < n_buckets; i ++) {
+                this->buckets_[i].active = false;
+            }
+
+            return 0;
+        }
+
+        inline int add(key_t key, val_t val)
+        {
+            uint32_t hash_index = this->hash_fn_(key) % this->n_buckets_;
+            struct hash_entry<key_t, val_t> *entry = &this->buckets_[hash_index];
+
+            if (entry->active == false) {
+                entry->active = true;
+                entry->key = key;
+                entry->val = val;
+
+                return 0;
+            } else {
+                struct hash_entry<key_t, val_t> *prev;
+                while (entry) {
+                    prev = entry;
+                    entry = entry->next;
+                }
+                entry = new hash_entry<key_t, val_t>;
+                entry->active = true;
+                entry->key = key;
+                entry->val = val;
+                entry->next = nullptr;
+                prev->next = entry;
+            }
+
+            return 0;
+        }
+
+        inline bool find(key_t key, val_t *val)
+        {
+            uint32_t hash_index = this->hash_fn_(key) % this->n_buckets_;
+            struct hash_entry<key_t, val_t> *entry = &this->buckets_[hash_index];
+
+            if (entry->active) {
+                auto res = this->find_fn_(key, entry->key);
+                if (res) {
+                    *val = entry->val;
+                    return true;
+                }
+            } else {
+                while (entry) {
+                    if (entry->active) {
+                        auto res = this->find_fn_(key, entry->key);
+                        if (res) {
+                            *val = entry->val;
+                            return true;
+                        }
+                    }
+                    entry = entry->next;
+                }
+            }
+
+            return false;
+
+        }
+
+        inline bool remove(key_t key)
+        {
+            uint32_t hash_index = this->hash_fn_(key) % this->n_buckets_;
+            struct hash_entry<key_t, val_t> *entry = &this->buckets_[hash_index];
+
+            if (entry->active) {
+                auto res = this->find_fn_(key, entry->key);
+                if (res) {
+                    this->del_fn_(entry->key, entry->val);
+                    delete entry;
+                    entry = entry->next;
+                    return true;
+                }
+            } else {
+                struct hash_entry<key_t, val_t> *prev;
+
+                while (entry) {
+                    prev = entry;
+                    if (entry->active && this->find_fn_(key, entry->key)) {
+                        this->del_fn_(entry->key, entry->val);
+                        prev->next = entry->next;
+                        delete entry;
+                        return true;
+                    }
+                    entry = entry->next;
+                }
+            }
+
+            return false;
+
+        }
+
+        inline void deinitialize()
+        {
+            uint32_t i;
+
+            for (i = 0; i < this->n_buckets_; i ++) {
+                struct hash_entry<key_t, val_t> *prev;
+                struct hash_entry<key_t, val_t> *entry;
+
+                entry = &this->buckets_[i];
+                while (entry) {
+                    prev = entry;
+                    this->del_fn_(entry->key, entry->val);
+                    delete entry;
+                    entry = entry->next;
+                }
+            }
+        }
+
+    private:
+        uint32_t n_buckets_;
+        hash_entry<key_t, val_t> *buckets_;
+        hash_fn<key_t> hash_fn_;
+        find_fn<key_t> find_fn_;
+        del_fn<key_t, val_t> del_fn_;
 };
 
-// Initialize the hash table.
-//
-// @param [in] size - hash table buckets
-//
-// @return returns the hash table pointer
-struct netos_hash_table* netos_hash_table_init(uint32_t size);
-
-// Add an item in the hash table.
-//
-// @param [in] ctx - hash table pointer.
-// @param [in] item - any type of user data.
-// @param [in] key - key to set in the hash list
-// @param [in] callback_hash - a pointer to a callback function that returns the hash
-//
-// Generally we define a custom hash function so that the user can specify what type of
-// hash they want to use so that the hashing logic can be per application specific and
-// will not be generalized for all the usecases.
-void netos_hash_table_add_item(struct netos_hash_table *ctx,
-                               void *item,
-                               void *key,
-                               uint32_t (*callback_hash)(void *key));
-void netos_hash_table_free(struct netos_hash_table *ctx, void (*callback_free)(void *ptr));
-void *netos_hash_table_search(struct netos_hash_table *ctx,
-                                void *key,
-                                bool (*callback_compare)(void *key1, void *key2),
-                                uint32_t (*callback_hash)(void *key));
-void netos_hash_table_for_each(struct netos_hash_table *ctx,
-                                void (*callback_func)(uint32_t bucket_number,
-                                                      void *item));
-
-#if defined(__cplusplus)
 }
-#endif
+
+}
 
 #endif
