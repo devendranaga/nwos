@@ -18,6 +18,7 @@ struct udp_hdr {
     uint16_t checksum;
 
     uint32_t start_off;
+    uint32_t checksum_off;
 
     explicit udp_hdr() : src_port(0),
                          dst_port(0),

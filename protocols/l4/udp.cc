@@ -5,9 +5,14 @@ namespace netos {
 
 netos_status udp_hdr::serialize(packet_buf *pkt_buf)
 {
+    this->start_off = pkt_buf->offset_;
+
     pkt_buf->serialize_2_bytes(this->src_port);
     pkt_buf->serialize_2_bytes(this->dst_port);
     pkt_buf->serialize_2_bytes(this->len);
+
+    this->checksum_off = pkt_buf->offset_;
+
     pkt_buf->serialize_2_bytes(this->checksum);
 
     return netos_status::NETOS_STATUS_SUCCESS;

@@ -15,6 +15,11 @@ struct vlan_entry {
     uint16_t egress_vlan_id;
 };
 
+struct vlan_key {
+    std::string intf;
+    uint16_t vid;
+};
+
 class vlan_membership {
     public:
         static vlan_membership *instance()
@@ -27,7 +32,7 @@ class vlan_membership {
         void initialize();
 
     private:
-        netos_hash_table *vlan_table_;
+        hash_table<vlan_key *, vlan_entry *> vlan_table_;
 
         explicit vlan_membership() = default;
 };

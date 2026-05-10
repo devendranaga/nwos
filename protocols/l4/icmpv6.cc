@@ -88,6 +88,7 @@ netos_status icmpv6_hdr::deserialize(packet_buf *pkt_buf)
             return netos_status::NETOS_STATUS_MALFORMED_PKT;
         break;
     }
+
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
