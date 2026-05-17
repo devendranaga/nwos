@@ -47,7 +47,8 @@ netos_status parsed_pkt::parse_frame()
      * Parse VLAN and more tagged.
      */
     if ((this->ethertype == NETOS_ETHERTYPE_VLAN) ||
-        (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN)) {
+        (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN) ||
+        (this->ethertype == NETOS_ETHERTYPE_IEEE_8021AD)) {
 
         uint32_t double_vlan_tag = 0;
 
@@ -71,7 +72,8 @@ vlan_parse:
         this->ethertype = this->vh[vlan_index].ethertype;
 
         if ((this->ethertype == NETOS_ETHERTYPE_VLAN) ||
-            (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN)) {
+            (this->ethertype == NETOS_ETHERTYPE_NONSTD_VLAN) ||
+            (this->ethertype == NETOS_ETHERTYPE_IEEE_8021AD)) {
 
             double_vlan_tag ++;
 
@@ -138,6 +140,13 @@ netos_status parsed_pkt::parse_l2_frame()
             ret = this->dot1x_h.deserialize(this->pkt_buf);
             if (ret == netos_status::NETOS_STATUS_SUCCESS) {
                 this->pkt_types_present.has_mka = 1;
+            }
+            return ret;
+        break;
+        case NETOS_ETHERTYPE_LLDP:
+            ret = this->lldp_h.deserialize(this->pkt_buf);
+            if (ret == netos_status::NETOS_STATUS_SUCCESS) {
+                this->pkt_types_present.has_lldp = 1;
             }
             return ret;
         break;

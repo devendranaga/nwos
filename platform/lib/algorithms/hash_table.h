@@ -13,17 +13,17 @@ template <typename key_t>
 using hash_fn = std::function<uint32_t(key_t)>;
 
 template <typename key_t>
-using find_fn = std::function<uint32_t(key_t, key_t)>;
+using find_fn = std::function<bool(key_t, key_t)>;
 
 template <typename key_t, typename val_t>
 using del_fn = std::function<void(key_t, val_t)>;
 
 template <typename key_t, typename val_t>
 struct hash_entry {
-    bool active;
-    key_t key;
-    val_t val;
-    struct hash_entry *next;
+    bool                active;
+    key_t               key;
+    val_t               val;
+    struct hash_entry   *next;
 };
 
 template <typename key_t, typename val_t>
@@ -173,3 +173,4 @@ class hash_table {
 }
 
 #endif
+
