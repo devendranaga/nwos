@@ -40,6 +40,41 @@ Ingress processing is done as follows:
 4. Based on the parsing, frame is queued to the protocol specific layer.
 5. Each protocol specific layer could run its own thread or multiple threads.
 
+## MACsec
+
+```
+|---------|-----|-----|----------|-------------|-------|
+| TCI AN  | SL  | PN  |   SCI    | Secure Data |  ICV  |
+|---------|-----|-----|----------|-------------|-------|
+
+```
+**Figure: MACsec frame format**
+
+```
+|---------|----|----|-----|---|---|--------|
+| Version | ES | SC | SCB | E | C |   AN   |
+|---------|----|----|-----|---|---|--------|
+```
+
+**Figure: TCI AN format**
+
+Following cipher suites are available in the standard:
+
+1. AES-GCM-128
+2. AES-GCM-256
+3. AES-GCM-XPN-128
+4. AES-GCM-XPN-256
+
+For AES-GCM the following are the inputs:
+
+1. AAD
+2. IV
+3. SAK
+4. Payload
+5. Payload length
+
+The outputs are the ciphertext and the GCM Tag.
+
 ## ARP frame handling
 
 ARPs are used to translate an IP address to a real device Mac so the frames can be sent at the switch / hardware level.
@@ -124,18 +159,23 @@ Egress queue is part of the Egress Controller. It does the following operations.
 
 ## netwd
 
-[ ] Fix invalid free or no free of parsed_pkt buffers. (ref counting)
-[ ] Fix packet_buf allocation as a single large pointer.
-[ ] Fix packet_buf free or no free. (ref counting)
-[ ] Cli interface for the netwd for configuration and statistics dumping
-[ ] enable logging to console via the config
-[ ] enable mmap based file writing
-[ ] enable pcap to write files via mmap
-[ ] during initialization of an interface, if the ip address is already given in the configuration, set it.
-[ ] enable configuration to bypass icmp checksum.
-[ ] rewrite the hash table to C++ implementation.
+- [ ] Fix invalid free or no free of parsed_pkt buffers. (ref counting)
+- [ ] Fix packet_buf allocation as a single large pointer.
+- [ ] Fix packet_buf free or no free. (ref counting)
+- [ ] Cli interface for the netwd for configuration and statistics dumping
+- [ ] enable logging to console via the config
+- [ ] enable mmap based file writing
+- [ ] enable pcap to write files via mmap
+- [ ] during initialization of an interface, if the ip address is already given in the configuration, set it.
+- [ ] enable configuration to bypass icmp checksum.
+- [ ] rewrite the hash table to C++ implementation.
+- [ ] implement LLDP parsing
+
+### MACsec
+
+- [ ] MACsec header definitions
 
 ## pktgen
 
-[ ] Generate ICMP messages
-[ ] Perform arping
+- [ ] Generate ICMP messages
+- [ ] Perform arping
