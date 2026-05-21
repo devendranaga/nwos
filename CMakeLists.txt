@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.12)
 
 project(netos)
 
@@ -29,10 +29,11 @@ set(IDS_COMMON_SRC
     protocols/l2/arp_hdr.cc
     protocols/l2/vlan.cc
     protocols/l2/vlan_membership.cc
-    protocols/l2/macsec.cc
+    protocols/l2/macsec_hdr.cc
     protocols/l2/mka.cc
     protocols/l2/avtp.cc
     protocols/l2/ieee8021br.cc
+    protocols/l2/lldp_hdr.cc
     protocols/l3/ipv4.cc
     protocols/l3/ipv6.cc
     protocols/l4/udp.cc
@@ -45,7 +46,8 @@ set(IDS_COMMON_SRC
     pkt/parsed_pkt_pool.cc)
 
 set(NETOS_PROTOCOLS_SRC
-    protocols/l2/arp.cc)
+    protocols/l2/arp.cc
+    protocols/l2/macsec.cc)
 
 set(STATISTICS_SRC
     statistics/statistics.cc)
@@ -100,6 +102,9 @@ set(TEST_CBOR_SRC
 set(TEST_QUEUE_SRC
     test/test_queue.c)
 
+set(TEST_DLL_SRC
+    test/test_dll.cc)
+
 set(INCL_DIR
     platform/lib/helpers/
     platform/lib/linux/
@@ -107,6 +112,7 @@ set(INCL_DIR
     platform/lib/error/
     platform/lib/logging/
     platform/lib/gcd/
+    platform/lib/allocator/
     pkt/
     protocols/
     protocols/macros/
@@ -203,6 +209,9 @@ target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)
 # build test tool for queueing
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue netos_platform pthread)
+
+add_executable(netos_test_dll ${TEST_DLL_SRC})
+target_link_libraries(netos_test_dll netos_platform pthread)
 
 # build test tool for packet replay
 add_executable(netos_replay ${TOOL_REPLAY_SRC})
