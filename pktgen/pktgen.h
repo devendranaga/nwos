@@ -29,6 +29,7 @@ class pktgen {
         void gen_icmp();
         void gen_tcp();
         void gen_udp();
+        void gen_icmpv6();
 
         std::shared_ptr<netos::lib::raw_socket> raw_fd_;
 };

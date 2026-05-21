@@ -35,8 +35,8 @@ struct icmpv6_hdr {
     explicit icmpv6_hdr();
     ~icmpv6_hdr();
 
-    icmpv6_echo *echo_req;
-    icmpv6_echo *echo_reply;
+    icmpv6_echo echo_req;
+    icmpv6_echo echo_reply;
 
     netos_status serialize(packet_buf *pkt_buf);
     netos_status deserialize(packet_buf *pkt_buf);

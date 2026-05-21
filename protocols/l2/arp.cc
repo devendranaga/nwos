@@ -22,7 +22,6 @@ using namespace netos::lib;
 
 uint32_t arp_cache_hash_fn(uint32_t ipaddr)
 {
-    printf("%s %u\n", __func__, __LINE__);
     return ((ipaddr & 0xFF000000) >> 24) +
            ((ipaddr & 0x00FF0000) >> 16) +
            ((ipaddr & 0x0000FF00) >> 8) +
@@ -43,7 +42,6 @@ int arp_cache::initialize()
 {
     network_config *config = network_config::instance();
 
-    printf("%s %u\n", __func__, __LINE__);
     return this->arp_cache_.initialize(config->arp_config_.arp_table_len,
                                  arp_cache_hash_fn,
                                  arp_cache_find_fn,
@@ -70,9 +68,7 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
     entry->ipaddr = ipaddr;
     entry->last_updated = time(0);
 
-    printf("%s %u\n", __func__, __LINE__);
     this->arp_cache_.add(ipaddr, entry);
-    printf("%s %u\n", __func__, __LINE__);
 }
 
 void arp_context::add_rx_frame(parsed_pkt *rx_frame)
@@ -140,9 +136,7 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
         struct arp_entry *entry = nullptr;
         bool res;
 
-    printf("%s %u\n", __func__, __LINE__);
         res = this->cache_.find(rx_frame->ah.sender_protocol_addr, &entry);
-    printf("%s %u %d %s\n", __func__, __LINE__, res, entry);
         if (res) {
             // Update the entry.
             entry->last_updated = time(0);

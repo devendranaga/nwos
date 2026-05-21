@@ -14,10 +14,11 @@ namespace ids {
 #define NETOS_ETHERTYPE_VLAN                0x8100
 #define NETOS_ETHERTYPE_AVTP                0x22F0
 #define NETOS_ETHERTYPE_NONSTD_VLAN         0x9100
-#define NETOS_ETHERTYPE_IEEE_802AD          0x88A8
+#define NETOS_ETHERTYPE_IEEE_8021AD         0x88A8
 #define NETOS_ETHERTYPE_MACSEC              0x88E5
 #define NETOS_ETHERTYPE_MKA                 0x888E
 #define NETOS_ETHERTYPE_8021BR              0x893F
+#define NETOS_ETHERTYPE_LLDP                0x88CC
 
 }
 

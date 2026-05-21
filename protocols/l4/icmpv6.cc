@@ -8,9 +8,27 @@
 
 namespace netos {
 
+netos_status icmpv6_echo::serialize(packet_buf *pkt_buf)
+{
+    pkt_buf->serialize_2_bytes(this->identifier);
+    pkt_buf->serialize_2_bytes(this->sequence);
+    if (this->data && (this->data_len > 0)) {
+        pkt_buf->serialize_bytes(this->data, this->data_len);
+    }
+
+    return netos_status::NETOS_STATUS_SUCCESS;
+}
+
 netos_status icmpv6_hdr::serialize(packet_buf *pkt_buf)
 {
-    return netos_status::NETOS_STATUS_SUCCESS;
+    switch (this->type) {
+        case NETOS_ICMPV6_ECHO_REQ:
+            return this->echo_req.serialize(pkt_buf);
+        case NETOS_ICMPV6_ECHO_REPLY:
+            return this->echo_reply.serialize(pkt_buf);
+    }
+
+    return netos_status::NETOS_STATUS_UNSUPPORTED_ICMPV6_TYPE;
 }
 
 netos_status icmpv6_echo::deserialize(packet_buf *pkt_buf)
@@ -45,11 +63,6 @@ netos_status icmpv6_hdr::deserialize(packet_buf *pkt_buf)
 
     switch (this->type) {
         case NETOS_ICMPV6_ECHO_REQ:
-            this->echo_req = (icmpv6_echo *)calloc(1, sizeof(icmpv6_echo));
-            if (!this->echo_req) {
-                return netos_status::NETOS_STATUS_ALLOC_FAILURE;
-            }
-
             if ((pkt_buf->offset_ + NETOS_ICMPV6_ECHO_REQ_HDR_LEN) > pkt_buf->len_) {
                 event_mgr::instance()->insert_event(
                                             IDS_EVENT_TYPE_DENY,
@@ -59,17 +72,12 @@ netos_status icmpv6_hdr::deserialize(packet_buf *pkt_buf)
                 return netos_status::NETOS_STATUS_MALFORMED_PKT;
             }
 
-            ret = this->echo_req->deserialize(pkt_buf);
+            ret = this->echo_req.deserialize(pkt_buf);
             if (ret != netos_status::NETOS_STATUS_SUCCESS) {
                 return ret;
             }
         break;
         case NETOS_ICMPV6_ECHO_REPLY:
-            this->echo_reply = (icmpv6_echo *)calloc(1, sizeof(icmpv6_echo));
-            if (!this->echo_reply) {
-                return netos_status::NETOS_STATUS_ALLOC_FAILURE;
-            }
-
             if ((pkt_buf->offset_ + NETOS_ICMPV6_ECHO_REPLY_HDR_LEN) > pkt_buf->len_) {
                 event_mgr::instance()->insert_event(
                                             IDS_EVENT_TYPE_DENY,
@@ -79,7 +87,7 @@ netos_status icmpv6_hdr::deserialize(packet_buf *pkt_buf)
                 return netos_status::NETOS_STATUS_MALFORMED_PKT;
             }
 
-            ret = this->echo_reply->deserialize(pkt_buf);
+            ret = this->echo_reply.deserialize(pkt_buf);
             if (ret != netos_status::NETOS_STATUS_SUCCESS) {
                 return ret;
             }

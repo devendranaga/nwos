@@ -13,7 +13,7 @@
 #include "event_mgr.h"
 #include "ethertypes.h"
 #include "eth.h"
-#include "macsec.h"
+#include "macsec_hdr.h"
 #include "arp_hdr.h"
 #include "vlan.h"
 #include "avtp.h"
@@ -495,6 +495,10 @@ free_pktbuf:
 
     if (buf)
         free(buf);
+}
+
+void pktgen::gen_icmpv6()
+{
 }
 
 void pktgen::gen_tcp()

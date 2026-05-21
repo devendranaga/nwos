@@ -35,11 +35,11 @@ class queue_impl {
         uint32_t size();
 
     private:
-        queue<type_t> *head_;
-        queue<type_t> *tail_;
-        lookup_cb<type_t> lcb_;
-        free_cb<type_t> fcb_;
-        uint32_t items_;
+        queue<type_t>       *head_;
+        queue<type_t>       *tail_;
+        lookup_cb<type_t>   lcb_;
+        free_cb<type_t>     fcb_;
+        uint32_t            items_;
 };
 
 template <typename type_t>

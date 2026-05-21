@@ -16,7 +16,8 @@
 #include "eth.h"
 #include "vlan.h"
 #include "arp_hdr.h"
-#include "macsec.h"
+#include "lldp_hdr.h"
+#include "macsec_hdr.h"
 #include "mka.h"
 #include "ipv4.h"
 #include "ipv6.h"
@@ -39,6 +40,7 @@ struct parsed_pkt_types {
     uint32_t has_arp    :1;
     uint32_t has_macsec :1;
     uint32_t has_mka    :1;
+    uint32_t has_lldp   :1;
     uint32_t has_ipv4   :1;
     uint32_t has_ipv6   :1;
     uint32_t has_udp    :1;
@@ -65,6 +67,7 @@ struct parsed_pkt {
     arp_hdr                                     ah;
     macsec_hdr                                  macsec_h;
     ieee8021x_header                            dot1x_h;
+    lldp_hdr                                    lldp_h;
     ipv4_hdr                                    ipv4_h;
     ipv6_hdr                                    ipv6_h;
     udp_hdr                                     udp_h;
@@ -114,7 +117,8 @@ struct parsed_pkt {
         {
             if ((ethertype == NETOS_ETHERTYPE_ARP) ||
                 (ethertype == NETOS_ETHERTYPE_MACSEC) ||
-                (ethertype == NETOS_ETHERTYPE_MKA)) {
+                (ethertype == NETOS_ETHERTYPE_MKA) ||
+                (ethertype == NETOS_ETHERTYPE_LLDP)) {
                 return netos_status::NETOS_STATUS_SUCCESS;
             }
 
