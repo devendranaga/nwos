@@ -198,6 +198,26 @@
         "count": 1,
         "pkt_intvl_nsec": 1
     },
+    "icmpv6": {
+        "enable": true,
+        "eth": {
+            "src_mac": "00:11:22:33:44:44",
+            "dst_mac": "01:01:02:03:04:04"
+        },
+        "ipv4": {
+            "src_addr": "192.168.0.1",
+            "dst_addr": "192.168.0.12"
+        },
+        "type": 128,
+        "code": 0,
+        "identifier": "0x1",
+        "sequence_number": "0x1",
+        "payload_len": 0,
+        "randomize": false,
+        "repeat": true,
+        "count": 1,
+        "pkt_intvl_nsec": 1
+    },
     "tcp": {
         "enable": false,
         "eth": {

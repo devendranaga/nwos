@@ -52,6 +52,10 @@
             ],
             "drop_double_tagged_vlan": false
         },
+        "macsec_config": {
+            "enable": false,
+            "num_secy": 16,
+        },
         "arp_config": {
             "arp_table_len": 64,
             "arp_query_timer_intvl_sec" : 1,
