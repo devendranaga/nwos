@@ -26,15 +26,17 @@ using namespace netos::lib;
 
 enum class arp_state : uint32_t {
     ARP_STATE_INIT = 1,
+    ARP_STATE_QUERY_REQUESTED,
     ARP_STATE_RESOLVED,
 };
 
 struct arp_entry {
-    arp_state   state;
-    std::string ifname;
-    uint8_t     macaddr[NETOS_MACADDR_LEN];
-    uint32_t    ipaddr;
-    time_t      last_updated;
+    arp_state                                   state;
+    std::shared_ptr<network_interface_config>   intf_config;
+    uint8_t                                     macaddr[NETOS_MACADDR_LEN];
+    uint32_t                                    ipaddr;
+    time_t                                      last_updated;
+    uint32_t                                    tx_count;
 
     explicit arp_entry() : state(arp_state::ARP_STATE_INIT) { }
     ~arp_entry() { }
@@ -47,11 +49,20 @@ class arp_cache {
 
         int initialize();
         void deinitialize();
-        void update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr);
+        void update(std::shared_ptr<network_interface_config> &intf_config,
+                    arp_state state,
+                    uint8_t *macaddr,
+                    uint32_t ipaddr);
         bool find(uint32_t ipaddr, arp_entry **entry) { return this->arp_cache_.find(ipaddr, entry); }
+        void for_each() {
+            this->arp_cache_.for_each();
+        }
 
     private:
         hash_table<uint32_t , arp_entry *> arp_cache_;
+
+        void arp_req_prepare(arp_entry *entry);
+        void for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry);
 };
 
 /**
@@ -83,7 +94,7 @@ class arp_context {
 
         void arp_process_thread();
         void arp_process_packet(parsed_pkt *rx_frame);
-        void arp_frame_prepare(parsed_pkt *rx_frame, uint8_t *mac, uint32_t ipaddr);
+        void arp_reply_prepare(parsed_pkt *rx_frame, uint8_t *mac, uint32_t ipaddr);
         void arp_query_timer_handler();
         void arp_cache_mgmt_timer_handler();
         void arp_statistics_inc_buffer_full(const std::string &ifname);

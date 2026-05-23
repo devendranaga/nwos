@@ -11,7 +11,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "arp": {
-        "enable": false,
+        "enable": true,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04"
@@ -87,7 +87,7 @@
         "pkt_intvl_nsec": 1000000
     },
     "vlan": {
-        "enable": true,
+        "enable": false,
         "eth": {
             "src_mac": "00:11:22:33:44:44",
             "dst_mac": "01:01:02:03:03:04",

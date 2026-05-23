@@ -30,9 +30,10 @@ void network_if_config::print()
 
 netos_status network_arp_config::parse(Json::Value &root)
 {
-    this->arp_table_len = root["arp_table_len"].asUInt();
-    this->arp_query_timer_intvl_sec = root["arp_query_timer_intvl_sec"].asUInt();
-    this->arp_cache_mgmt_timer_intvl_sec = root["arp_cache_mgmt_timer_intvl_sec"].asUInt();
+    this->arp_table_len                     = root["arp_table_len"].asUInt();
+    this->arp_query_timer_intvl_sec         = root["arp_query_timer_intvl_sec"].asUInt();
+    this->arp_cache_mgmt_timer_intvl_sec    = root["arp_cache_mgmt_timer_intvl_sec"].asUInt();
+    this->arp_retry_count                   = root["arp_retry_count"].asUInt();
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -45,6 +46,8 @@ void network_arp_config::print()
                       this->arp_query_timer_intvl_sec);
     netos_log_verbose("\t ARP Cache Management Timer Interval (sec): %u\n",
                       this->arp_cache_mgmt_timer_intvl_sec);
+    netos_log_verbose("\t ARP Retry Count: %d\n",
+                      this->arp_retry_count);
 }
 
 netos_status network_log_config::parse(Json::Value &root)

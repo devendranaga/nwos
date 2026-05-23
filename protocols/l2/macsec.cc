@@ -33,7 +33,8 @@ netos_status macsec_context::initialize(uint32_t n_secy, uint32_t n_rxsc)
     this->secy_list_->initialize(n_secy * (n_rxsc + 1), // n secy x (n rxsc + 1 txsc)
                                  macsec_hash_fn,
                                  macsec_find_fn,
-                                 macsec_del_fn);
+                                 macsec_del_fn,
+                                 nullptr);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }

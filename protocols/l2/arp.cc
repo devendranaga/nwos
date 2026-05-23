@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <functional>
 
 #include "hash_table.h"
 #include "signal_intf.h"
@@ -41,11 +42,33 @@ bool arp_cache_delete_fn(uint32_t ipaddr, arp_entry *entry)
 int arp_cache::initialize()
 {
     network_config *config = network_config::instance();
+    for_each_fn<uint32_t, arp_entry *>  fe_fn =
+                        std::bind(&arp_cache::for_each_arp_entry_cb,
+                                  this,
+                                  std::placeholders::_1,
+                                  std::placeholders::_2);
 
     return this->arp_cache_.initialize(config->arp_config_.arp_table_len,
-                                 arp_cache_hash_fn,
-                                 arp_cache_find_fn,
-                                 arp_cache_delete_fn);
+                                       arp_cache_hash_fn,
+                                       arp_cache_find_fn,
+                                       arp_cache_delete_fn,
+                                       fe_fn);
+}
+
+void arp_cache::for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry)
+{
+    network_config *config = network_config::instance();
+    time_t now = time(0);
+
+    /* Set state to ARP_REQUESTED. */
+    if ((config->arp_config_.arp_cache_mgmt_timer_intvl_sec <=
+                        (now - entry->last_updated)) &&
+        (entry->tx_count < config->arp_config_.arp_retry_count)) {
+
+        entry->state = arp_state::ARP_STATE_QUERY_REQUESTED;
+        this->arp_req_prepare(entry);
+        entry->tx_count ++;
+    }
 }
 
 void arp_cache::deinitialize()
@@ -53,7 +76,10 @@ void arp_cache::deinitialize()
     arp_cache_.deinitialize();
 }
 
-void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *macaddr, uint32_t ipaddr)
+void arp_cache::update(std::shared_ptr<network_interface_config> &intf_config,
+                       arp_state state,
+                       uint8_t *macaddr,
+                       uint32_t ipaddr)
 {
     arp_entry *entry;
 
@@ -62,11 +88,12 @@ void arp_cache::update(const std::string &ifname, arp_state state, uint8_t *maca
         return;
     }
 
-    entry->ifname = ifname;
-    entry->state = state;
+    entry->intf_config  = intf_config;
+    entry->state        = state;
     memcpy(entry->macaddr, macaddr, NETOS_MACADDR_LEN);
-    entry->ipaddr = ipaddr;
+    entry->ipaddr       = ipaddr;
     entry->last_updated = time(0);
+    entry->tx_count     = 0;
 
     this->arp_cache_.add(ipaddr, entry);
 }
@@ -87,12 +114,12 @@ void arp_context::arp_statistics_inc_buffer_full(const std::string &ifname)
     intf->inc_egress_drop_buffer_full();
 }
 
-void arp_context::arp_frame_prepare(parsed_pkt *frame,
+void arp_context::arp_reply_prepare(parsed_pkt *frame,
                                     uint8_t *macaddr,
                                     uint32_t ipaddr)
 {
     network_egress_intf intf;
-    eth_hdr eh;
+    eth_hdr eh(frame->eh.src_mac, macaddr, NETOS_ETHERTYPE_ARP);
     arp_hdr ah;
     std::string ifname = frame->intf_config->ifname;
 
@@ -104,15 +131,37 @@ void arp_context::arp_frame_prepare(parsed_pkt *frame,
         return;
     }
 
-    memcpy(eh.dst_mac, frame->eh.src_mac, NETOS_MACADDR_LEN);
-    memcpy(eh.src_mac, macaddr, NETOS_MACADDR_LEN);
-    eh.ethertype = NETOS_ETHERTYPE_ARP;
     eh.serialize(intf.pkt);
 
     ah.arp_reply_defaults(macaddr,
                           frame->eh.src_mac,
                           ntohl(ipaddr),
                           frame->ah.sender_protocol_addr);
+    ah.serialize(intf.pkt);
+
+    network_egress::instance()->egress_enque(intf);
+}
+
+void arp_cache::arp_req_prepare(arp_entry *entry)
+{
+    network_egress_intf intf;
+    eth_hdr eh(entry->macaddr, entry->intf_config->mac, NETOS_ETHERTYPE_ARP);
+    arp_hdr ah;
+    std::string ifname = entry->intf_config->ifname;
+
+    intf.ifname     = ifname;
+    intf.raw_fd_    = entry->intf_config->raw;
+    intf.pkt = packet_buf_pool::instance()->get_pkt();
+    if (!intf.pkt) {
+        return;
+    }
+
+    eh.serialize(intf.pkt);
+
+    ah.arp_request_defaults(entry->intf_config->mac,
+                            entry->macaddr,
+                            ntohl(entry->intf_config->ipaddr),
+                            entry->ipaddr);
     ah.serialize(intf.pkt);
 
     network_egress::instance()->egress_enque(intf);
@@ -142,12 +191,12 @@ void arp_context::arp_process_packet(parsed_pkt *rx_frame)
             entry->last_updated = time(0);
         } else {
             // Add the entry.
-            this->cache_.update(rx_frame->intf_config->ifname,
-                            arp_state::ARP_STATE_RESOLVED,
-                            rx_frame->ah.sender_hwaddr,
-                            rx_frame->ah.sender_protocol_addr);
+            this->cache_.update(rx_frame->intf_config,
+                                arp_state::ARP_STATE_RESOLVED,
+                                rx_frame->ah.sender_hwaddr,
+                                rx_frame->ah.sender_protocol_addr);
         }
-        this->arp_frame_prepare(rx_frame, rx_frame->intf_config->mac, ipaddr);
+        this->arp_reply_prepare(rx_frame, rx_frame->intf_config->mac, ipaddr);
     } else {
         // Drop the frame and cleanup.
     }
@@ -171,10 +220,7 @@ void arp_context::arp_process_thread()
 
 void arp_context::arp_query_timer_handler()
 {
-}
-
-void arp_context::arp_cache_mgmt_timer_handler()
-{
+    this->cache_.for_each();
 }
 
 netos_status arp_context::init()
@@ -188,13 +234,6 @@ netos_status arp_context::init()
     gcd_instance->register_timer(config->arp_config_.arp_query_timer_intvl_sec,
                                  0,
                                  query_timer_cb);
-
-    /* Create ARP cache management timer. */
-    std::function<void()> cache_mgmt_timer_cb = std::bind(&arp_context::arp_cache_mgmt_timer_handler, this);
-
-    gcd_instance->register_timer(config->arp_config_.arp_cache_mgmt_timer_intvl_sec,
-                                 0,
-                                 cache_mgmt_timer_cb);
 
     /* Create Receive thread. */
     monitor_thr_ = std::make_shared<std::thread>(&arp_context::arp_process_thread, this);

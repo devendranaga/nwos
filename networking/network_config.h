@@ -17,6 +17,7 @@ struct network_arp_config {
     uint32_t arp_table_len;
     uint32_t arp_cache_mgmt_timer_intvl_sec;
     uint32_t arp_query_timer_intvl_sec;
+    uint32_t arp_retry_count;
 
     /**
      * @brief - Parse the ARP configuration

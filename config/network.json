@@ -58,8 +58,9 @@
         },
         "arp_config": {
             "arp_table_len": 64,
+            "arp_retry_count": 3,
             "arp_query_timer_intvl_sec" : 1,
-            "arp_cache_mgmt_timer_intvl_sec": 30
+            "arp_cache_mgmt_timer_intvl_sec": 12
         },
         "ipv4_config": {
             "ipv4_ip_type": "static",

@@ -7,6 +7,10 @@
 #include <exception>
 #include <system_error>
 
+namespace netos {
+
+namespace lib {
+
 class mmap_allocator {
     public:
         explicit mmap_allocator(uint32_t size) :
@@ -66,5 +70,9 @@ class mmap_allocator {
         uint32_t size_;
         uint32_t page_size_;
 };
+
+}
+
+}
 
 #endif

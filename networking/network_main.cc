@@ -62,9 +62,11 @@ void network_manager::termination_handler()
     gcd_instance->terminate();
 }
 
-void network_interface_config::initialize(const std::string &ifname)
+void network_interface_config::initialize(const std::string &ifname,
+                                          std::shared_ptr<raw_socket> raw)
 {
     this->ifname = ifname;
+    this->raw = raw;
 
     netos_get_macaddr(ifname.c_str(), this->mac);
     netos_get_ipaddr(ifname.c_str(), &this->ipaddr);
@@ -270,7 +272,7 @@ netos_status network_interface::initialize(const std::string &ifname)
     netos_log_info("created raw socket on <%s>\n", ifname.c_str());
 
     this->intf_config_ = std::make_shared<network_interface_config>();
-    this->intf_config_->initialize(ifname);
+    this->intf_config_->initialize(ifname, this->raw_);
 
     this->stats_ = statistics::instance()->initialize(ifname);
 

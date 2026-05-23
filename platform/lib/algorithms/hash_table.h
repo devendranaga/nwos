@@ -19,6 +19,9 @@ template <typename key_t, typename val_t>
 using del_fn = std::function<void(key_t, val_t)>;
 
 template <typename key_t, typename val_t>
+using for_each_fn = std::function<void(key_t, val_t)>;
+
+template <typename key_t, typename val_t>
 struct hash_entry {
     bool                active;
     key_t               key;
@@ -35,7 +38,8 @@ class hash_table {
         inline int initialize(uint32_t n_buckets,
                        hash_fn<key_t> hfn,
                        find_fn<key_t> ffn,
-                       del_fn<key_t, val_t> dfn)
+                       del_fn<key_t, val_t> dfn,
+                       for_each_fn<key_t, val_t> fefn)
         {
             this->n_buckets_ = n_buckets;
             this->buckets_ = new hash_entry<key_t, val_t>[n_buckets];
@@ -46,6 +50,7 @@ class hash_table {
             this->hash_fn_ = hfn;
             this->find_fn_ = ffn;
             this->del_fn_ = dfn;
+            this->fe_fn_ = fefn;
 
             for (uint32_t i = 0; i < n_buckets; i ++) {
                 this->buckets_[i].active = false;
@@ -110,6 +115,22 @@ class hash_table {
 
         }
 
+        inline void for_each()
+        {
+            uint32_t i;
+
+            for (i = 0; i < this->n_buckets_; i ++) {
+                struct hash_entry<key_t, val_t> *entry = &this->buckets_[i];
+
+                while (entry) {
+                    if (entry->active) {
+                        this->fe_fn_(entry->key, entry->val);
+                    }
+                    entry = entry->next;
+                }
+            }
+        }
+
         inline bool remove(key_t key)
         {
             uint32_t hash_index = this->hash_fn_(key) % this->n_buckets_;
@@ -166,6 +187,7 @@ class hash_table {
         hash_fn<key_t> hash_fn_;
         find_fn<key_t> find_fn_;
         del_fn<key_t, val_t> del_fn_;
+        for_each_fn<key_t, val_t> fe_fn_;
 };
 
 }
