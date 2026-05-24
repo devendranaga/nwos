@@ -1,12 +1,16 @@
 #ifndef PROTOCOLS_L2_MACSEC_H
 #define PROTOCOLS_L2_MACSEC_H
 
+#include <stdint.h>
 #include <string.h>
 
 #include "netos_macros.h"
 #include "error_codes.h"
+#include "cryptography_methods.h"
+#include "cryptography_aes_gcm.h"
 #include "hash_table.h"
 #include "packet_buf.h"
+#include "parsed_pkt.h"
 
 namespace netos {
 
@@ -31,6 +35,8 @@ struct macsec_txsa {
     uint8_t key[MACSEC_KEY_LEN];
     uint32_t key_len;
     bool macsec_operational;
+    std::shared_ptr<cryptography_aes_gcm> gcm_;
+    std::shared_ptr<cryptography_aes_gmac> gmac_;
 };
 
 struct macsec_rxsa {
@@ -41,6 +47,8 @@ struct macsec_rxsa {
     uint8_t key[MACSEC_KEY_LEN];
     uint32_t key_len;
     bool macsec_operational;
+    std::shared_ptr<cryptography_aes_gcm> gcm_;
+    std::shared_ptr<cryptography_aes_gmac> gmac_;
 };
 
 struct macsec_rxsc {
@@ -84,6 +92,7 @@ class macsec_context {
         void deinitialize();
 
         netos_status transmit(uint8_t *sci, bool use_es, packet_buf *pkt_buf);
+        netos_status receive(parsed_pkt *parsed_pkt);
 
     private:
         hash_table<uint8_t *, macsec_secy *> *secy_list_;
@@ -103,6 +112,10 @@ class macsec_context {
 
         void del_sci(uint8_t *sci_1, macsec_secy *secy) {
             return;
+        }
+
+        bool for_each_sci(uint8_t *sci, macsec_secy *secy) {
+            return false;
         }
 };
 

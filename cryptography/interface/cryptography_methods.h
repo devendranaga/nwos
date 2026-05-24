@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <cryptography_hash.h>
+#include <cryptography_aes_gcm.h>
 
 namespace netos {
 
@@ -23,10 +24,9 @@ class cryptography_methods {
         /**
          * @brief Get the instance object
          *
-         * @param provider crypto provider (openssl / wolfssl)
          * @return cryptography_methods* pointer to the instance
          */
-        static cryptography_methods* get_instance(crypto_provider provider)
+        static cryptography_methods* get_instance()
         {
             static cryptography_methods methods;
             return &methods;
@@ -40,6 +40,10 @@ class cryptography_methods {
          * @return std::shared_ptr<cryptography_hash>
          */
         std::shared_ptr<cryptography_hash> get_hash_instance(crypto_provider provider);
+
+        std::shared_ptr<cryptography_aes_gcm> get_aes_gcm_instance(crypto_provider provider);
+
+        std::shared_ptr<cryptography_aes_gmac> get_aes_gmac_instance(crypto_provider provider);
 
     private:
         explicit cryptography_methods() = default;

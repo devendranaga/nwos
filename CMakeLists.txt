@@ -78,6 +78,7 @@ set(CRYPTOGRAPHY_SRC
     cryptography/openssl/openssl_hash.cc
     cryptography/openssl/openssl_rsa.cc
     cryptography/wolfssl/wolfssl_hash.cc
+    cryptography/wolfssl/wolfssl_gcm.cc
     cryptography/interface/cryptography_methods.cc)
 
 set(CRYPTO_SRV_SRC
@@ -158,8 +159,8 @@ else()
 set(BUILD_FLAGS "")
 endif()
 
-set(CMAKE_C_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
-set(CMAKE_CXX_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT}")
+set(CMAKE_C_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT} -DWC_NO_HARDEN")
+set(CMAKE_CXX_FLAGS "${BUILD_FLAGS} -fstack-protector -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wno-unused-parameter ${NETOS_BIN_OPT} -DWC_NO_HARDEN")
 
 ## Use clang compiler
 
@@ -179,7 +180,7 @@ add_library(netos_platform ${PLATFORM_SRC})
 
 # build network daemon
 add_executable(netos_netwd ${NETWORKING_SRC})
-target_link_libraries(netos_netwd netos_platform pthread ${JSONCPP_LIBRARIES} netos_cryptography ssl crypto wolfssl)
+target_link_libraries(netos_netwd netos_platform pthread ${JSONCPP_LIBRARIES} netos_cryptography ssl crypto wolfssl zstd z)
 
 # build logger daemon
 add_executable(netos_logger ${LOGGER_SRC})

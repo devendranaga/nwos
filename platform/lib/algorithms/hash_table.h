@@ -144,6 +144,10 @@ class hash_table {
                 struct hash_entry<key_t, val_t> *entry = this->buckets_[i];
 
                 while (entry) {
+                    /**
+                     * If the for_each callback returns true, that means the caller
+                     * asked to stop.
+                     */
                     if (this->fe_fn_(entry->key, entry->val) == true) {
                         return;
                     }

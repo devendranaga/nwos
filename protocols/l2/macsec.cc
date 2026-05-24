@@ -26,6 +26,12 @@ netos_status macsec_context::initialize(uint32_t n_secy, uint32_t n_rxsc)
                                                         this,
                                                         std::placeholders::_1,
                                                         std::placeholders::_2);
+
+    for_each_fn<uint8_t *, macsec_secy *> macsec_for_each_fn = std::bind(
+                                                                    &macsec_context::for_each_sci,
+                                                                    this,
+                                                                    std::placeholders::_1,
+                                                                    std::placeholders::_2);
     /**
      * Initialize hash table with combined sci lenght for 1 txsc and n rxsc multiplied
      * by the number of secy.
@@ -34,7 +40,7 @@ netos_status macsec_context::initialize(uint32_t n_secy, uint32_t n_rxsc)
                                  macsec_hash_fn,
                                  macsec_find_fn,
                                  macsec_del_fn,
-                                 nullptr);
+                                 macsec_for_each_fn);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
@@ -110,6 +116,16 @@ netos_status macsec_context::create_txsa(uint8_t *sci, macsec_txsa *txsa)
     secy->txsc.txsa[txsa->an].protect_frames        = txsa->protect_frames;
     secy->txsc.txsa[txsa->an].macsec_operational    = false;
 
+    secy->txsc.txsa[txsa->an].gcm_ = cryptography_methods::get_instance()->get_aes_gcm_instance(
+                                                            crypto_provider::WOLFSSL);
+    secy->txsc.txsa[txsa->an].gcm_->init();
+    secy->txsc.txsa[txsa->an].gcm_->set_key(txsa->key, txsa->key_len);
+
+    secy->txsc.txsa[txsa->an].gmac_ = cryptography_methods::get_instance()->get_aes_gmac_instance(
+                                                            crypto_provider::WOLFSSL);
+    secy->txsc.txsa[txsa->an].gmac_->init();
+    secy->txsc.txsa[txsa->an].gmac_->set_key(txsa->key, txsa->key_len);
+
     return netos_status::NETOS_STATUS_SUCCESS;
 }
 
@@ -135,6 +151,16 @@ netos_status macsec_context::create_rxsa(uint8_t *sci,
     secy->rxsc.rxsa[rxsa->an].key_len               = rxsa->key_len;
     secy->rxsc.rxsa[rxsa->an].protect_frames        = rxsa->protect_frames;
     secy->rxsc.rxsa[rxsa->an].macsec_operational    = false;
+
+    secy->rxsc.rxsa[rxsa->an].gcm_ = cryptography_methods::get_instance()->get_aes_gcm_instance(
+                                                            crypto_provider::WOLFSSL);
+    secy->rxsc.rxsa[rxsa->an].gcm_->init();
+    secy->rxsc.rxsa[rxsa->an].gcm_->set_key(rxsa->key, rxsa->key_len);
+
+    secy->rxsc.rxsa[rxsa->an].gmac_ = cryptography_methods::get_instance()->get_aes_gmac_instance(
+                                                            crypto_provider::WOLFSSL);
+    secy->rxsc.rxsa[rxsa->an].gmac_->init();
+    secy->rxsc.rxsa[rxsa->an].gmac_->set_key(rxsa->key, rxsa->key_len);
 
     return netos_status::NETOS_STATUS_SUCCESS;
 }
