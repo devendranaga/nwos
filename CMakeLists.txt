@@ -105,6 +105,9 @@ set(TEST_QUEUE_SRC
 set(TEST_DLL_SRC
     test/test_dll.cc)
 
+set(TEST_HASH_TABLE_SRC
+    test/test_hash_table.cc)
+
 set(INCL_DIR
     platform/lib/helpers/
     platform/lib/linux/
@@ -210,8 +213,13 @@ target_link_libraries(netos_test_cbor netos_platform pthread netos_cbor)
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue netos_platform pthread)
 
+# build test tool for doubly linked lists
 add_executable(netos_test_dll ${TEST_DLL_SRC})
 target_link_libraries(netos_test_dll netos_platform pthread)
+
+# build test tool for the hash tables
+add_executable(netos_test_hash_table ${TEST_HASH_TABLE_SRC})
+target_link_libraries(netos_test_hash_table netos_platform pthread)
 
 # build test tool for packet replay
 add_executable(netos_replay ${TOOL_REPLAY_SRC})

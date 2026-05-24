@@ -62,7 +62,7 @@ class arp_cache {
         hash_table<uint32_t , arp_entry *> arp_cache_;
 
         void arp_req_prepare(arp_entry *entry);
-        void for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry);
+        bool for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry);
 };
 
 /**

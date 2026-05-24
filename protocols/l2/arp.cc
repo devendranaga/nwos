@@ -36,6 +36,7 @@ bool arp_cache_find_fn(uint32_t ipaddr1, uint32_t ipaddr2)
 
 bool arp_cache_delete_fn(uint32_t ipaddr, arp_entry *entry)
 {
+    free(entry);
     return true;
 }
 
@@ -55,7 +56,7 @@ int arp_cache::initialize()
                                        fe_fn);
 }
 
-void arp_cache::for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry)
+bool arp_cache::for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry)
 {
     network_config *config = network_config::instance();
     time_t now = time(0);
@@ -69,6 +70,15 @@ void arp_cache::for_each_arp_entry_cb(uint32_t ipaddr, arp_entry *entry)
         this->arp_req_prepare(entry);
         entry->tx_count ++;
     }
+
+    if (entry->state == arp_state::ARP_STATE_QUERY_REQUESTED) {
+        if (entry->tx_count >= config->arp_config_.arp_retry_count) {
+            this->arp_cache_.remove(ipaddr);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void arp_cache::deinitialize()
