@@ -1,9 +1,0 @@
-#ifndef NETOS_MACRO_DEFS_H
-#define NETOS_MACRO_DEFS_H
-
-#define NETOS_MACADDR_LEN   6u
-#define NETOS_IPV4_ADDR_LEN 4u
-#define NETOS_IPV6_ADDR_LEN 16u
-
-#endif
-
