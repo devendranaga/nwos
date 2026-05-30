@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <interface_list>
+        <interface>wlp4s0</interface>
+    </interface_list>
+</configuration>

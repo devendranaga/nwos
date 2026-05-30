@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.12)
+project(netos)
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(LINK_SEARCH_START_STATIC ON)
+set(LINK_SEARCH_END_STATIC ON)
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc")
+
+if(COMPILER_CLANG)
+set(CMAKE_C_COMPILER "clang")
+elseif(COMPILER_GCC)
+set(CMAKE_C_COMPILER "gcc")
+endif()
+
+set(CMAKE_C_FLAGS "-Wall -Wno-unused-parameter -Werror -Wextra")
+
+SET(PROTOCOL_SRC
+    ./protocols/eth.c)
+
+SET(PLATFORM_SRC
+    ./platform/lib/raw_socket.c
+    ./platform/lib/net_ioctl.c
+    ./platform/lib/pthread_intf.c
+    ./platform/lib/mmap_intf.c
+    ./common/pkt_buffer.c
+    ./common/buffer_pool.c
+    ./common/list.c
+    ./common/queue.c
+    ./logging/netos_log.c)
+
+SET(LIB_SRC
+    ${PROTOCOL_SRC}
+    ${PLATFORM_SRC})
+
+SET(NETWORK_SRC
+    ./networking/main.c
+    ./networking/packet_parser.c
+    ./networking/network_config.c)
+
+include_directories(
+                ./protocols/
+                ./common/
+                ./platform/lib/
+                ./logging/
+                /usr/include/libxml2/)
+
+add_library(netos STATIC ${LIB_SRC})
+
+set(TEST_DLL_SRC
+    ./tests/test_dll.c)
+
+set(TEST_QUEUE_SRC
+    ./tests/test_queue.c)
+
+add_executable(netos_test_dll ${TEST_DLL_SRC})
+target_link_libraries(netos_test_dll PRIVATE netos)
+
+add_executable(netos_test_queue ${TEST_QUEUE_SRC})
+target_link_libraries(netos_test_queue PRIVATE netos)
+
+add_executable(netosd ${NETWORK_SRC})
+target_link_libraries(netosd PRIVATE netos xml2 m z lzma)
+

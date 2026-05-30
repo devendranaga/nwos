@@ -1,0 +1,42 @@
+#ifndef NETOS_PKT_BUFFER_H
+#define NETOS_PKT_BUFFER_H
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <pthread.h>
+
+#define NETOS_PKT_BUFFER_LEN 4096u
+
+typedef struct pkt_buffer {
+    uint8_t             buffer[NETOS_PKT_BUFFER_LEN];
+    uint32_t            offset;
+    uint32_t            rx_len;
+    uint32_t            tx_len;
+    uint32_t            ref_count;
+    pthread_mutex_t     lock;
+
+#define PKT_BUFFER_ADVANCE(__pkt_buf, __offset) do { \
+    __pkt_buf->offset += __offset; \
+} while (0)
+
+    struct pkt_buffer   *next;
+} pkt_buffer_t;
+
+void pkt_buffer_initialize(pkt_buffer_t *pkt_buf);
+
+void pkt_buffer_ref_count_up(pkt_buffer_t *pkt_buf);
+
+void pkt_buffer_ref_count_down(pkt_buffer_t *pkt_buf);
+
+bool pkt_buffer_rx_frame_in_range(pkt_buffer_t *pkt_buf, uint32_t hdr_len);
+
+void pkt_buffer_decode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t *u16);
+
+void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32);
+
+void pkt_buffer_decode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data_len);
+
+#endif
+

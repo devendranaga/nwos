@@ -1,0 +1,7 @@
+#ifndef NETOS_PROTOCOL_CONST_H
+#define NETOS_PROTOCOL_CONST_H
+
+#define NETOS_MACADDR_LEN 6
+
+#endif
+
