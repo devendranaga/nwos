@@ -29,16 +29,19 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
         goto err;
     }
 
+    // set the promiscous mode
     ret = net_ioctl_set_promisc_fd(raw->fd, ifname);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
 
+    // bind to device
     ret = net_ioctl_bind_to_device(raw->fd, ifname);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
 
+    // get the ifindex
     ifindex = net_ioctl_get_ifindex(raw->fd, ifname);
     if (ifindex == -1) {
         goto err;
@@ -49,8 +52,15 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
     lladdr.sll_protocol = htons(ETH_P_ALL);
     lladdr.sll_family = AF_PACKET;
 
+    // bind the raw socket
     res = bind(raw->fd, (struct sockaddr *)&lladdr, sizeof(lladdr));
     if (res != 0) {
+        goto err;
+    }
+
+    // get mac address
+    ret = netos_ioctl_get_macaddr(raw->fd, ifname, raw->mac);
+    if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
 

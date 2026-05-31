@@ -34,6 +34,12 @@ bool pkt_buffer_rx_frame_in_range(pkt_buffer_t *pkt_buf, uint32_t hdr_len)
     return (pkt_buf->rx_len >= (pkt_buf->offset + hdr_len));
 }
 
+void pkt_buffer_decode_byte(pkt_buffer_t *pkt_buf, uint8_t *u8)
+{
+    *u8 = pkt_buf->buffer[pkt_buf->offset];
+    pkt_buf->offset ++;
+}
+
 void pkt_buffer_decode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t *u16)
 {
     uint8_t *buf = pkt_buf->buffer;

@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include "netos_status.h"
+#include "protocol_const.h"
 
 netos_status_t net_ioctl_set_promisc_fd(int fd, const char *ifname)
 {
@@ -66,3 +67,22 @@ int net_ioctl_get_ifindex(int fd, const char *ifname)
 
     return ifr.ifr_ifindex;
 }
+
+netos_status_t netos_ioctl_get_macaddr(int fd, const char *ifname, uint8_t *macaddr)
+{
+    struct ifreq ifr;
+    int ret;
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
+
+    ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
+    if (ret != 0) {
+        return NETOS_STATUS_IOCTL_GET_HWADDR_FAILED;
+    }
+
+    memcpy(macaddr, (uint8_t *)(ifr.ifr_hwaddr.sa_data), NETOS_MACADDR_LEN);
+
+    return NETOS_STATUS_SUCCESS;
+}
+

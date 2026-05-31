@@ -1,11 +1,13 @@
 #ifndef NETOS_RAW_SOCKET_H
 #define NETOS_RAW_SOCKET_H
 
+#include "protocol_const.h"
 #include "netos_status.h"
 
 typedef struct raw_socket_ctx {
-    int fd;
-    char *ifname;
+    int     fd;
+    char    *ifname;
+    uint8_t mac[NETOS_MACADDR_LEN];
 } raw_socket_ctx_t;
 
 raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);

@@ -76,8 +76,8 @@ static void *netos_intf_parse_callback(void *cbdata)
 
         if (length > 0) {
             pkt = netos_queue_pop(parse_thr->parse_q);
-            pkt_buffer_ref_count_down(pkt);
-            printf("final refcount %d\n", pkt->ref_count);
+            netos_parse_frame(pkt, &parse_thr->parsed_data);
+
         } else {
             pthread_cond_wait(&parse_thr->parse_q_cond, &parse_thr->parse_q_lock);
         }

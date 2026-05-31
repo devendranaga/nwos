@@ -15,8 +15,19 @@ endif()
 
 set(CMAKE_C_FLAGS "-Wall -Wno-unused-parameter -Werror -Wextra")
 
+if(DEBUG)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
+endif()
+
 SET(PROTOCOL_SRC
-    ./protocols/eth.c)
+    ./protocols/eth.c
+    ./protocols/arp.c
+    ./protocols/vlan.c
+    ./protocols/macsec.c
+    ./protocols/ipv4.c
+    ./protocols/ipv6.c
+    ./protocols/tcp.c
+    ./protocols/udp.c)
 
 SET(PLATFORM_SRC
     ./platform/lib/raw_socket.c
@@ -29,9 +40,14 @@ SET(PLATFORM_SRC
     ./common/queue.c
     ./logging/netos_log.c)
 
+SET(EVENT_SRC
+    ./events/event_intf.c
+    ./events/event_mgr.c)
+
 SET(LIB_SRC
     ${PROTOCOL_SRC}
-    ${PLATFORM_SRC})
+    ${PLATFORM_SRC}
+    ${EVENT_SRC})
 
 SET(NETWORK_SRC
     ./networking/main.c
@@ -43,6 +59,7 @@ include_directories(
                 ./common/
                 ./platform/lib/
                 ./logging/
+                ./events/
                 /usr/include/libxml2/)
 
 add_library(netos STATIC ${LIB_SRC})

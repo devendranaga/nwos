@@ -32,6 +32,8 @@ void pkt_buffer_ref_count_down(pkt_buffer_t *pkt_buf);
 
 bool pkt_buffer_rx_frame_in_range(pkt_buffer_t *pkt_buf, uint32_t hdr_len);
 
+void pkt_buffer_decode_byte(pkt_buffer_t *pkt_buf, uint8_t *u8);
+
 void pkt_buffer_decode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t *u16);
 
 void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32);

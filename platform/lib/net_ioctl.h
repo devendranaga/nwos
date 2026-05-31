@@ -7,5 +7,7 @@ netos_status_t net_ioctl_bind_to_device(int fd, const char *ifname);
 
 int net_ioctl_get_ifindex(int fd, const char *ifname);
 
+netos_status_t netos_ioctl_get_macaddr(int fd, const char *ifname, uint8_t *macaddr);
+
 #endif
 

@@ -17,6 +17,7 @@ netos_buffer_pool_t *netos_buffer_pool_alloc(uint32_t n_pkt_buffers)
 
     pthread_mutex_init(&pool->lock, NULL);
 
+    // Allocate a memory mapped pool buffer
     pool->size = (n_pkt_buffers + 1) * sizeof(pkt_buffer_t);
     pool->mapped_mem = netos_mmap_alloc(pool->size);
     if (!pool->mapped_mem) {

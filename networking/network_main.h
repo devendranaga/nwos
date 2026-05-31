@@ -7,6 +7,7 @@
 #include "network_config.h"
 #include "pthread_intf.h"
 #include "buffer_pool.h"
+#include "packet_parser.h"
 #include "queue.h"
 
 typedef struct netos_cmdargs {
@@ -14,12 +15,13 @@ typedef struct netos_cmdargs {
 } netos_cmdargs_t;
 
 typedef struct netos_parser_thread {
-    char                *ifname;
-    raw_socket_ctx_t    *raw;
-    pthread_t           tid;
-    pthread_mutex_t     parse_q_lock;
-    pthread_cond_t      parse_q_cond;
-    netos_queue_impl_t  *parse_q;
+    char                    *ifname;
+    raw_socket_ctx_t        *raw;
+    pthread_t               tid;
+    pthread_mutex_t         parse_q_lock;
+    pthread_cond_t          parse_q_cond;
+    netos_queue_impl_t      *parse_q;
+    netos_packet_parser_t   parsed_data;
 } netos_parser_thread_t;
 
 typedef struct netos_intf {

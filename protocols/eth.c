@@ -4,6 +4,7 @@
 #include "protocol_const.h"
 #include "pkt_buffer.h"
 #include "eth.h"
+#include "netos_log.h"
 
 netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
                                 pkt_buffer_t *pkt_buf)
@@ -17,6 +18,18 @@ netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
     pkt_buffer_decode_2_bytes(pkt_buf, &eh->ethertype);
 
     return NETOS_STATUS_SUCCESS;
+}
+
+void netos_eth_print(netos_eth_hdr_t *eh)
+{
+    netos_log_debug("Eth:\n");
+    netos_log_debug("\t DA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                            eh->dst[0], eh->dst[1], eh->dst[2],
+                            eh->dst[3], eh->dst[4], eh->dst[5]);
+    netos_log_debug("\t SA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                            eh->src[0], eh->src[1], eh->src[2],
+                            eh->src[3], eh->src[4], eh->src[5]);
+    netos_log_debug("\t ethertype: 0x%04x\n", eh->ethertype);
 }
 
 

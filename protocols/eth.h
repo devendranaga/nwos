@@ -16,5 +16,7 @@ typedef struct netos_eth_hdr {
 netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
                                 pkt_buffer_t *pkt_buf);
 
+void netos_eth_print(netos_eth_hdr_t *eh);
+
 #endif
 
