@@ -30,7 +30,10 @@ netos_buffer_pool_t *netos_buffer_pool_alloc(uint32_t n_pkt_buffers)
         ptr = (pool->mapped_mem + (i * sizeof(pkt_buffer_t)));
         pkt_buffer_initialize(ptr);
 
+        /* double chaining not required so far when allocating free buffer pool. */
+        ptr->prev = NULL;
         ptr->next = NULL;
+        ptr->buffer_pool_ctx = pool;
 
         if (!pool->free_buffers) {
             pool->free_buffers = ptr;

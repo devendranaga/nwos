@@ -1,5 +1,6 @@
 #include "pkt_buffer.h"
 #include "packet_parser.h"
+#include "parser_thread_ctx.h"
 #include "netos_status.h"
 
 typedef enum {
@@ -46,8 +47,6 @@ netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
         return ret;
     }
 
-    netos_eth_print(&parsed_data->eh);
-
     ethertype = parsed_data->eh.ethertype;
 
 check_ethertype:
@@ -82,11 +81,12 @@ check_ethertype:
     parsed_data->ethertype = ethertype;
 
     if (ethertype == NETOS_ETHERTYPE_ARP) {
-        ret = netos_arp_decode(&parsed_data->l2.arp_hdr, pkt_buf);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            return ret;
+        netos_arp_protocol_t *arp = NETOS_TO_ARP_CTX(parsed_data->this_thread);
+
+        ret = netos_arp_rx_process(pkt_buf, arp);
+        if (ret == NETOS_STATUS_SUCCESS) {
+            parsed_data->has_l2_protocol = true;
         }
-        parsed_data->has_l2_protocol = true;
 
     } else if (ethertype == NETOS_ETHERTYPE_IPV4) {
         ret = netos_ipv4_decode(&parsed_data->l3.ipv4_hdr, pkt_buf);

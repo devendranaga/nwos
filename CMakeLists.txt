@@ -52,7 +52,9 @@ SET(LIB_SRC
 SET(NETWORK_SRC
     ./networking/main.c
     ./networking/packet_parser.c
-    ./networking/network_config.c)
+    ./networking/network_config.c
+    ./egress/egress_controller.c
+    ./egress/egress_sp.c)
 
 include_directories(
                 ./protocols/
@@ -60,6 +62,8 @@ include_directories(
                 ./platform/lib/
                 ./logging/
                 ./events/
+                ./egress/
+                ./statistics/
                 /usr/include/libxml2/)
 
 add_library(netos STATIC ${LIB_SRC})

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include "raw_socket.h"
 
 #define NETOS_PKT_BUFFER_LEN 4096u
 
@@ -16,11 +17,23 @@ typedef struct pkt_buffer {
     uint32_t            tx_len;
     uint32_t            ref_count;
     pthread_mutex_t     lock;
+    uint8_t             priority;
 
 #define PKT_BUFFER_ADVANCE(__pkt_buf, __offset) do { \
     __pkt_buf->offset += __offset; \
 } while (0)
 
+    // from which interface this packet came from
+    raw_socket_ctx_t    *in_intf;
+
+    // on to which interface this packet will go
+    raw_socket_ctx_t    *out_intf;
+
+    // the allocator of this buffer .. back pointer to buffer pool
+    void                *buffer_pool_ctx;
+
+    // prev may be used in egress queueing but may not be used in all the cases
+    struct pkt_buffer   *prev;
     struct pkt_buffer   *next;
 } pkt_buffer_t;
 

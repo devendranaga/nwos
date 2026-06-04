@@ -13,6 +13,7 @@
 
 typedef struct netos_packet_parser {
     char                    *ifname;
+    void                    *this_thread;
     raw_socket_ctx_t        *raw;
     netos_eth_hdr_t         eh;
     uint16_t                ethertype;
@@ -20,10 +21,6 @@ typedef struct netos_packet_parser {
     uint32_t                n_vlans;
     netos_macsec_hdr_t      macsec_hdr;
     bool                    has_l2_protocol;
-
-    union {
-        netos_arp_hdr_t     arp_hdr;
-    } l2;
 
     union {
         netos_ipv4_hdr_t    ipv4_hdr;

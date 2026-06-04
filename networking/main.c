@@ -45,6 +45,8 @@ static void *netos_intf_rx_callback(void *cbdata)
             continue;
         }
 
+        rx_buf->in_intf = intf->raw;
+
         ret = netos_raw_socket_rx(intf->raw, rx_buf->buffer, sizeof(rx_buf->buffer));
         if (ret < 0) {
             continue;
@@ -65,6 +67,9 @@ static void *netos_intf_rx_callback(void *cbdata)
 static void *netos_intf_parse_callback(void *cbdata)
 {
     netos_parser_thread_t *parse_thr = cbdata;
+    netos_status_t ret;
+
+    parse_thr->protocol_ctx.parsed_data.this_thread = parse_thr;
 
     netos_log_info("Parse callback started\n");
 
@@ -75,14 +80,21 @@ static void *netos_intf_parse_callback(void *cbdata)
         int length = parse_thr->parse_q->length;
 
         if (length > 0) {
+            // retrieve the rx from the head of the queue
             pkt = netos_queue_pop(parse_thr->parse_q);
-            netos_parse_frame(pkt, &parse_thr->parsed_data);
+
+            // stats increment
+            parse_thr->if_stats.in_rx_bytes += pkt->rx_len;
+
+            // parse the frame
+            ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
+            if (ret != NETOS_STATUS_SUCCESS) {
+                parse_thr->if_stats.in_rx_invalid ++;
+            }
 
         } else {
             pthread_cond_wait(&parse_thr->parse_q_cond, &parse_thr->parse_q_lock);
         }
-
-        printf("in parse callback rx pkt %p length %d\n", pkt, pkt->rx_len);
 
         pthread_mutex_unlock(&parse_thr->parse_q_lock);
     }
@@ -107,11 +119,15 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
         goto err;
     }
 
+    netos_log_info("raw socket on [%s] create ok\n", intf_config->ifname);
+
     intf->rx_pool = netos_buffer_pool_alloc(1024);
     if (!intf->rx_pool) {
         netos_log_error("Failed to allocate rx buffer pool\n");
         goto err;
     }
+
+    netos_log_info("rx pool created ok\n");
 
     intf->parser_thr = calloc(1, sizeof(netos_parser_thread_t));
     if (!intf->parser_thr) {
@@ -122,27 +138,48 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     intf->parser_thr->ifname = strdup(intf_config->ifname);
     intf->parser_thr->raw = intf->raw;
     intf->parser_thr->parse_q = netos_queue_init();
+
+    netos_log_info("Initialize parse queue\n");
+
     pthread_mutex_init(&intf->parser_thr->parse_q_lock, NULL);
     pthread_cond_init(&intf->parser_thr->parse_q_cond, NULL);
+
+    // initialize egress controller for this interface
+    intf->egress_ctrl = netos_egress_controller_init(NETOS_EGRESS_ALG_SP, intf->raw);
+    if (!intf->egress_ctrl) {
+        netos_log_error("Failed to initialize egress controller\n");
+        goto err;
+    }
+
+    netos_log_info("Initialize egress controller ok\n");
 
     intf->next = NULL;
 
     // create parse thread
     ret = netos_pthread_create_detached(&intf->parser_thr->tid, netos_intf_parse_callback, intf->parser_thr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to create rx parse thread\n");
         goto err;
     }
+
+    netos_log_info("Created rx parse thread\n");
 
     // create receive thread
     ret = netos_pthread_create_detached(&intf->rx_thread, netos_intf_rx_callback, intf);
     if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to create rx thread on [%s]\n", intf->ifname);
         goto err;
     }
+
+    netos_log_info("Created rx thread on interface [%s]\n", intf->ifname);
 
     return intf;
 
 err:
     if (intf) {
+        if (intf->egress_ctrl) {
+            netos_egress_controller_deinit(intf->egress_ctrl);
+        }
         if (intf->parser_thr) {
             if (intf->parser_thr->ifname) {
                 free(intf->parser_thr->ifname);
