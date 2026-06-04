@@ -5,5 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install System Packages
+      run: |
+        sudo apt update
+        sudo apt install -y liblzma-dev
     - name: Compile
       run: mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j
