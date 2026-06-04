@@ -6,6 +6,9 @@
 
 #include "pkt_buffer.h"
 
+/**
+ * @brief - defines buffer pool.
+ */
 typedef struct netos_buffer_pool {
     void            *mapped_mem;
     pkt_buffer_t    *free_buffers;

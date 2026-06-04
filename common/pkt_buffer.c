@@ -5,6 +5,7 @@
 #include <pthread.h>
 
 #include "pkt_buffer.h"
+#include "event_info.h"
 
 void pkt_buffer_initialize(pkt_buffer_t *pkt_buf)
 {
@@ -13,6 +14,7 @@ void pkt_buffer_initialize(pkt_buffer_t *pkt_buf)
     pkt_buf->tx_len     = 0;
     pkt_buf->ref_count  = 0;
     pthread_mutex_init(&pkt_buf->lock, NULL);
+    NETOS_EVENT_INIT(pkt_buf->event_type, pkt_buf->event_desc);
 }
 
 void pkt_buffer_ref_count_up(pkt_buffer_t *pkt_buf)

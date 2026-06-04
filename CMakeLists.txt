@@ -42,7 +42,8 @@ SET(PLATFORM_SRC
 
 SET(EVENT_SRC
     ./events/event_intf.c
-    ./events/event_mgr.c)
+    ./events/event_mgr.c
+    ./events/event_buffer.c)
 
 SET(LIB_SRC
     ${PROTOCOL_SRC}

@@ -52,6 +52,7 @@ static void *netos_intf_rx_callback(void *cbdata)
             continue;
         }
 
+        clock_gettime(CLOCK_REALTIME, &rx_buf->rx_ts);
         rx_buf->rx_len = ret;
 
         pthread_mutex_lock(&intf->parser_thr->parse_q_lock);
@@ -62,6 +63,27 @@ static void *netos_intf_rx_callback(void *cbdata)
     }
 
     return NULL;
+}
+
+static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
+{
+    netos_event_info_t *evt_info;
+
+    evt_info = netos_event_mgr_get_evt_buf();
+    if (!evt_info) {
+        netos_log_error("No available event buffers\n");
+        return;
+    }
+
+    NETOS_EVENT_INFO_CREATE(evt_info,
+                            ifname,
+                            pkt_buf->rx_ts.tv_sec,
+                            pkt_buf->rx_ts.tv_nsec,
+                            pkt_buf->event_type,
+                            pkt_buf->event_desc,
+                            pkt_buf->rx_len);
+
+    netos_event_mgr_add_event(evt_info);
 }
 
 static void *netos_intf_parse_callback(void *cbdata)
@@ -89,6 +111,7 @@ static void *netos_intf_parse_callback(void *cbdata)
             // parse the frame
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
+                netos_update_rx_event(parse_thr->ifname, pkt);
                 parse_thr->if_stats.in_rx_invalid ++;
             }
 
@@ -248,6 +271,13 @@ int main(int argc, char **argv)
 
     netos_log_info("Config parse ok\n");
     netos_config_print(&ctx->config);
+
+    // initialize event manager
+    ret = netos_event_mgr_init();
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("Cannot initialize event manager\n");
+        return ret;
+    }
 
     ret = netos_initialize_interfaces(ctx);
     if (ret != NETOS_STATUS_SUCCESS) {

@@ -4,12 +4,17 @@
 #include "protocol_const.h"
 #include "pkt_buffer.h"
 #include "eth.h"
+#include "event_info.h"
 #include "netos_log.h"
 
 netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
                                 pkt_buffer_t *pkt_buf)
 {
+    // drop and write to event log
     if (!pkt_buffer_rx_frame_in_range(pkt_buf, NETOS_ETH_HDR_LEN)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ETH_SHORT_HDR);
         return NETOS_STATUS_ETH_MALFORMED_PKT;
     }
 
