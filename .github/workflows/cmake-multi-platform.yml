@@ -1,0 +1,9 @@
+name: C cmake CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Compile
+      run: mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j
