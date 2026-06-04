@@ -81,5 +81,5 @@ add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue PRIVATE netos)
 
 add_executable(netosd ${NETWORK_SRC})
-target_link_libraries(netosd PRIVATE netos xml2 m z lzma)
+target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
 

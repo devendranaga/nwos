@@ -8,6 +8,6 @@ jobs:
     - name: Install System Packages
       run: |
         sudo apt update
-        sudo apt install -y liblzma-dev
+        sudo apt install -y liblzma-dev libicu-dev
     - name: Compile
       run: mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j
