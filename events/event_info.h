@@ -9,6 +9,8 @@ typedef enum {
 
 typedef enum {
     NETOS_EVENT_DESC_ETH_SHORT_HDR = 1,
+    NETOS_EVENT_DESC_ARP_SHORT_HDR,
+    NETOS_EVENT_DESC_ARP_INVAL_SENDER_HWADDR,
     NETOS_EVENT_DESC_INVAL = 0xFAFAFAFA,
 } netos_event_desc_t;
 

@@ -7,7 +7,7 @@
 
 #define NETOS_ETH_HDR_LEN 14
 
-#define NETOS_IS_MULTICAST(__mac) !!(mac[0] && 0x01)
+#define NETOS_IS_MULTICAST(__mac) !!(__mac[0] && 0x01)
 
 typedef struct netos_eth_hdr {
     uint8_t     dst[NETOS_MACADDR_LEN];

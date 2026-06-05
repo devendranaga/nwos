@@ -13,7 +13,7 @@ elseif(COMPILER_GCC)
 set(CMAKE_C_COMPILER "gcc")
 endif()
 
-set(CMAKE_C_FLAGS "-Wall -Wno-unused-parameter -Werror -Wextra")
+set(CMAKE_C_FLAGS "-Wall -Wno-unused-parameter -Werror -Wextra -static")
 
 if(DEBUG)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
