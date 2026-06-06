@@ -3,7 +3,7 @@
 
 #include "raw_socket.h"
 #include "eth.h"
-#include "arp.h"
+#include "arp_hdr.h"
 #include "vlan.h"
 #include "macsec.h"
 #include "ipv4.h"
@@ -16,6 +16,7 @@ typedef struct netos_packet_parser {
     void                    *this_thread;
     raw_socket_ctx_t        *raw;
     netos_eth_hdr_t         eh;
+    netos_arp_hdr_t         arp_hdr;
     uint16_t                ethertype;
     netos_vlan_hdr_t        vlan_hdr[NETOS_MAX_VLAN_TUNNELS];
     uint32_t                n_vlans;

@@ -1,4 +1,5 @@
 #include "pkt_buffer.h"
+#include "arp.h"
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
 #include "netos_status.h"
@@ -83,9 +84,19 @@ check_ethertype:
     if (ethertype == NETOS_ETHERTYPE_ARP) {
         netos_arp_protocol_t *arp = NETOS_TO_ARP_CTX(parsed_data->this_thread);
 
-        ret = netos_arp_rx_process(pkt_buf, arp);
+        // Decode ARP frame
+        ret = netos_arp_decode(&parsed_data->arp_hdr, pkt_buf);
         if (ret == NETOS_STATUS_SUCCESS) {
-            parsed_data->has_l2_protocol = true;
+            arp->mib.in_arp ++;
+
+            // Process ARP frame
+            ret = netos_arp_rx_process(pkt_buf, parsed_data, arp);
+            if (ret == NETOS_STATUS_SUCCESS) {
+                parsed_data->has_l2_protocol = true;
+            }
+        } else {
+            arp->mib.in_arp_invalid ++;
+            return ret;
         }
 
     } else if (ethertype == NETOS_ETHERTYPE_IPV4) {

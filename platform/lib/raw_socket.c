@@ -64,6 +64,12 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
         goto err;
     }
 
+    // get the ipaddress
+    ret = netos_ioctl_get_ipaddr(raw->fd, ifname, &raw->ipaddr);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
+
     return raw;
 
 err:

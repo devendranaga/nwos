@@ -5,9 +5,10 @@
 #include "netos_status.h"
 
 typedef struct raw_socket_ctx {
-    int     fd;
-    char    *ifname;
-    uint8_t mac[NETOS_MACADDR_LEN];
+    int         fd;
+    char        *ifname;
+    uint8_t     mac[NETOS_MACADDR_LEN];
+    uint32_t    ipaddr;
 } raw_socket_ctx_t;
 
 raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);

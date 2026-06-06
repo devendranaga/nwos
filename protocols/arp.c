@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include "protocol_const.h"
 #include "netos_status.h"
@@ -6,6 +7,7 @@
 #include "arp.h"
 #include "eth.h"
 #include "event_info.h"
+#include "packet_parser.h"
 
 netos_status_t netos_arp_decode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf)
 {
@@ -62,21 +64,29 @@ void netos_arp_print(netos_arp_hdr_t *arp_hdr)
     netos_log_debug("\t target_protocol_addr: %x\n", arp_hdr->target_protocol_addr);
 }
 
-netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
-                                    netos_arp_protocol_t *arp_ctx)
+static netos_status_t netos_arp_rx_process_reply(pkt_buffer_t *pkt_buf,
+                                                 netos_packet_parser_t *pkt_parser,
+                                                 netos_arp_protocol_t *arp_ctx)
 {
-    netos_arp_hdr_t arp_hdr;
-    netos_status_t ret;
-
-    ret = netos_arp_decode(&arp_hdr, pkt_buf);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        arp_ctx->mib.in_arp_invalid ++;
-        return ret;
+    // target hardware is us
+    if (memcmp(pkt_parser->arp_hdr.target_hwaddr,
+               pkt_buf->in_intf->mac,
+               NETOS_MACADDR_LEN) == 0) {
     }
 
-    netos_arp_print(&arp_hdr);
+    return NETOS_STATUS_SUCCESS;
+}
 
-    arp_ctx->mib.in_arp ++;
- 
+netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
+                                    netos_packet_parser_t *pkt_parser,
+                                    netos_arp_protocol_t *arp_ctx)
+{
+    netos_status_t ret = NETOS_STATUS_SUCCESS;
+
+    if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
+        ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser, arp_ctx);
+    }
+
     return ret;
 }
+

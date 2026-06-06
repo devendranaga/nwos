@@ -65,6 +65,7 @@ include_directories(
                 ./events/
                 ./egress/
                 ./statistics/
+                ./networking/
                 /usr/include/libxml2/)
 
 add_library(netos STATIC ${LIB_SRC})
