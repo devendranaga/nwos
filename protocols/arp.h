@@ -1,6 +1,10 @@
 #ifndef NETOS_PROTOCOLS_ARP_H
 #define NETOS_PROTOCOLS_ARP_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #include "protocol_const.h"
@@ -47,6 +51,10 @@ typedef struct netos_arp_protocol {
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                                     netos_packet_parser_t *pkt_parser,
                                     netos_arp_protocol_t *arp_ctx);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

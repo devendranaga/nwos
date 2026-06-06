@@ -1,6 +1,10 @@
 #ifndef NETOS_PROTOCOLS_MACSEC_H
 #define NETOS_PROTOCOLS_MACSEC_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "netos_status.h"
 
 #define NETOS_MACSEC_SCI_LEN 8
@@ -29,5 +33,9 @@ typedef struct netos_macsec_hdr {
 } netos_macsec_hdr_t;
 
 netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t *pkt_buf);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

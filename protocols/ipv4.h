@@ -1,6 +1,10 @@
 #ifndef NETOS_PROTOCOLS_IPV4_H
 #define NETOS_PROTOCOLS_IPV4_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define NETOS_IPV4_HDR_LEN_DEFAULT  20
 #define NETOS_IPV4_HDR_LEN_MAX      60
 
@@ -27,6 +31,10 @@ typedef struct netos_ipv4_hdr {
 } netos_ipv4_hdr_t;
 
 netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_buf);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

@@ -3,11 +3,16 @@
 ## TODOs
 
 - [ ] WRR egress scheduling
-- [ ] selectable scheduler from a tx path
+- [ ] Fix RR egress scheduling (all frames are not egressing if multiple queues exist)
 - [ ] ARP rx processing
 - [ ] Dynamic hash table
 - [ ] Static queues
 - [ ] correct handling of ref count in rx and egress
+
+## Done
+
+- [x] selectable scheduler from a tx path (via egress algorithm type)
+
 
 ## Configuration
 

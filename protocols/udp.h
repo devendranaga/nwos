@@ -1,6 +1,10 @@
 #ifndef NETOS_PROTOCOLS_UDP_H
 #define NETOS_PROTOCOLS_UDP_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #include "pkt_buffer.h"
@@ -16,5 +20,9 @@ typedef struct netos_udp_hdr {
 } netos_udp_hdr_t;
 
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr, pkt_buffer_t *pkt_buf);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

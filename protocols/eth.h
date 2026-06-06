@@ -5,6 +5,10 @@
 #include "protocol_const.h"
 #include "pkt_buffer.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define NETOS_ETH_HDR_LEN 14
 
 #define NETOS_IS_MULTICAST(__mac) !!(__mac[0] & 0x01)
@@ -19,6 +23,10 @@ netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
                                 pkt_buffer_t *pkt_buf);
 
 void netos_eth_print(netos_eth_hdr_t *eh);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 
