@@ -168,7 +168,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     pthread_cond_init(&intf->parser_thr->parse_q_cond, NULL);
 
     // initialize egress controller for this interface
-    intf->egress_ctrl = netos_egress_controller_init(NETOS_EGRESS_ALG_SP, intf->raw);
+    intf->egress_ctrl = netos_egress_controller_init(intf->raw);
     if (!intf->egress_ctrl) {
         netos_log_error("Failed to initialize egress controller\n");
         goto err;

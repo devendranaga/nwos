@@ -22,6 +22,10 @@ void *netos_egress_sp_tx_queue_thread(void *ctx)
         while (!sp->pkts_in_queue || !sp->terminate_signal) {
             pthread_cond_wait(&sp->sp_cond, &sp->sp_lock);
         }
+        // manager thread signalled terminate, stop this thread
+        if (sp->terminate_signal) {
+            break;
+        }
         sp->pkts_in_queue = false;
 
         for (int i = NETOS_EGRESS_SP_MAX - 1; i >= 0; i --) {
@@ -71,11 +75,20 @@ netos_status_t netos_egress_sp_init(netos_egress_sp_mgr_t *sp)
     return ret;
 }
 
-void netos_egress_sp_enque(netos_egress_sp_mgr_t *sp,
+void netos_egress_sp_deinit(netos_egress_sp_mgr_t *sp)
+{
+    pthread_mutex_lock(&sp->sp_lock);
+    sp->terminate_signal = true;
+    pthread_cond_signal(&sp->sp_cond);
+    pthread_mutex_unlock(&sp->sp_lock);
+}
+
+void netos_egress_sp_enque(void *ctx,
                            pkt_buffer_t *pkt_buf)
 {
+    netos_egress_sp_mgr_t *sp = ctx;
     uint32_t priority = pkt_buf->priority;
-    
+
     pthread_mutex_lock(&sp->sp_lock);
     {
         if (!sp->sp[priority].pkt_buf) {
@@ -90,3 +103,4 @@ void netos_egress_sp_enque(netos_egress_sp_mgr_t *sp,
     pthread_cond_signal(&sp->sp_cond);
     pthread_mutex_unlock(&sp->sp_lock);
 }
+

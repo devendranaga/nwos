@@ -27,6 +27,9 @@ typedef struct netos_egress_sp_mgr {
 
 netos_status_t netos_egress_sp_init(netos_egress_sp_mgr_t *sp);
 
-void netos_egress_sp_enque(netos_egress_sp_mgr_t *sp,
+void netos_egress_sp_enque(void *ctx,
                            pkt_buffer_t *pkt_buf);
+
+void netos_egress_sp_deinit(netos_egress_sp_mgr_t *sp);
+
 #endif

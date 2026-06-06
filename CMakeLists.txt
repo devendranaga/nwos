@@ -55,7 +55,8 @@ SET(NETWORK_SRC
     ./networking/packet_parser.c
     ./networking/network_config.c
     ./egress/egress_controller.c
-    ./egress/egress_sp.c)
+    ./egress/egress_sp.c
+    ./egress/egress_rr.c)
 
 include_directories(
                 ./protocols/

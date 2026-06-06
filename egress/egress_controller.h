@@ -3,10 +3,17 @@
 
 #include "raw_socket.h"
 #include "egress_sp.h"
+#include "egress_rr.h"
 
 typedef enum {
     NETOS_EGRESS_ALG_SP = 1, // Strict priority
+    NETOS_EGRESS_ALG_RR,     // Round robin
+    NETOS_EGRESS_ALG_WRR,    // Weighted round robin
 } netos_egress_queueing_alg_t;
+
+typedef struct netos_egress_controller_mib {
+    uint64_t drops_inval_alg;
+} netos_egress_controller_mib_t;
 
 /**
  * @brief
@@ -20,13 +27,18 @@ typedef enum {
  *  and then can be selected for a specific flow.
  */
 typedef struct netos_egress_controller {
-    char                    *ifname;
-    raw_socket_ctx_t        *raw;
-    netos_egress_sp_mgr_t   *sp;
+    char                            *ifname;
+    raw_socket_ctx_t                *raw;
+    netos_egress_sp_mgr_t           *sp;
+    netos_egress_rr_mgr_t           *rr;
+    netos_egress_controller_mib_t   mib;
 } netos_egress_controller_t;
 
-netos_egress_controller_t *netos_egress_controller_init(netos_egress_queueing_alg_t alg,
-                                                        raw_socket_ctx_t *raw);
+netos_egress_controller_t *netos_egress_controller_init(raw_socket_ctx_t *raw);
+
+void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
+                        netos_egress_queueing_alg_t alg,
+                        pkt_buffer_t *pkt_buf);
 
 void netos_egress_controller_deinit(netos_egress_controller_t *egress_ctrl);
 
