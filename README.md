@@ -2,9 +2,43 @@
 
 ## TODOs
 
+- [ ] WRR egress scheduling
+- [ ] selectable scheduler from a tx path
+- [ ] ARP rx processing
+- [ ] Dynamic hash table
+- [ ] Static queues
+- [ ] correct handling of ref count in rx and egress
+
 ## Configuration
 
 ## Network stack
+
+### Init path
+
+### Rx path
+
+Following actions happen on the rx path:
+1. Rx thread waits on the receive path.
+2. Receives one frame, takes the parse / process thread lock, queues it, wakes up process thread.
+3. Process thread wakes up, retrieves the head item.
+4. Passes it to the protocol parser.
+5. Protocol parsers runs the layer specific handler.
+
+### Egress Queue controller
+
+Egress queue controller orchestrates the queueing and shaping. The following Egress Queueing algorithms exist.
+
+1. Strict Priority
+
+**Strict Priority Queueing**
+
+1. Frames are placed one of the 8 queues based on their priority.
+2. The priroity is determined based on the VLAN's PCP or any priority assignment within the ingress path or protocol level.
+3. The SP scheduler wakes up on a queued item.
+4. Loops around each priority queue from 7 to 0.
+5. Dequeues and transmits all the frames from queue 7.
+6. Repeats it for queue 6, 5, .. and so on to queue 0.
+
 
 ## Build status
 
