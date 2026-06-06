@@ -4,6 +4,9 @@
 #include <pthread.h>
 #include "event_info.h"
 
+/**
+ * @brief - Defines event buffer pool.
+ */
 typedef struct netos_event_buffer {
     void                *mapped_mem;
     netos_event_info_t  *free_buffers;

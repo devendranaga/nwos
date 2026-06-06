@@ -22,7 +22,7 @@ void netos_queue_push(netos_queue_impl_t *impl, void *item)
 {
     netos_queue_t *node;
 
-    node = calloc(1, sizeof(netos_queue_impl_t));
+    node = calloc(1, sizeof(netos_queue_t));
     if (!node) {
         return;
     }

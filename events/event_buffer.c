@@ -15,6 +15,7 @@ netos_event_buffer_t *netos_event_buffer_init(uint32_t n_events)
     }
 
     pthread_mutex_init(&pool->evt_lock, NULL);
+
     pool->size = (n_events + 1) * sizeof(netos_event_info_t);
     pool->mapped_mem = netos_mmap_alloc(pool->size);
     if (!pool->mapped_mem) {
