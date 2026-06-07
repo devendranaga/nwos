@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#define NETOS_IPV4_VERSION          4
 #define NETOS_IPV4_HDR_LEN_DEFAULT  20
 #define NETOS_IPV4_HDR_LEN_MAX      60
 
