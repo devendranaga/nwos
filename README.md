@@ -15,6 +15,7 @@
 - [ ] TCP frame parsing
 - [ ] IPv4 checksum validation
 - [ ] Event capture and storage tests
+- [ ] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
 
 ## Done
 

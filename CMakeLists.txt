@@ -59,6 +59,9 @@ SET(NETWORK_SRC
     ./egress/egress_sp.c
     ./egress/egress_rr.c)
 
+set(TOOL_PGEN_SRC
+    ./tools/pgen/pgen.c)
+
 include_directories(
                 ./protocols/
                 ./common/
@@ -68,7 +71,8 @@ include_directories(
                 ./egress/
                 ./statistics/
                 ./networking/
-                /usr/include/libxml2/)
+                /usr/include/libxml2/
+                ./tools/pgen/)
 
 add_library(netos STATIC ${LIB_SRC})
 
@@ -89,6 +93,9 @@ target_link_libraries(netos_test_queue PRIVATE netos)
 
 add_executable(netos_test_hash_table ${TEST_HASH_TABLE_SRC})
 target_link_libraries(netos_test_hash_table PRIVATE netos)
+
+add_executable(netos_pgen ${TOOL_PGEN_SRC})
+target_link_libraries(netos_pgen PRIVATE pthread netos)
 
 add_executable(netosd ${NETWORK_SRC})
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
