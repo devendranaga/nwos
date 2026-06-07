@@ -72,6 +72,7 @@ pkt_buffer_t *netos_buffer_pool_get_buffer(netos_buffer_pool_t *pool)
 
 void netos_buffer_pool_put_buffer(netos_buffer_pool_t *pool, pkt_buffer_t *pkt_buf)
 {
+    // give back the pkt_buf to the buffer pool.
     pkt_buffer_ref_count_down(pkt_buf);
     pkt_buf->next = NULL;
 

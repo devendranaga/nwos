@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #include "pkt_buffer.h"
-#include "macsec.h"
+#include "macsec_hdr.h"
 
 netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t *pkt_buf)
 {

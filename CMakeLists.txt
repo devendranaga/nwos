@@ -34,6 +34,7 @@ SET(PLATFORM_SRC
     ./platform/lib/net_ioctl.c
     ./platform/lib/pthread_intf.c
     ./platform/lib/mmap_intf.c
+    ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
     ./common/list.c
@@ -77,11 +78,17 @@ set(TEST_DLL_SRC
 set(TEST_QUEUE_SRC
     ./tests/test_queue.c)
 
+set(TEST_HASH_TABLE_SRC
+    ./tests/test_hash_table.c)
+
 add_executable(netos_test_dll ${TEST_DLL_SRC})
 target_link_libraries(netos_test_dll PRIVATE netos)
 
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue PRIVATE netos)
+
+add_executable(netos_test_hash_table ${TEST_HASH_TABLE_SRC})
+target_link_libraries(netos_test_hash_table PRIVATE netos)
 
 add_executable(netosd ${NETWORK_SRC})
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)

@@ -8,6 +8,13 @@
 - [ ] Dynamic hash table
 - [ ] Static queues
 - [ ] correct handling of ref count in rx and egress
+- [ ] MACsec implementation
+- [ ] Cryptography wrapper callback interface
+- [ ] MbedTLS, wolfSSL GCM & GMAC
+- [ ] IPsec implementation
+- [ ] TCP frame parsing
+- [ ] IPv4 checksum validation
+- [ ] Event capture and storage tests
 
 ## Done
 
@@ -15,6 +22,31 @@
 
 
 ## Configuration
+
+**config design**
+
+```xml
+<config>
+    <!-- for both tx and rx pools per each interface -->
+    <pkt_buf_pool_size>1024</pkt_buf_pool_size>
+    <macsec>
+        <!--
+            Enabling MACsec should be dynamic,
+            if the macsec frame appear, the mapping has to be done
+            directly based on the ethertype from rx point.
+
+            Lookup will happen and decryption / verify needs to be done.
+
+            if on tx, the capabilities must be set per interface pointer.
+            if the pointer is not macsec capable, it can be bypassed both
+            on tx and rx sides.
+        -->
+        <max_sci>128</max_sci>
+        <tx_sc_per_sci>1</tx_sc_per_sci>
+        <rx_sc_per_sci>16</rx_sc_per_sci>
+    </macsec>
+</config>
+```
 
 ## Network stack
 
@@ -34,6 +66,7 @@ Following actions happen on the rx path:
 Egress queue controller orchestrates the queueing and shaping. The following Egress Queueing algorithms exist.
 
 1. Strict Priority
+2. Round robin
 
 **Strict Priority Queueing**
 

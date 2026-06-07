@@ -5,7 +5,7 @@
 #include "eth.h"
 #include "arp_hdr.h"
 #include "vlan.h"
-#include "macsec.h"
+#include "macsec_hdr.h"
 #include "ipv4.h"
 #include "udp.h"
 

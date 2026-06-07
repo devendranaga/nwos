@@ -12,6 +12,7 @@ extern "C" {
 #include "pkt_buffer.h"
 #include "arp_hdr.h"
 #include "packet_parser.h"
+#include "hash_tables.h"
 
 #define NETOS_SET_MACADDR(__tgt_mac, __src_mac) do {\
     __tgt_mac[0] = __src_mac[0];\
@@ -44,8 +45,14 @@ typedef struct netos_arp_mib {
     uint64_t    in_arp_valid;
 } netos_arp_mib_t;
 
+typedef struct netos_arp_entry {
+    uint8_t mac[NETOS_MACADDR_LEN];
+    uint32_t ipaddr;
+} netos_arp_entry_t;
+
 typedef struct netos_arp_protocol {
     netos_arp_mib_t mib;
+    netos_hash_table_t *arp_cache;
 } netos_arp_protocol_t;
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
