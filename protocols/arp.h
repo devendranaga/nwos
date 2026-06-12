@@ -39,6 +39,11 @@ extern "C" {
     NETOS_ARP_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa);\
 } while (0)
 
+#define NETOS_ARP_REPLY_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa) do {\
+    (__arp_h)->op = NETOS_ARP_OP_REPLY;\
+    NETOS_ARP_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa);\
+} while (0)
+
 typedef struct netos_arp_mib {
     uint64_t    in_arp;
     uint64_t    in_arp_invalid;

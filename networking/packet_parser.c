@@ -2,15 +2,8 @@
 #include "arp.h"
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
+#include "ethertypes.h"
 #include "netos_status.h"
-
-typedef enum {
-    NETOS_ETHERTYPE_ARP     = 0x0806,
-    NETOS_ETHERTYPE_VLAN    = 0x8100,
-    NETOS_ETHERTYPE_MACSEC  = 0x88E5,
-    NETOS_ETHERTYPE_IPV4    = 0x0800,
-    NETOS_ETHERTYPE_IPV6    = 0x88D6,
-} netos_ethertype_t;
 
 typedef enum {
     NETOS_PROTOCOL_ICMP = 1,

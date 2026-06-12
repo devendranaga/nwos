@@ -42,13 +42,26 @@ void pkt_buffer_decode_byte(pkt_buffer_t *pkt_buf, uint8_t *u8)
     pkt_buf->offset ++;
 }
 
+void pkt_buffer_encode_byte(pkt_buffer_t *pkt_buf, uint8_t u8)
+{
+    pkt_buf->buffer[pkt_buf->offset] = u8;
+    pkt_buf->offset ++;
+}
+
 void pkt_buffer_decode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t *u16)
 {
     uint8_t *buf = pkt_buf->buffer;
     uint32_t offset = pkt_buf->offset;
 
     *u16 = (buf[offset] << 8) | (buf[offset + 1]);
-    pkt_buf->offset += 2u;
+    pkt_buf->offset += 2;
+}
+
+void pkt_buffer_encode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t u16)
+{
+    pkt_buf->buffer[pkt_buf->offset] = (u16 & 0xFF00) >> 8;
+    pkt_buf->buffer[pkt_buf->offset + 1] = (u16 & 0x00FF);
+    pkt_buf->offset += 2;
 }
 
 void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32)
@@ -61,9 +74,23 @@ void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32)
     pkt_buf->offset += 4u;
 }
 
+void pkt_buffer_encode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t u32)
+{
+    pkt_buf->buffer[pkt_buf->offset] = (u32 & 0xFF000000) >> 24;
+    pkt_buf->buffer[pkt_buf->offset + 1] = (u32 & 0x00FF0000) >> 16;
+    pkt_buf->buffer[pkt_buf->offset + 2] = (u32 & 0x0000FF00) >> 8;
+    pkt_buf->buffer[pkt_buf->offset + 3] = (u32 & 0x000000FF);
+    pkt_buf->offset += 4;
+}
+
 void pkt_buffer_decode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data_len)
 {
     memcpy(data, &pkt_buf->buffer[pkt_buf->offset], data_len);
     pkt_buf->offset += data_len;
 }
 
+void pkt_buffer_encode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data_len)
+{
+    memcpy(&pkt_buf->buffer[pkt_buf->offset], data, data_len);
+    pkt_buf->offset += data_len;
+}

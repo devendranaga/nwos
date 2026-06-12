@@ -25,6 +25,16 @@ netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
     return NETOS_STATUS_SUCCESS;
 }
 
+netos_status_t netos_eth_encode(netos_eth_hdr_t *eh,
+                                pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_bytes(pkt_buf, eh->dst, NETOS_MACADDR_LEN);
+    pkt_buffer_encode_bytes(pkt_buf, eh->src, NETOS_MACADDR_LEN);
+    pkt_buffer_encode_2_bytes(pkt_buf, eh->ethertype);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 void netos_eth_print(netos_eth_hdr_t *eh)
 {
     netos_log_debug("Eth:\n");

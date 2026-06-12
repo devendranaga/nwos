@@ -1,6 +1,7 @@
 #ifndef NETOS_PROTOCOLS_ETH_H
 #define NETOS_PROTOCOLS_ETH_H
 
+#include <string.h>
 #include "netos_status.h"
 #include "protocol_const.h"
 #include "pkt_buffer.h"
@@ -19,7 +20,16 @@ typedef struct netos_eth_hdr {
     uint16_t    ethertype;
 } netos_eth_hdr_t;
 
+#define NETOS_ETH_DEFAULTS(__eh, __dst, __src, __ethertype) do {\
+    memcpy((__eh).dst, (__dst), NETOS_MACADDR_LEN);\
+    memcpy((__eh).src, (__src), NETOS_MACADDR_LEN);\
+    __eh.ethertype = __ethertype;\
+} while (0)
+
 netos_status_t netos_eth_decode(netos_eth_hdr_t *eh,
+                                pkt_buffer_t *pkt_buf);
+
+netos_status_t netos_eth_encode(netos_eth_hdr_t *eh,
                                 pkt_buffer_t *pkt_buf);
 
 void netos_eth_print(netos_eth_hdr_t *eh);

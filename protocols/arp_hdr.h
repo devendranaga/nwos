@@ -32,6 +32,8 @@ typedef struct netos_arp_hdr {
 
 netos_status_t netos_arp_decode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf);
 
+netos_status_t netos_arp_encode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf);
+
 void netos_arp_print(netos_arp_hdr_t *arp_hdr);
 
 #if defined(__cplusplus)

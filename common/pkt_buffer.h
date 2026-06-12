@@ -48,6 +48,23 @@ typedef struct pkt_buffer {
     struct pkt_buffer   *next;
 } pkt_buffer_t;
 
+static inline void pkt_buffer_reset(pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->offset = 0;
+    pkt_buf->rx_len = 0;
+    pkt_buf->tx_len = 0;
+}
+
+static inline void pkt_buffer_set_egress_intf_self(pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->out_intf = pkt_buf->in_intf;
+}
+
+static inline void pkt_buffer_set_tx_len_default(pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->tx_len = pkt_buf->offset;
+}
+
 void pkt_buffer_initialize(pkt_buffer_t *pkt_buf);
 
 void pkt_buffer_ref_count_up(pkt_buffer_t *pkt_buf);
@@ -63,6 +80,14 @@ void pkt_buffer_decode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t *u16);
 void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32);
 
 void pkt_buffer_decode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data_len);
+
+void pkt_buffer_encode_byte(pkt_buffer_t *pkt_buf, uint8_t u8);
+
+void pkt_buffer_encode_2_bytes(pkt_buffer_t *pkt_buf, uint16_t u16);
+
+void pkt_buffer_encode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t u32);
+
+void pkt_buffer_encode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data_len);
 
 #endif
 

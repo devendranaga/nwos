@@ -43,7 +43,10 @@ typedef struct netos_event_info {
     (__evt_info)->frame_len = 0;\
 } while (0)
 
-#define NETOS_EVENT_INFO_CREATE(__evt_info, __ifname, __sec, __nsec, __evt_type, __evt_desc, __frame_len) do {\
+#define NETOS_EVENT_INFO_CREATE(__evt_info, __ifname,\
+                                __sec, __nsec,\
+                                __evt_type, __evt_desc,\
+                                __frame_len) do {\
     (__evt_info)->type = __evt_type;\
     (__evt_info)->desc = __evt_desc;\
     (__evt_info)->sec = __sec;\

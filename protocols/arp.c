@@ -8,6 +8,7 @@
 #include "eth.h"
 #include "event_info.h"
 #include "packet_parser.h"
+#include "ethertypes.h"
 
 netos_status_t netos_arp_decode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf)
 {
@@ -48,6 +49,21 @@ netos_status_t netos_arp_decode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf)
     return ret;
 }
 
+netos_status_t netos_arp_encode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_2_bytes(pkt_buf, arp_hdr->hwtype);
+    pkt_buffer_encode_2_bytes(pkt_buf, arp_hdr->protocol_type);
+    pkt_buffer_encode_byte(pkt_buf, arp_hdr->hw_addr_len);
+    pkt_buffer_encode_byte(pkt_buf, arp_hdr->protocol_len);
+    pkt_buffer_encode_2_bytes(pkt_buf, arp_hdr->op);
+    pkt_buffer_encode_bytes(pkt_buf, arp_hdr->sender_hwaddr, NETOS_MACADDR_LEN);
+    pkt_buffer_encode_4_bytes(pkt_buf, arp_hdr->sender_protocol_addr);
+    pkt_buffer_encode_bytes(pkt_buf, arp_hdr->target_hwaddr, NETOS_MACADDR_LEN);
+    pkt_buffer_encode_4_bytes(pkt_buf, arp_hdr->target_protocol_addr);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 void netos_arp_print(netos_arp_hdr_t *arp_hdr)
 {
     netos_log_debug("ARP:\n");
@@ -64,14 +80,42 @@ void netos_arp_print(netos_arp_hdr_t *arp_hdr)
     netos_log_debug("\t target_protocol_addr: %x\n", arp_hdr->target_protocol_addr);
 }
 
+static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
+                                           netos_packet_parser_t *pkt_parser,
+                                           netos_arp_protocol_t *arp_ctx)
+{
+    netos_arp_hdr_t arp_h;
+    netos_eth_hdr_t eth_h;
+
+    NETOS_ETH_DEFAULTS(eth_h,
+                       pkt_parser->eh.dst,
+                       pkt_parser->eh.src,
+                       NETOS_ETHERTYPE_ARP);
+
+    NETOS_ARP_REPLY_DEFAULTS((&arp_h),
+                             pkt_buf->in_intf->mac,
+                             pkt_buf->in_intf->ipaddr,
+                             pkt_parser->arp_hdr.sender_hwaddr,
+                             pkt_parser->arp_hdr.sender_protocol_addr);
+
+    pkt_buffer_reset(pkt_buf);
+    pkt_buffer_set_egress_intf_self(pkt_buf);
+
+    netos_eth_encode(&eth_h, pkt_buf);
+    netos_arp_encode(&arp_h, pkt_buf);
+
+    pkt_buffer_set_tx_len_default(pkt_buf);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_arp_rx_process_reply(pkt_buffer_t *pkt_buf,
                                                  netos_packet_parser_t *pkt_parser,
                                                  netos_arp_protocol_t *arp_ctx)
 {
     // target hardware is us
-    if (memcmp(pkt_parser->arp_hdr.target_hwaddr,
-               pkt_buf->in_intf->mac,
-               NETOS_MACADDR_LEN) == 0) {
+    if (pkt_parser->arp_hdr.target_protocol_addr == pkt_buf->in_intf->ipaddr) {
+        netos_arp_send_reply(pkt_buf, pkt_parser, arp_ctx);
     }
 
     return NETOS_STATUS_SUCCESS;

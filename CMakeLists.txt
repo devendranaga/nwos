@@ -39,6 +39,7 @@ SET(PLATFORM_SRC
     ./common/buffer_pool.c
     ./common/list.c
     ./common/queue.c
+    ./common/common.c
     ./logging/netos_log.c)
 
 SET(EVENT_SRC
