@@ -97,6 +97,10 @@ void *netos_hash_item_find(netos_hash_table_t *hash_table, void *key)
     index = hash_table->hash(key) % hash_table->n_items;
     item = hash_table->items[index];
 
+    if (!item) {
+        return NULL;
+    }
+
     if (hash_table->cmp(key, item->key)) {
         return item->val;
     } else {

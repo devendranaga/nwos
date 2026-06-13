@@ -78,6 +78,18 @@ Egress queue controller orchestrates the queueing and shaping. The following Egr
 5. Dequeues and transmits all the frames from queue 7.
 6. Repeats it for queue 6, 5, .. and so on to queue 0.
 
+## Switching
+
+### Generating interfaces
+
+Run the script `gen_interfaces.py` on Linux.
+
+```bash
+bash gen_interfaces.py create dummy 8
+```
+
+Would create 10 interfaces on Linux.
+
 ## Ids
 
 ### Capturing events

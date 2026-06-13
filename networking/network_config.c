@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
@@ -27,18 +29,163 @@ static netos_status_t netos_config_parse_interface_config(network_config_t *conf
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_config_parse_interfaces(network_config_t *config, xmlDocPtr doc, xmlNode *root)
+static netos_status_t netos_config_get_u32(uint32_t *u32_ptr, xmlDocPtr doc, xmlNode *node)
 {
-    xmlNode *node;
+    char *err_ptr = NULL;
+    xmlChar *val = xmlNodeListGetString(doc, node->children, 1);
+
+    if (!val) {
+        return NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    *u32_ptr = strtoul((const char *)val, &err_ptr, 10);
+    if (err_ptr && *err_ptr != '\0') {
+        return NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_config_get_bool(bool *bool_ptr, xmlDocPtr doc, xmlNode *node)
+{
+    netos_status_t ret = NETOS_STATUS_SUCCESS;
+    xmlChar *val = xmlNodeListGetString(doc, node->children, 1);
+
+    if (!val) {
+        return NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    if (!strcmp((const char *)val, "true")) {
+        *bool_ptr = true;
+    } else if (!strcmp((const char *)val, "false")) {
+        *bool_ptr = false;
+    } else {
+        ret = NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    return ret;
+}
+
+static netos_status_t netos_config_get_arp_cache_size(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_u32(&config->protocol_config.arp_config.arp_cache_size,
+                                doc, node);
+}
+
+static const struct {
+    const char *name;
+    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+} arp_config_callbacks[] = {
+    { "arp_cache_size", netos_config_get_arp_cache_size }
+};
+
+static netos_status_t netos_config_parse_arp_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *iter;
+    netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
+
+    for (iter = node->children; iter; iter = iter->next) {
+        if (iter->type == XML_ELEMENT_NODE) {
+            for (uint32_t i = 0; i < sizeof(arp_config_callbacks) /
+                                     sizeof(arp_config_callbacks[0]); i ++) {
+                if (strcmp((const char *)iter->name, arp_config_callbacks[i].name) == 0) {
+                    ret = arp_config_callbacks[i].callback_fn(config, doc, iter);
+                    if (ret != NETOS_STATUS_SUCCESS) {
+                        return ret;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+static netos_status_t netos_config_get_ipv4_drop_fragments(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_bool(&config->protocol_config.ipv4_config.drop_fragments, doc, node);
+}
+
+static const struct {
+    const char *name;
+    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+} ipv4_config_callbacks[] = {
+    { "drop_fragments", netos_config_get_ipv4_drop_fragments }
+};
+
+static netos_status_t netos_config_parse_ipv4_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *iter;
+    netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
+
+    for (iter = node->children; iter; iter = iter->next) {
+        if (iter->type == XML_ELEMENT_NODE) {
+            for (uint32_t i = 0; i < sizeof(ipv4_config_callbacks) /
+                                     sizeof(ipv4_config_callbacks[0]); i ++) {
+                if (strcmp((const char *)iter->name, ipv4_config_callbacks[i].name) == 0) {
+                    ret = ipv4_config_callbacks[i].callback_fn(config, doc, iter);
+                    if (ret != NETOS_STATUS_SUCCESS) {
+                        return ret;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+static const struct {
+    const char *name;
+    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+} protocol_config_callbacks[] = {
+    { "arp", netos_config_parse_arp_config },
+    { "ipv4", netos_config_parse_ipv4_config }
+};
+
+static netos_status_t netos_config_parse_protocol_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
     netos_status_t ret;
 
-    config->n_if_config = 0;
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (uint32_t i = 0; i < sizeof(protocol_config_callbacks) /
+                                 sizeof(protocol_config_callbacks[0]); i ++) {
+            if ((node_ptr->type == XML_ELEMENT_NODE) &&
+                (strcmp((const char *)node_ptr->name, protocol_config_callbacks[i].name) == 0)) {
+                ret = protocol_config_callbacks[i].callback_fn(config, doc, node_ptr);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+            }
+        }
+    }
 
-    for (node = root->children; node; node = node->next) {
-        if ((node->type == XML_ELEMENT_NODE) && (strcmp((char *)node->name, "interface_list") == 0)) {
-            ret = netos_config_parse_interface_config(config, doc, node);
-            if (ret != NETOS_STATUS_SUCCESS) {
-                return ret;
+    return NETOS_STATUS_SUCCESS;
+}
+
+static const struct {
+    const char *name;
+    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+} config_callbacks[] = {
+    { "interface_list", netos_config_parse_interface_config },
+    { "protocols", netos_config_parse_protocol_config },
+};
+
+static netos_status_t netos_config_parse_config_callbacks(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
+    netos_status_t ret;
+
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (uint32_t i = 0; i < sizeof(config_callbacks) /
+                                 sizeof(config_callbacks[0]); i ++) {
+            if ((node_ptr->type == XML_ELEMENT_NODE) &&
+                (strcmp((const char *)node_ptr->name, config_callbacks[i].name) == 0)) {
+                ret = config_callbacks[i].callback_fn(config, doc, node_ptr);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
             }
         }
     }
@@ -64,7 +211,7 @@ netos_status_t netos_config_parse(network_config_t *config, const char *config_p
         goto end;
     }
 
-    ret = netos_config_parse_interfaces(config, doc, root);
+    ret = netos_config_parse_config_callbacks(config, doc, root);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto end;
     }
@@ -93,6 +240,11 @@ void netos_config_print(const network_config_t *config)
     for (i = 0; i < config->n_if_config; i ++) {
         fprintf(stderr, "        ifname: %s\n", config->if_config[i].ifname);
     }
+    fprintf(stderr, "    protocols: {\n");
+    fprintf(stderr, "        arp: {\n");
+    fprintf(stderr, "            arp_cache_size: %d\n",
+                    config->protocol_config.arp_config.arp_cache_size);
+    fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
     fprintf(stderr, "}\n");
 }

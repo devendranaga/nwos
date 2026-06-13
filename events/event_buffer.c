@@ -25,8 +25,7 @@ netos_event_buffer_t *netos_event_buffer_init(uint32_t n_events)
     for (uint32_t i = 0; i < n_events; i ++) {
         netos_event_info_t *evt;
 
-        evt = (pool->mapped_mem + (i * sizeof(netos_event_buffer_t)));
-
+        evt = (pool->mapped_mem + (i * sizeof(netos_event_info_t)));
         evt->next = NULL;
 
         if (!pool->free_buffers) {

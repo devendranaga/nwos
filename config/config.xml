@@ -3,4 +3,15 @@
     <interface_list>
         <interface>wlp4s0</interface>
     </interface_list>
+    <protocols>
+        <arp>
+            <arp_cache_size>32</arp_cache_size>
+        </arp>
+        <ipv4>
+            <drop_fragments>true</drop_fragments>
+        </ipv4>
+        <icmp>
+            <min_echo_payload_len>0</min_echo_payload_len>
+        </icmp>
+    </protocols>
 </configuration>

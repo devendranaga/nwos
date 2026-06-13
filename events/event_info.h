@@ -43,6 +43,15 @@ typedef struct netos_event_info {
     (__evt_info)->frame_len = 0;\
 } while (0)
 
+#define NETOS_STRING_COPY(__dst, __src) do {\
+    uint32_t __i = 0;\
+    while ((*(__src) != '\0')) {\
+        (__dst)[__i] = *(__src);\
+        __i ++;\
+        __src++;\
+    }\
+} while (0)
+
 #define NETOS_EVENT_INFO_CREATE(__evt_info, __ifname,\
                                 __sec, __nsec,\
                                 __evt_type, __evt_desc,\
@@ -51,7 +60,7 @@ typedef struct netos_event_info {
     (__evt_info)->desc = __evt_desc;\
     (__evt_info)->sec = __sec;\
     (__evt_info)->nsec = __nsec;\
-    memcpy((__evt_info)->ifname, ifname, sizeof((__evt_info)->ifname));\
+    NETOS_STRING_COPY((__evt_info)->ifname, ifname);\
     (__evt_info)->frame_len = __frame_len;\
 } while (0)
 

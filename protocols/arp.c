@@ -171,14 +171,21 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                 return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
             }
 
+            uint32_t *sender_protocol_addr = calloc(1, sizeof(uint32_t *));
+            if (!sender_protocol_addr) {
+                return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+            }
+
+            *sender_protocol_addr = pkt_parser->arp_hdr.sender_protocol_addr;
+
             if (pkt_parser->arp_hdr.sender_protocol_addr != 0) {
                 memcpy(entry->mac, pkt_parser->eh.src, NETOS_MACADDR_LEN);
                 entry->ipaddr = pkt_parser->arp_hdr.sender_protocol_addr;
                 clock_gettime(CLOCK_REALTIME, &entry->last_updated);
 
                 netos_hash_item_add(arp_protocol.arp_cache,
-                                    &pkt_parser->arp_hdr.sender_protocol_addr,
-                                    pkt_parser->eh.src);
+                                    sender_protocol_addr,
+                                    entry);
             }
         } else {
             // update it

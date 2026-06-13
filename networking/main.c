@@ -241,6 +241,7 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
 
     ret = netos_initialize_protocols();
     if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to initialize protocols\n");
         return ret;
     }
 
@@ -289,7 +290,6 @@ int main(int argc, char **argv)
     }
 
     netos_log_info("Config parse ok\n");
-    netos_config_print(&ctx->config);
 
     // initialize event manager
     ret = netos_event_mgr_init();
