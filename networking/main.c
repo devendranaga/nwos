@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include "arp.h"
 #include "netos_log.h"
 #include "network_config.h"
 #include "network_main.h"
@@ -221,9 +222,27 @@ err:
     return NULL;
 }
 
+static netos_status_t netos_initialize_protocols()
+{
+    netos_status_t ret;
+
+    ret = netos_arp_protocol_init();
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
 {
+    netos_status_t ret;
     uint32_t i;
+
+    ret = netos_initialize_protocols();
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
 
     for (i = 0; i < ctx->config.n_if_config; i ++) {
         netos_intf_t *intf;

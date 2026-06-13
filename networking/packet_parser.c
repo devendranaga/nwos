@@ -75,20 +75,18 @@ check_ethertype:
     parsed_data->ethertype = ethertype;
 
     if (ethertype == NETOS_ETHERTYPE_ARP) {
-        netos_arp_protocol_t *arp = NETOS_TO_ARP_CTX(parsed_data->this_thread);
-
         // Decode ARP frame
         ret = netos_arp_decode(&parsed_data->arp_hdr, pkt_buf);
         if (ret == NETOS_STATUS_SUCCESS) {
-            arp->mib.in_arp ++;
+            netos_arp_mib_in_arp_ok();
 
             // Process ARP frame
-            ret = netos_arp_rx_process(pkt_buf, parsed_data, arp);
+            ret = netos_arp_rx_process(pkt_buf, parsed_data);
             if (ret == NETOS_STATUS_SUCCESS) {
                 parsed_data->has_l2_protocol = true;
             }
         } else {
-            arp->mib.in_arp_invalid ++;
+            netos_arp_mib_in_arp_invalid();
             return ret;
         }
 

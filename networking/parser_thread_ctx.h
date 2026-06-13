@@ -10,7 +10,6 @@
 
 typedef struct netos_protocol_context {
     netos_packet_parser_t       parsed_data;
-    netos_arp_protocol_t        arp;
 } netos_protocol_context_t;
 
 typedef struct netos_parser_thread {

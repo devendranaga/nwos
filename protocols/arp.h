@@ -6,6 +6,9 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <pthread.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "protocol_const.h"
 #include "netos_status.h"
@@ -53,16 +56,23 @@ typedef struct netos_arp_mib {
 typedef struct netos_arp_entry {
     uint8_t mac[NETOS_MACADDR_LEN];
     uint32_t ipaddr;
+    struct timespec last_updated;
 } netos_arp_entry_t;
 
 typedef struct netos_arp_protocol {
     netos_arp_mib_t mib;
     netos_hash_table_t *arp_cache;
+    pthread_mutex_t lock;
 } netos_arp_protocol_t;
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
-                                    netos_packet_parser_t *pkt_parser,
-                                    netos_arp_protocol_t *arp_ctx);
+                                    netos_packet_parser_t *pkt_parser);
+
+netos_status_t netos_arp_protocol_init();
+
+void netos_arp_mib_in_arp_ok();
+
+void netos_arp_mib_in_arp_invalid();
 
 #if defined(__cplusplus)
 }

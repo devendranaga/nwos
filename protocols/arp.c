@@ -10,6 +10,8 @@
 #include "packet_parser.h"
 #include "ethertypes.h"
 
+static netos_arp_protocol_t arp_protocol;
+
 netos_status_t netos_arp_decode(netos_arp_hdr_t *arp_hdr, pkt_buffer_t *pkt_buf)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
@@ -81,8 +83,7 @@ void netos_arp_print(netos_arp_hdr_t *arp_hdr)
 }
 
 static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
-                                           netos_packet_parser_t *pkt_parser,
-                                           netos_arp_protocol_t *arp_ctx)
+                                           netos_packet_parser_t *pkt_parser)
 {
     netos_arp_hdr_t arp_h;
     netos_eth_hdr_t eth_h;
@@ -110,27 +111,71 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
 }
 
 static netos_status_t netos_arp_rx_process_reply(pkt_buffer_t *pkt_buf,
-                                                 netos_packet_parser_t *pkt_parser,
-                                                 netos_arp_protocol_t *arp_ctx)
+                                                 netos_packet_parser_t *pkt_parser)
 {
     // target hardware is us
     if (pkt_parser->arp_hdr.target_protocol_addr == pkt_buf->in_intf->ipaddr) {
-        netos_arp_send_reply(pkt_buf, pkt_parser, arp_ctx);
+        netos_arp_send_reply(pkt_buf, pkt_parser);
     }
 
     return NETOS_STATUS_SUCCESS;
 }
 
+void netos_arp_mib_in_arp_ok()
+{
+    arp_protocol.mib.in_arp ++;
+}
+
+void netos_arp_mib_in_arp_invalid()
+{
+    arp_protocol.mib.in_arp_invalid ++;
+}
+
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
-                                    netos_packet_parser_t *pkt_parser,
-                                    netos_arp_protocol_t *arp_ctx)
+                                    netos_packet_parser_t *pkt_parser)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
+    pthread_mutex_lock(&arp_protocol.lock);
+
     if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
-        ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser, arp_ctx);
+        ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser);
     }
+
+    pthread_mutex_unlock(&arp_protocol.lock);
 
     return ret;
 }
 
+static uint32_t netos_arp_entry_hash(void *key)
+{
+    uint32_t *ipaddr = key;
+    uint32_t hash_val;
+
+    hash_val = (((*ipaddr) & 0xFF000000) >> 24) +
+               (((*ipaddr) & 0x00FF0000) >> 16) +
+               (((*ipaddr) & 0x0000FF00) >> 8) +
+               ((*ipaddr) & 0x000000FF);
+
+    return hash_val;
+}
+
+static bool netos_arp_entry_compare(void *key1, void *key2)
+{
+    uint32_t *ipaddr1 = key1;
+    uint32_t *ipaddr2 = key2;
+
+    return *ipaddr1 == *ipaddr2;
+}
+
+netos_status_t netos_arp_protocol_init()
+{
+    arp_protocol.arp_cache = netos_hash_table_init(1024, netos_arp_entry_hash, netos_arp_entry_compare);
+    if (!arp_protocol.arp_cache) {
+        return NETOS_STATUS_HASH_TABLE_ALLOC_FAILURE;
+    }
+
+    pthread_mutex_init(&arp_protocol.lock, NULL);
+
+    return NETOS_STATUS_SUCCESS;
+}
