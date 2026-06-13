@@ -4,8 +4,6 @@
 
 - [ ] WRR egress scheduling
 - [ ] Fix RR egress scheduling (all frames are not egressing if multiple queues exist)
-- [ ] ARP rx processing
-- [ ] Dynamic hash table
 - [ ] Static queues
 - [ ] correct handling of ref count in rx and egress
 - [ ] MACsec implementation
@@ -15,11 +13,23 @@
 - [ ] TCP frame parsing
 - [ ] IPv4 checksum validation
 - [ ] Event capture and storage tests
+- [ ] ICMP frame parsing
+- [ ] ICMP checksum validation
+- [ ] gcd framework
+- [ ] ARP cache invalidation
+- [ ] Address translation must be done right before the parser and straight to egress.
+- [ ] DRR egress scheduling
+- [ ] IPv6 frame parsing
+- [ ] TCP checksum validation
+- [ ] UDP checksum validation
+- [ ] Take pkt buffer numbers from xml config
 - [ ] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
 
 ## Done
 
 - [x] selectable scheduler from a tx path (via egress algorithm type)
+- [x] Dynamic hash table
+- [x] ARP rx processing
 
 
 ## Configuration
@@ -30,22 +40,27 @@
 <config>
     <!-- for both tx and rx pools per each interface -->
     <pkt_buf_pool_size>1024</pkt_buf_pool_size>
-    <macsec>
-        <!--
-            Enabling MACsec should be dynamic,
-            if the macsec frame appear, the mapping has to be done
-            directly based on the ethertype from rx point.
+    <protocols>
+        <arp>
+            <arp_cache_size>32</arp_cache_size>
+        </arp>
+        <macsec>
+            <!--
+                Enabling MACsec should be dynamic,
+                if the macsec frame appear, the mapping has to be done
+                directly based on the ethertype from rx point.
 
-            Lookup will happen and decryption / verify needs to be done.
+                Lookup will happen and decryption / verify needs to be done.
 
-            if on tx, the capabilities must be set per interface pointer.
-            if the pointer is not macsec capable, it can be bypassed both
-            on tx and rx sides.
-        -->
-        <max_sci>128</max_sci>
-        <tx_sc_per_sci>1</tx_sc_per_sci>
-        <rx_sc_per_sci>16</rx_sc_per_sci>
-    </macsec>
+                if on tx, the capabilities must be set per interface pointer.
+                if the pointer is not macsec capable, it can be bypassed both
+                on tx and rx sides.
+            -->
+            <max_sci>128</max_sci>
+            <tx_sc_per_sci>1</tx_sc_per_sci>
+            <rx_sc_per_sci>16</rx_sc_per_sci>
+        </macsec>
+    </protocols>
 </config>
 ```
 
@@ -85,7 +100,7 @@ Egress queue controller orchestrates the queueing and shaping. The following Egr
 Run the script `gen_interfaces.py` on Linux.
 
 ```bash
-bash gen_interfaces.py create dummy 8
+bash gen_interfaces.py create dummy 10
 ```
 
 Would create 10 interfaces on Linux.

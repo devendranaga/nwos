@@ -19,7 +19,7 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
 
     while (1) {
         pthread_mutex_lock(&rr->rr_lock);
-        while (!rr->pkts_in_queue || !rr->terminate_signal) {
+        while (!rr->pkts_in_queue && !rr->terminate_signal) {
             pthread_cond_wait(&rr->rr_cond, &rr->rr_lock);
         }
         // manager thread signalled terminate, stop this thread

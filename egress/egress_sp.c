@@ -19,9 +19,10 @@ void *netos_egress_sp_tx_queue_thread(void *ctx)
 
     while (1) {
         pthread_mutex_lock(&sp->sp_lock);
-        while (!sp->pkts_in_queue || !sp->terminate_signal) {
+        while (!sp->pkts_in_queue && !sp->terminate_signal) {
             pthread_cond_wait(&sp->sp_cond, &sp->sp_lock);
         }
+
         // manager thread signalled terminate, stop this thread
         if (sp->terminate_signal) {
             break;

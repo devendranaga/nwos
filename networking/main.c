@@ -222,11 +222,11 @@ err:
     return NULL;
 }
 
-static netos_status_t netos_initialize_protocols()
+static netos_status_t netos_initialize_protocols(network_config_t *config)
 {
     netos_status_t ret;
 
-    ret = netos_arp_protocol_init();
+    ret = netos_arp_protocol_init(config);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
@@ -239,7 +239,7 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
     netos_status_t ret;
     uint32_t i;
 
-    ret = netos_initialize_protocols();
+    ret = netos_initialize_protocols(&ctx->config);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to initialize protocols\n");
         return ret;

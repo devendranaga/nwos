@@ -9,6 +9,7 @@
 #include "event_info.h"
 #include "packet_parser.h"
 #include "ethertypes.h"
+#include "network_config.h"
 
 static netos_arp_protocol_t arp_protocol;
 
@@ -219,9 +220,12 @@ static bool netos_arp_entry_compare(void *key1, void *key2)
     return *ipaddr1 == *ipaddr2;
 }
 
-netos_status_t netos_arp_protocol_init()
+netos_status_t netos_arp_protocol_init(network_config_t *config)
 {
-    arp_protocol.arp_cache = netos_hash_table_init(1024, netos_arp_entry_hash, netos_arp_entry_compare);
+    arp_protocol.arp_cache = netos_hash_table_init(
+                                        config->protocol_config.arp_config.arp_cache_size,
+                                        netos_arp_entry_hash,
+                                        netos_arp_entry_compare);
     if (!arp_protocol.arp_cache) {
         return NETOS_STATUS_HASH_TABLE_ALLOC_FAILURE;
     }
@@ -230,3 +234,4 @@ netos_status_t netos_arp_protocol_init()
 
     return NETOS_STATUS_SUCCESS;
 }
+

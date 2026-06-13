@@ -15,6 +15,7 @@ extern "C" {
 #include "pkt_buffer.h"
 #include "arp_hdr.h"
 #include "packet_parser.h"
+#include "network_config.h"
 #include "hash_tables.h"
 
 #define NETOS_SET_MACADDR(__tgt_mac, __src_mac) do {\
@@ -68,7 +69,7 @@ typedef struct netos_arp_protocol {
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                                     netos_packet_parser_t *pkt_parser);
 
-netos_status_t netos_arp_protocol_init();
+netos_status_t netos_arp_protocol_init(network_config_t *config);
 
 void netos_arp_mib_in_arp_ok();
 
