@@ -113,9 +113,15 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
 static netos_status_t netos_arp_rx_process_reply(pkt_buffer_t *pkt_buf,
                                                  netos_packet_parser_t *pkt_parser)
 {
-    // target hardware is us
-    if (pkt_parser->arp_hdr.target_protocol_addr == pkt_buf->in_intf->ipaddr) {
-        netos_arp_send_reply(pkt_buf, pkt_parser);
+    netos_status_t ret;
+
+    // target hardware is us and its ARP Request
+    if ((pkt_parser->arp_hdr.op == NETOS_ARP_OP_REQUEST) &&
+        (pkt_parser->arp_hdr.target_protocol_addr == pkt_buf->in_intf->ipaddr)) {
+        ret = netos_arp_send_reply(pkt_buf, pkt_parser);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -138,8 +144,46 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 
     pthread_mutex_lock(&arp_protocol.lock);
 
+    // if ARP's sender hwaddr does not match with the ethernet SA
+    // drop the frame
+    if (memcmp(pkt_parser->arp_hdr.sender_hwaddr,
+               pkt_parser->eh.src, NETOS_MACADDR_LEN) != 0) {
+        return NETOS_STATUS_ARP_MALFORMED_PKT;
+    }
+
+    // if there is an ARP reply process it
     if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
         ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+    }
+
+    // if sender's protocol address is known, add it. be it ARP request or reply
+    // sometimes there can be gratitous ARPs that contain the ip address.
+    if (pkt_parser->arp_hdr.sender_protocol_addr != 0) {
+        netos_arp_entry_t *entry = netos_hash_item_find(arp_protocol.arp_cache,
+                                                        &pkt_parser->arp_hdr.sender_protocol_addr);
+        if (!entry) {
+            // add the entry
+            entry = calloc(1, sizeof(netos_arp_entry_t));
+            if (!entry) {
+                return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+            }
+
+            if (pkt_parser->arp_hdr.sender_protocol_addr != 0) {
+                memcpy(entry->mac, pkt_parser->eh.src, NETOS_MACADDR_LEN);
+                entry->ipaddr = pkt_parser->arp_hdr.sender_protocol_addr;
+                clock_gettime(CLOCK_REALTIME, &entry->last_updated);
+
+                netos_hash_item_add(arp_protocol.arp_cache,
+                                    &pkt_parser->arp_hdr.sender_protocol_addr,
+                                    pkt_parser->eh.src);
+            }
+        } else {
+            // update it
+            clock_gettime(CLOCK_REALTIME, &entry->last_updated);
+        }
     }
 
     pthread_mutex_unlock(&arp_protocol.lock);
