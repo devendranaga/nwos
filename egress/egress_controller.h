@@ -6,7 +6,7 @@
 #include "egress_rr.h"
 
 typedef enum {
-    NETOS_EGRESS_ALG_SP = 1, // Strict priority
+    NETOS_EGRESS_ALG_SP = 0, // Strict priority
     NETOS_EGRESS_ALG_RR,     // Round robin
     NETOS_EGRESS_ALG_WRR,    // Weighted round robin
 } netos_egress_queueing_alg_t;
