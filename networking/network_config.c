@@ -103,7 +103,8 @@ static netos_status_t netos_config_parse_arp_config(network_config_t *config, xm
 
 static netos_status_t netos_config_get_ipv4_drop_fragments(network_config_t *config, xmlDocPtr doc, xmlNode *node)
 {
-    return netos_config_get_bool(&config->protocol_config.ipv4_config.drop_fragments, doc, node);
+    return netos_config_get_bool(&config->protocol_config.ipv4_config.drop_fragments,
+                                 doc, node);
 }
 
 static const struct {

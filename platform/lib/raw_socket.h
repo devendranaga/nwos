@@ -9,11 +9,14 @@ typedef struct raw_socket_ctx {
     char        *ifname;
     uint8_t     mac[NETOS_MACADDR_LEN];
     uint32_t    ipaddr;
+    int         ifindex;
 } raw_socket_ctx_t;
 
 raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);
 
 int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
+
+int netos_raw_socket_tx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
 #endif
 

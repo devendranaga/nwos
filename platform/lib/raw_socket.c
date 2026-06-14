@@ -15,7 +15,6 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
     raw_socket_ctx_t *raw;
     netos_status_t ret;
     struct sockaddr_ll lladdr;
-    int ifindex;
     int res;
 
     raw = calloc(1, sizeof(raw_socket_ctx_t));
@@ -42,13 +41,13 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
     }
 
     // get the ifindex
-    ifindex = net_ioctl_get_ifindex(raw->fd, ifname);
-    if (ifindex == -1) {
+    raw->ifindex = net_ioctl_get_ifindex(raw->fd, ifname);
+    if (raw->ifindex == -1) {
         goto err;
     }
 
     memset(&lladdr, 0, sizeof(lladdr));
-    lladdr.sll_ifindex = ifindex;
+    lladdr.sll_ifindex = raw->ifindex;
     lladdr.sll_protocol = htons(ETH_P_ALL);
     lladdr.sll_family = AF_PACKET;
 
@@ -67,7 +66,8 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
     // get the ipaddress
     ret = netos_ioctl_get_ipaddr(raw->fd, ifname, &raw->ipaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        goto err;
+        // do not fail if the address is not present.. continue
+        ret = NETOS_STATUS_SUCCESS;
     }
 
     return raw;
@@ -95,5 +95,22 @@ int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
     }
 
     return ret;
+}
+
+int netos_raw_socket_tx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
+{
+    struct sockaddr_ll lladdr;
+
+    lladdr.sll_ifindex = raw->ifindex;
+    lladdr.sll_halen = ETH_ALEN;
+    lladdr.sll_addr[0] = 0x00;
+    lladdr.sll_addr[1] = 0x00;
+    lladdr.sll_addr[2] = 0x00;
+    lladdr.sll_addr[3] = 0x00;
+    lladdr.sll_addr[4] = 0x00;
+    lladdr.sll_addr[5] = 0x00;
+
+    return sendto(raw->fd, data, data_len, 0,
+                 (struct sockaddr *)&lladdr, sizeof(struct sockaddr_ll));
 }
 

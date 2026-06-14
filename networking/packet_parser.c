@@ -4,6 +4,7 @@
 #include "parser_thread_ctx.h"
 #include "ethertypes.h"
 #include "netos_status.h"
+#include "network_config.h"
 
 typedef enum {
     NETOS_PROTOCOL_ICMP = 1,
