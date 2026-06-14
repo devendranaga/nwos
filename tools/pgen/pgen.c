@@ -18,9 +18,9 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);
 
 static void pgen_set_defaults()
 {
-    uint8_t dst[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
-    uint8_t src[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
-    uint16_t ethertype = 0x0800;
+    const uint8_t dst[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
+    const uint8_t src[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
+    const uint16_t ethertype = 0x0800;
 
     memcpy(pgen.eth_hdr.dst, dst, NETOS_MACADDR_LEN);
     memcpy(pgen.eth_hdr.src, src, NETOS_MACADDR_LEN);
@@ -28,9 +28,27 @@ static void pgen_set_defaults()
 
     // default transmit params
     pgen.ifname = NULL;
+    pgen.raw = NULL;
     pgen.ipg_ns = 1000 * 1000 * 100; // every 100ms
     pgen.n_frames = 10; // 10 frames
     pgen.len = 100; // 100 bytes
+}
+
+static void pgen_eth_run();
+
+static struct {
+    const char  *str;
+    bool        enable;
+    void        (*callback)();
+} pgen_run_callback_list[] = {
+    {
+        "eth", false, pgen_eth_run
+    }
+};
+
+static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    pgen_run_callback_list[0].enable = true;
 }
 
 static void set_eth_da(struct pgen_token *tokens, uint32_t n_tokens)
@@ -90,6 +108,20 @@ static void set_ifname(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void pgen_eth_run()
+{
+    pkt_buffer_t pkt_buf;
+    uint8_t data_buf[1024] = {0};
+
+    pkt_buffer_initialize(&pkt_buf);
+    netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+    if ((pgen.len != 0) && (pgen.len < (sizeof(data_buf) - 80))) {
+        pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
+    }
+    pkt_buffer_set_tx_len_default(&pkt_buf);
+    netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+}
+
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen.raw = netos_raw_socket_init(pgen.ifname);
@@ -99,17 +131,24 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 
     uint32_t i;
 
-    for (i = 0; i < pgen.n_frames; i ++) {
-        pkt_buffer_t pkt_buf;
-        uint8_t data_buf[1024] = {0};
+    void (*callback_ptr)() = NULL;
 
-        pkt_buffer_initialize(&pkt_buf);
-        netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
-        if ((pgen.len != 0) && (pgen.len < (sizeof(data_buf) - 80))) {
-            pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
+    for (i = 0; i < sizeof(pgen_run_callback_list) /
+                    sizeof(pgen_run_callback_list[0]); i ++) {
+        if (pgen_run_callback_list[i].enable) {
+            callback_ptr = pgen_run_callback_list[i].callback;
+            break;
         }
-        pkt_buffer_set_tx_len_default(&pkt_buf);
-        netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+    }
+
+    if (!callback_ptr) {
+        fprintf(stderr, "no protocol generation enabled!\n");
+        return;
+    }
+
+    for (i = 0; (callback_ptr) && (i < pgen.n_frames); i ++) {
+
+        callback_ptr();
 
         struct timespec tp = {
             .tv_sec  = 0,
@@ -128,11 +167,16 @@ static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
     exit(1);
 }
 
-struct netos_pgen_callbacks {
+static const struct {
     const char *str;
     const char *desc;
     void (*callback)(struct pgen_token *tokens, uint32_t n_tokens);
 } pgen_setup_callbacks[] = {
+    {
+        "eth.enable",
+        "Enables the Ethernet frame generation",
+        set_eth_enable,
+    },
     {
         "eth.da",
         "Set the Eth DA",

@@ -6,6 +6,7 @@
 
 struct pgen {
     netos_eth_hdr_t     eth_hdr;
+    bool                eth_enable;
     uint64_t            ipg_ns;
     uint32_t            n_frames;
     char                *ifname;
