@@ -29,6 +29,9 @@ SET(PROTOCOL_SRC
     ./protocols/tcp.c
     ./protocols/udp.c)
 
+SET(SWITCHING_SRC
+    ./switching/atu.c)
+
 SET(PLATFORM_SRC
     ./platform/lib/raw_socket.c
     ./platform/lib/net_ioctl.c
@@ -49,6 +52,7 @@ SET(EVENT_SRC
 
 SET(LIB_SRC
     ${PROTOCOL_SRC}
+    ${SWITCHING_SRC}
     ${PLATFORM_SRC}
     ${EVENT_SRC})
 
@@ -72,6 +76,7 @@ include_directories(
                 ./egress/
                 ./statistics/
                 ./networking/
+                ./switching/
                 /usr/include/libxml2/
                 ./tools/pgen/)
 

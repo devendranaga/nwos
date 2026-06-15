@@ -3,15 +3,21 @@
 
 #include <stdlib.h>
 
+/**
+ * @brief - Defines a queue.
+ */
 typedef struct netos_queue {
-    void *item;
-    struct netos_queue *next;
+    void                *item;
+    struct netos_queue  *next;
 } netos_queue_t;
 
+/**
+ * @brief - Defines queue implementation.
+ */
 typedef struct netos_queue_impl {
-    netos_queue_t *head;
-    netos_queue_t *tail;
-    uint32_t length;
+    netos_queue_t   *head;
+    netos_queue_t   *tail;
+    uint32_t        length;
 } netos_queue_impl_t;
 
 netos_queue_impl_t *netos_queue_init();

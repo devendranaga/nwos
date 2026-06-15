@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include "raw_socket.h"
+#include "perf_intf.h"
 
 #define NETOS_PKT_BUFFER_LEN 4096u
 
@@ -42,6 +43,9 @@ typedef struct pkt_buffer {
 
     // the allocator of this buffer .. back pointer to buffer pool
     void                *buffer_pool_ctx;
+
+    // perf event related to this frame
+    netos_perf_event_t  perf_evt;
 
     // prev may be used in egress queueing but may not be used in all the cases
     struct pkt_buffer   *prev;

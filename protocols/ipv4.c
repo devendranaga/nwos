@@ -4,6 +4,7 @@
 #include "netos_status.h"
 #include "pkt_buffer.h"
 #include "ipv4.h"
+#include "event_info.h"
 
 netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_buf)
 {
@@ -11,17 +12,26 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     uint32_t hdr_len;
 
     if ((pkt_buf->offset + NETOS_IPV4_HDR_LEN_DEFAULT) > pkt_buf->rx_len) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_SHORT_HDR_LEN);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
     ipv4_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
     if (ipv4_hdr->version != NETOS_IPV4_VERSION) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_INVAL_VERSION);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
     ipv4_hdr->header_len = (pkt_buf->buffer[pkt_buf->offset] & 0x0F);
-    hdr_len = ipv4_hdr->header_len * 5;
+    hdr_len = ipv4_hdr->header_len * 4;
     if (hdr_len < NETOS_IPV4_HDR_LEN_DEFAULT) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_INVAL_HDR_LEN);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
@@ -32,16 +42,29 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buf->offset ++;
 
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv4_hdr->total_len);
+    if (ipv4_hdr->total_len == 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_TOTAL_LEN_ZERO);
+        return NETOS_STATUS_IPV4_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv4_hdr->identification);
 
     ipv4_hdr->flags.reseved = !!(pkt_buf->buffer[pkt_buf->offset] & 0x80);
     if (ipv4_hdr->flags.reseved) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_RESERVED_BIT_SET);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
     ipv4_hdr->flags.dont_fragment = !!(pkt_buf->buffer[pkt_buf->offset] & 0x40);
     ipv4_hdr->flags.more_fragment = !!(pkt_buf->buffer[pkt_buf->offset] & 0x20);
     if (ipv4_hdr->flags.dont_fragment && ipv4_hdr->flags.more_fragment) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_DF_MF_SET);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
@@ -51,6 +74,9 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
 
     pkt_buffer_decode_byte(pkt_buf, &ipv4_hdr->ttl);
     if (ipv4_hdr->ttl == 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_TTL_ZERO);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
@@ -61,3 +87,4 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
 
     return ret;
 }
+

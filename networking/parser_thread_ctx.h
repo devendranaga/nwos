@@ -1,6 +1,7 @@
 #ifndef NETOS_PARSER_THREAD_CTX_H
 #define NETOS_PARSER_THREAD_CTX_H
 
+#include <stdbool.h>
 #include <pthread.h>
 #include "raw_socket.h"
 #include "packet_parser.h"

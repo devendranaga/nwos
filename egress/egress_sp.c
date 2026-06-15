@@ -25,6 +25,7 @@ void *netos_egress_sp_tx_queue_thread(void *ctx)
 
         // manager thread signalled terminate, stop this thread
         if (sp->terminate_signal) {
+            pthread_mutex_unlock(&sp->sp_lock);
             break;
         }
         sp->pkts_in_queue = false;

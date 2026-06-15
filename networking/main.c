@@ -7,6 +7,7 @@
 #include "arp.h"
 #include "netos_log.h"
 #include "network_config.h"
+#include "perf_intf.h"
 #include "network_main.h"
 
 static void netos_usage(const char *progname)
@@ -46,10 +47,15 @@ static void *netos_intf_rx_callback(void *cbdata)
             continue;
         }
 
+        NETOS_PERF_EVENT_INITIALIZE(rx_buf->perf_evt);
+
+        NETOS_PERF_EVENT_START(rx_buf->perf_evt);
+
         rx_buf->in_intf = intf->raw;
 
         ret = netos_raw_socket_rx(intf->raw, rx_buf->buffer, sizeof(rx_buf->buffer));
-        if (ret < 0) {
+        if (ret <= 0) {
+            netos_buffer_pool_put_buffer(intf->rx_pool, rx_buf);
             continue;
         }
 
@@ -89,6 +95,7 @@ static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
 
 static void *netos_intf_parse_callback(void *cbdata)
 {
+    uint32_t length;
     netos_parser_thread_t *parse_thr = cbdata;
     netos_status_t ret;
 
@@ -100,11 +107,15 @@ static void *netos_intf_parse_callback(void *cbdata)
         pthread_mutex_lock(&parse_thr->parse_q_lock);
 
         pkt_buffer_t *pkt;
-        int length = parse_thr->parse_q->length;
+        length = parse_thr->parse_q->length;
 
         if (length > 0) {
             // retrieve the rx from the head of the queue
             pkt = netos_queue_pop(parse_thr->parse_q);
+            pthread_mutex_unlock(&parse_thr->parse_q_lock);
+            if (!pkt) {
+                continue;
+            }
 
             // stats increment
             parse_thr->if_stats.in_rx_bytes += pkt->rx_len;
@@ -115,12 +126,12 @@ static void *netos_intf_parse_callback(void *cbdata)
                 netos_update_rx_event(parse_thr->ifname, pkt);
                 parse_thr->if_stats.in_rx_invalid ++;
             }
+            NETOS_PERF_EVENT_END(pkt->perf_evt);
 
         } else {
             pthread_cond_wait(&parse_thr->parse_q_cond, &parse_thr->parse_q_lock);
+            pthread_mutex_unlock(&parse_thr->parse_q_lock);
         }
-
-        pthread_mutex_unlock(&parse_thr->parse_q_lock);
     }
 
     return NULL;

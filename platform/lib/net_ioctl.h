@@ -1,6 +1,14 @@
 #ifndef NETOS_NET_IOCTL_H
 #define NETOS_NET_IOCTL_H
 
+/**
+ * @brief - Set a file descriptor in the promiscous mode.
+ *
+ * @param [in] fd - file descriptor
+ * @param [in] ifname - interface name
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t net_ioctl_set_promisc_fd(int fd, const char *ifname);
 
 netos_status_t net_ioctl_bind_to_device(int fd, const char *ifname);

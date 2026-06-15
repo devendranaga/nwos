@@ -149,14 +149,15 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
     // drop the frame
     if (memcmp(pkt_parser->arp_hdr.sender_hwaddr,
                pkt_parser->eh.src, NETOS_MACADDR_LEN) != 0) {
-        return NETOS_STATUS_ARP_MALFORMED_PKT;
+        ret = NETOS_STATUS_ARP_MALFORMED_PKT;
+        goto unlock;
     }
 
     // if there is an ARP reply process it
     if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
         ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser);
         if (ret != NETOS_STATUS_SUCCESS) {
-            return ret;
+            goto unlock;
         }
     }
 
@@ -169,12 +170,13 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
             // add the entry
             entry = calloc(1, sizeof(netos_arp_entry_t));
             if (!entry) {
-                return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                goto unlock;
             }
 
-            uint32_t *sender_protocol_addr = calloc(1, sizeof(uint32_t *));
+            uint32_t *sender_protocol_addr = calloc(1, sizeof(uint32_t));
             if (!sender_protocol_addr) {
-                return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                ret = NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                goto unlock;
             }
 
             *sender_protocol_addr = pkt_parser->arp_hdr.sender_protocol_addr;
@@ -194,6 +196,7 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
         }
     }
 
+unlock:
     pthread_mutex_unlock(&arp_protocol.lock);
 
     return ret;

@@ -24,21 +24,37 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
         }
         // manager thread signalled terminate, stop this thread
         if (rr->terminate_signal) {
+            pthread_mutex_unlock(&rr->rr_lock);
             break;
         }
         rr->pkts_in_queue = false;
 
-        for (int i = NETOS_EGRESS_RR_MAX - 1; i >= 0; i --) {
-            netos_egress_rr_t *rr_item = &rr->rr[i];
+        /**
+         * There can be cases where there are different items in the queue
+         * with varying lengths. such as queue 1 can be 3 items and queue 2 can be 2.
+         *
+         * In this case, the count is used to count up or flag that there are still **some**
+         * items in the queue and that the scheduler must repeat and look for the entry and
+         * send out on the egress.
+         */
+        uint32_t count = 0;
+        do {
+            count = 0;
+            for (int i = NETOS_EGRESS_RR_MAX - 1; i >= 0; i --) {
+                netos_egress_rr_t *rr_item = &rr->rr[i];
 
-            if (rr_item->pkt_buf) {
-                pkt_buffer_t *pkt_buf = rr_item->pkt_buf;
+                if (rr_item->pkt_buf) {
+                    pkt_buffer_t *pkt_buf = rr_item->pkt_buf;
 
-                // perform transmit of the packet
-                rr_item->pkt_buf = pkt_buf->next;
-                netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
+                    // perform transmit of the packet
+                    rr_item->pkt_buf = pkt_buf->next;
+                    netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
+                    if (rr_item->pkt_buf) {
+                        count ++;
+                    }
+                }
             }
-        }
+        } while (count > 0);
 
         pthread_mutex_unlock(&rr->rr_lock);
     }

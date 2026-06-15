@@ -23,13 +23,14 @@
 - [ ] TCP checksum validation
 - [ ] UDP checksum validation
 - [ ] Take pkt buffer numbers from xml config
-- [ ] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
+- [ ] static ARP cache allocation strategy
 
 ## Done
 
 - [x] selectable scheduler from a tx path (via egress algorithm type)
 - [x] Dynamic hash table
 - [x] ARP rx processing
+- [x] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
 
 
 ## Configuration

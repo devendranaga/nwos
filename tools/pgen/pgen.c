@@ -16,24 +16,6 @@ struct pgen_token {
 
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);
 
-static void pgen_set_defaults()
-{
-    const uint8_t dst[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
-    const uint8_t src[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
-    const uint16_t ethertype = 0x0800;
-
-    memcpy(pgen.eth_hdr.dst, dst, NETOS_MACADDR_LEN);
-    memcpy(pgen.eth_hdr.src, src, NETOS_MACADDR_LEN);
-    pgen.eth_hdr.ethertype = ethertype;
-
-    // default transmit params
-    pgen.ifname = NULL;
-    pgen.raw = NULL;
-    pgen.ipg_ns = 1000 * 1000 * 100; // every 100ms
-    pgen.n_frames = 10; // 10 frames
-    pgen.len = 100; // 100 bytes
-}
-
 static void pgen_eth_run();
 
 static struct {
@@ -45,6 +27,24 @@ static struct {
         "eth", false, pgen_eth_run
     }
 };
+
+static void pgen_set_defaults()
+{
+    const uint8_t dst[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
+    const uint8_t src[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
+    const uint16_t ethertype = 0x0800;
+
+    memcpy(pgen.eth_hdr.dst, dst, NETOS_MACADDR_LEN);
+    memcpy(pgen.eth_hdr.src, src, NETOS_MACADDR_LEN);
+    pgen.eth_hdr.ethertype = ethertype;
+
+    // default transmit params
+    pgen.ifname     = NULL;
+    pgen.raw        = NULL;
+    pgen.ipg_ns     = 1000 * 1000 * 100; // every 100ms
+    pgen.n_frames   = 10; // 10 frames
+    pgen.len        = 100; // 100 bytes
+}
 
 static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
