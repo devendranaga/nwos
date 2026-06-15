@@ -24,6 +24,8 @@
 - [ ] UDP checksum validation
 - [ ] Take pkt buffer numbers from xml config
 - [ ] static ARP cache allocation strategy
+- [ ] CPU affinity per thread
+- [ ] Count number of CPUs and tie each thread to a CPU
 
 ## Done
 
@@ -64,6 +66,35 @@
     </protocols>
 </config>
 ```
+
+## Design considerations
+
+### Latency measurements
+
+Notes: 15/06/2026
+
+On an AMD Ryzen 5 5500u,
+
+1. `recvfrom` without `MSG_DONTWAIT` takes anywhere between 2 to 300-400 microseconds.
+2. New ARP entries can either overrun the buffer or spend a lot of time in allocation.
+3. Generic buffer pool is required.
+4. `calloc` takes anywhere between 0.1 usec to 10 usec at random (real `mmap` called more than once instead of once by `calloc` ?)
+5. `pthread_mutex_lock` and `pthread_mutex_unlock` takes anywhere betwen 4 to 14 microseconds.
+
+Since `recvfrom` is waiting in a dedicated rx thread per interface, so it could be because there is no frame data and the `recvfrom` is in wait.
+There is another approach to do this is via the `select` or `epoll` system call by registering the socket and doing the rx in the callback.
+
+For every new ARP entry (i.e. cache miss) there is new allocation and this can repeatedly happen if there are as many new ARP replies or
+requests. (attack is one example)
+Also the allocation path takes up a lot of time and so this needs to be pool allocated.
+
+Since the problem is allocation and is all over the place the buffer pool must be generic of what is written for the pkt_buffer.
+
+Most of the processing time gets lost in here and most of the allocations must always been in the static allocation.
+
+Moving to static queues might help to cut down on the repeated calls to the `calloc` and `free` when `push` and `pop` are being called.
+Right now, `atomic` seem to be an approach to the single producer and single consumer problem. So new C might have already `_Atomic`
+and this can be used along with the circular buffer.
 
 ## Network stack
 
