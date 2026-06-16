@@ -3,6 +3,7 @@
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
 #include "ethertypes.h"
+#include "netos_log.h"
 #include "netos_status.h"
 #include "network_config.h"
 

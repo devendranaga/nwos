@@ -57,6 +57,8 @@ static inline void pkt_buffer_reset(pkt_buffer_t *pkt_buf)
     pkt_buf->offset = 0;
     pkt_buf->rx_len = 0;
     pkt_buf->tx_len = 0;
+    pkt_buf->in_intf = NULL;
+    pkt_buf->out_intf = NULL;
 }
 
 static inline void pkt_buffer_set_egress_intf_self(pkt_buffer_t *pkt_buf)

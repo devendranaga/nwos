@@ -74,6 +74,7 @@ void netos_buffer_pool_put_buffer(netos_buffer_pool_t *pool, pkt_buffer_t *pkt_b
 {
     // give back the pkt_buf to the buffer pool.
     pkt_buffer_ref_count_down(pkt_buf);
+    pkt_buffer_reset(pkt_buf);
     pkt_buf->next = NULL;
 
     pthread_mutex_lock(&pool->lock);

@@ -51,6 +51,9 @@ static void *netos_intf_rx_callback(void *cbdata)
 
         NETOS_PERF_EVENT_START(rx_buf->perf_evt);
 
+        rx_buf->event_type = NETOS_EVENT_TYPE_INVAL;
+        rx_buf->event_desc = NETOS_EVENT_DESC_INVAL;
+
         rx_buf->in_intf = intf->raw;
 
         ret = netos_raw_socket_rx(intf->raw, rx_buf->buffer, sizeof(rx_buf->buffer));
@@ -77,6 +80,11 @@ static void *netos_intf_rx_callback(void *cbdata)
 static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
 {
     netos_event_info_t *evt_info;
+
+    if ((pkt_buf->event_type == NETOS_EVENT_TYPE_INVAL) ||
+        (pkt_buf->event_desc == NETOS_EVENT_DESC_INVAL)) {
+        return;
+    }
 
     evt_info = netos_event_mgr_get_evt_buf();
     if (!evt_info) {
