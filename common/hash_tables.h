@@ -32,5 +32,7 @@ void *netos_hash_item_find(netos_hash_table_t *hash_table, void *key);
 
 void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del);
 
+void netos_hash_table_deinit(netos_hash_table_t *hash_tbl, del_fn del);
+
 #endif
 

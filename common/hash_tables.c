@@ -145,3 +145,32 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
     }
 }
 
+void netos_hash_table_deinit(netos_hash_table_t *hash_tbl, del_fn del)
+{
+    uint32_t i;
+
+    if (!hash_tbl) {
+        return;
+    }
+
+    for (i = 0; i < hash_tbl->n_items; i ++) {
+        netos_hash_item_t *item = hash_tbl->items[i];
+        netos_hash_item_t *prev;
+
+        while (item) {
+            prev = item;
+            del(item->key, item->val);
+            item = item->next;
+            free(prev);
+        }
+
+        if (item) {
+            free(item);
+        }
+    }
+
+    if (hash_tbl->items) {
+        free(hash_tbl->items);
+    }
+    free(hash_tbl);
+}

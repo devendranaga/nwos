@@ -9,6 +9,8 @@
 
 #include "raw_socket.h"
 #include "net_ioctl.h"
+#include "netos_status.h"
+#include "netos_log.h"
 
 raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
 {
@@ -19,6 +21,7 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
 
     raw = calloc(1, sizeof(raw_socket_ctx_t));
     if (!raw) {
+        netos_log_error("failed to allocate raw socket context\n");
         return NULL;
     }
 

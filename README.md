@@ -9,7 +9,6 @@
 - [ ] MbedTLS, wolfSSL GCM & GMAC
 - [ ] IPsec implementation
 - [ ] TCP frame parsing
-- [ ] IPv4 checksum validation
 - [ ] Event capture and storage tests
 - [ ] ICMP frame parsing
 - [ ] ICMP checksum validation
@@ -30,6 +29,8 @@
 - [ ] Handling Ctrl + C
 - [ ] See if we really need ref count on `pkt_buffer`
 - [ ] See if `_Atomic` can be usde on `pkt_buffer`.
+- [ ] Define event storage format, the same format is used for upload of events
+- [ ] Define event storage encryption
 
 ## Done
 
@@ -40,6 +41,7 @@
 - [x] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
 - [x] Static queues using ring buffer
 - [x] Fix leak of packet buffers (never freed)
+- [x] IPv4 checksum validation
 
 
 ## Configuration

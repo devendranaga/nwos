@@ -14,9 +14,16 @@
 #define NETOS_PKT_BUFFER_LEN 4096u
 
 typedef struct pkt_buffer {
+    // buffer for transmit and receive
     uint8_t             buffer[NETOS_PKT_BUFFER_LEN];
+
+    // pointer in the buffer
     uint32_t            offset;
+
+    // receive length
     uint32_t            rx_len;
+
+    // transmit length
     uint32_t            tx_len;
     uint32_t            ref_count;
     pthread_mutex_t     lock;
@@ -57,11 +64,11 @@ typedef struct pkt_buffer {
 
 static inline void pkt_buffer_reset(pkt_buffer_t *pkt_buf)
 {
-    pkt_buf->offset = 0;
-    pkt_buf->rx_len = 0;
-    pkt_buf->tx_len = 0;
-    pkt_buf->in_intf = NULL;
-    pkt_buf->out_intf = NULL;
+    pkt_buf->offset     = 0;
+    pkt_buf->rx_len     = 0;
+    pkt_buf->tx_len     = 0;
+    pkt_buf->in_intf    = NULL;
+    pkt_buf->out_intf   = NULL;
 }
 
 static inline void pkt_buffer_set_egress_intf_self(pkt_buffer_t *pkt_buf)

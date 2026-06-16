@@ -156,6 +156,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
     intf = calloc(1, sizeof(netos_intf_t));
     if (!intf) {
+        netos_log_error("failed to initialize the interface\n");
         return NULL;
     }
 
@@ -163,6 +164,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
     intf->raw = netos_raw_socket_init(intf_config->ifname);
     if (!intf->raw) {
+        netos_log_error("failed to initialize the raw socket\n");
         goto err;
     }
 

@@ -88,6 +88,13 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->src_ipaddr);
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->dst_ipaddr);
 
+    if (ipv4_hdr->src_ipaddr == ipv4_hdr->dst_ipaddr) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_SRC_DST_IP_SAME);
+        return NETOS_STATUS_IPV4_MALFORMED_PKT;
+    }
+
     ipv4_hdr_len = pkt_buf->offset - pkt_buf->ipv4_offset;
 
     netos_checksum_t chksum = {
