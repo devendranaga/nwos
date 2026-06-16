@@ -44,6 +44,8 @@ typedef enum {
 
 
     NETOS_STATUS_HASH_TABLE_ALLOC_FAILURE           = 0x00000900,
+
+    NETOS_STATUS_RING_BUFFER_FULL                   = 0x00000A00,
 } netos_status_t;
 
 #endif
