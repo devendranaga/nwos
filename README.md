@@ -3,8 +3,6 @@
 ## TODOs
 
 - [ ] WRR egress scheduling
-- [ ] Fix RR egress scheduling (all frames are not egressing if multiple queues exist)
-- [ ] Static queues
 - [ ] correct handling of ref count in rx and egress
 - [ ] MACsec implementation
 - [ ] Cryptography wrapper callback interface
@@ -26,13 +24,22 @@
 - [ ] static ARP cache allocation strategy
 - [ ] CPU affinity per thread
 - [ ] Count number of CPUs and tie each thread to a CPU
+- [ ] Tooling: Generate VLAN frames and multi level VLANs
+- [ ] Tooling: Generate ARP frames
+- [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
+- [ ] Handling Ctrl + C
+- [ ] See if we really need ref count on `pkt_buffer`
+- [ ] See if `_Atomic` can be usde on `pkt_buffer`.
 
 ## Done
 
 - [x] selectable scheduler from a tx path (via egress algorithm type)
 - [x] Dynamic hash table
 - [x] ARP rx processing
+- [x] Fix RR egress scheduling (all frames are not egressing if multiple queues exist)
 - [x] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
+- [x] Static queues using ring buffer
+- [x] Fix leak of packet buffers (never freed)
 
 
 ## Configuration
