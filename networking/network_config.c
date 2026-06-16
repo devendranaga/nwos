@@ -22,6 +22,7 @@ static netos_status_t netos_config_parse_interface_config(network_config_t *conf
 
             config->if_config[index].ifname = strdup((char *)val);
             index ++;
+            xmlFree(val);
         }
     }
 
@@ -40,9 +41,11 @@ static netos_status_t netos_config_get_u32(uint32_t *u32_ptr, xmlDocPtr doc, xml
 
     *u32_ptr = strtoul((const char *)val, &err_ptr, 10);
     if (err_ptr && *err_ptr != '\0') {
+        xmlFree(val);
         return NETOS_STATUS_CONFIG_INVAL_XML;
     }
 
+    xmlFree(val);
     return NETOS_STATUS_SUCCESS;
 }
 
@@ -63,6 +66,7 @@ static netos_status_t netos_config_get_bool(bool *bool_ptr, xmlDocPtr doc, xmlNo
         ret = NETOS_STATUS_CONFIG_INVAL_XML;
     }
 
+    xmlFree(val);
     return ret;
 }
 
@@ -218,6 +222,7 @@ netos_status_t netos_config_parse(network_config_t *config, const char *config_p
     }
 
     xmlFree(root);
+    xmlFree(doc);
 
     return ret;
 
@@ -245,6 +250,10 @@ void netos_config_print(const network_config_t *config)
     fprintf(stderr, "        arp: {\n");
     fprintf(stderr, "            arp_cache_size: %d\n",
                     config->protocol_config.arp_config.arp_cache_size);
+    fprintf(stderr, "        }\n");
+    fprintf(stderr, "        ipv4: {\n");
+    fprintf(stderr, "            drop_fragments: %s\n",
+                    config->protocol_config.ipv4_config.drop_fragments ? "True": "False");
     fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
     fprintf(stderr, "}\n");
