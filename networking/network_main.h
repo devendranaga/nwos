@@ -29,9 +29,6 @@ typedef struct netos_intf {
     // recieve thread
     pthread_t                   rx_thread;
 
-    // receive buffer pool
-    netos_buffer_pool_t         *rx_pool;
-
     // parser thread context
     netos_parser_thread_t       *parser_thr;
 

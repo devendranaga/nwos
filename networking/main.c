@@ -41,7 +41,7 @@ static void *netos_intf_rx_callback(void *cbdata)
     netos_log_info("Rx thread for [%s] ready\n", intf->ifname);
 
     while (1) {
-        pkt_buffer_t *rx_buf = netos_buffer_pool_get_buffer(intf->rx_pool);
+        pkt_buffer_t *rx_buf = netos_buffer_pool_get_buffer(intf->parser_thr->rx_pool);
         if (!rx_buf) {
             //netos_log_warn("Out of rx buffers.. retry\n");
             continue;
@@ -55,16 +55,18 @@ static void *netos_intf_rx_callback(void *cbdata)
 
         ret = netos_raw_socket_rx(intf->raw, rx_buf->buffer, sizeof(rx_buf->buffer));
         if (ret <= 0) {
-            netos_buffer_pool_put_buffer(intf->rx_pool, rx_buf);
+            // receive failed, give back the buffer to the pool
+            netos_buffer_pool_put_buffer(intf->parser_thr->rx_pool, rx_buf);
             continue;
         }
 
         clock_gettime(CLOCK_REALTIME, &rx_buf->rx_ts);
         rx_buf->rx_len = ret;
+        intf->parser_thr->if_stats.in_rx_bytes += ret;
 
         pthread_mutex_lock(&intf->parser_thr->parse_q_lock);
         pkt_buffer_ref_count_up(rx_buf);
-        netos_queue_push(intf->parser_thr->parse_q, rx_buf);
+        netos_ring_add(&intf->parser_thr->parse_ring, rx_buf);
         pthread_cond_signal(&intf->parser_thr->parse_q_cond);
         pthread_mutex_unlock(&intf->parser_thr->parse_q_lock);
     }
@@ -95,7 +97,7 @@ static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
 
 static void *netos_intf_parse_callback(void *cbdata)
 {
-    uint32_t length;
+    bool ring_empty;
     netos_parser_thread_t *parse_thr = cbdata;
     netos_status_t ret;
 
@@ -107,11 +109,12 @@ static void *netos_intf_parse_callback(void *cbdata)
         pthread_mutex_lock(&parse_thr->parse_q_lock);
 
         pkt_buffer_t *pkt;
-        length = parse_thr->parse_q->length;
 
-        if (length > 0) {
+        ring_empty = NETOS_RING_EMPTY(parse_thr->parse_ring);
+
+        if (!ring_empty) {
             // retrieve the rx from the head of the queue
-            pkt = netos_queue_pop(parse_thr->parse_q);
+            pkt = netos_ring_remove(&parse_thr->parse_ring);
             pthread_mutex_unlock(&parse_thr->parse_q_lock);
             if (!pkt) {
                 continue;
@@ -124,6 +127,7 @@ static void *netos_intf_parse_callback(void *cbdata)
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
                 netos_update_rx_event(parse_thr->ifname, pkt);
+                netos_buffer_pool_put_buffer(parse_thr->rx_pool, pkt);
                 parse_thr->if_stats.in_rx_invalid ++;
             }
             NETOS_PERF_EVENT_END(pkt->perf_evt);
@@ -156,12 +160,6 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
     netos_log_info("raw socket on [%s] create ok\n", intf_config->ifname);
 
-    intf->rx_pool = netos_buffer_pool_alloc(1024);
-    if (!intf->rx_pool) {
-        netos_log_error("Failed to allocate rx buffer pool\n");
-        goto err;
-    }
-
     netos_log_info("rx pool created ok\n");
 
     intf->parser_thr = calloc(1, sizeof(netos_parser_thread_t));
@@ -170,9 +168,15 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
         goto err;
     }
 
+    intf->parser_thr->rx_pool = netos_buffer_pool_alloc(1024);
+    if (!intf->parser_thr->rx_pool) {
+        netos_log_error("Failed to allocate rx buffer pool\n");
+        goto err;
+    }
+
     intf->parser_thr->ifname = strdup(intf_config->ifname);
     intf->parser_thr->raw = intf->raw;
-    intf->parser_thr->parse_q = netos_queue_init();
+    netos_ring_init(&intf->parser_thr->parse_ring, 1024);
 
     netos_log_info("Initialize parse queue\n");
 
@@ -216,13 +220,13 @@ err:
             netos_egress_controller_deinit(intf->egress_ctrl);
         }
         if (intf->parser_thr) {
+            if (intf->parser_thr->rx_pool) {
+                netos_buffer_pool_free(intf->parser_thr->rx_pool);
+            }
             if (intf->parser_thr->ifname) {
                 free(intf->parser_thr->ifname);
             }
             free(intf->parser_thr);
-        }
-        if (intf->rx_pool) {
-            netos_buffer_pool_free(intf->rx_pool);
         }
         if (intf->ifname) {
             free(intf->ifname);
