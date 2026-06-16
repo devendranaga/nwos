@@ -27,7 +27,8 @@ SET(PROTOCOL_SRC
     ./protocols/ipv4.c
     ./protocols/ipv6.c
     ./protocols/tcp.c
-    ./protocols/udp.c)
+    ./protocols/udp.c
+    ./protocols/checksum.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c)

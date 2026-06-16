@@ -44,6 +44,9 @@ typedef struct pkt_buffer {
     // the allocator of this buffer .. back pointer to buffer pool
     void                *buffer_pool_ctx;
 
+    // ip header offset
+    uint32_t            ipv4_offset;
+
     // perf event related to this frame
     netos_perf_event_t  perf_evt;
 

@@ -9,7 +9,7 @@ netos_status_t netos_vlan_decode(netos_vlan_hdr_t *vlan_hdr,
 
     vlan_hdr->pcp = (pkt_buf->buffer[pkt_buf->offset] & 0xE0) >> 5;
     vlan_hdr->dei = (pkt_buf->buffer[pkt_buf->offset] & 0x10) >> 4;
-    vlan_hdr->vlan_id = ((pkt_buf->buffer[pkt_buf->offset] << 8) |
+    vlan_hdr->vlan_id = (((pkt_buf->buffer[pkt_buf->offset] & 0x0F) << 8) |
                          (pkt_buf->buffer[pkt_buf->offset + 1]));
     pkt_buf->offset += 2;
 
@@ -17,3 +17,18 @@ netos_status_t netos_vlan_decode(netos_vlan_hdr_t *vlan_hdr,
 
     return NETOS_STATUS_SUCCESS;
 }
+
+netos_status_t netos_vlan_encode(netos_vlan_hdr_t *vlan_hdr,
+                                 pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->buffer[pkt_buf->offset] = (vlan_hdr->pcp << 5);
+    pkt_buf->buffer[pkt_buf->offset] |= (vlan_hdr->dei << 4);
+    pkt_buf->buffer[pkt_buf->offset] |= (vlan_hdr->vlan_id & 0x0F00);
+    pkt_buf->buffer[pkt_buf->offset + 1] = (vlan_hdr->vlan_id & 0x00FF);
+
+    pkt_buf->offset += 2;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+

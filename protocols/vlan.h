@@ -12,7 +12,7 @@ extern "C" {
 
 #define NETOS_VLAN_HDR_LEN 4
 
-typedef struct netos_vlan_hedr {
+typedef struct netos_vlan_hdr {
     uint16_t                vlan_id;
     uint8_t                 pcp;
     uint8_t                 dei;

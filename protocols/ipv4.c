@@ -4,12 +4,13 @@
 #include "netos_status.h"
 #include "pkt_buffer.h"
 #include "ipv4.h"
+#include "checksum.h"
 #include "event_info.h"
 
 netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_buf)
 {
-    netos_status_t ret = NETOS_STATUS_SUCCESS;
     uint32_t hdr_len;
+    uint32_t ipv4_hdr_len;
 
     if ((pkt_buf->offset + NETOS_IPV4_HDR_LEN_DEFAULT) > pkt_buf->rx_len) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
@@ -17,6 +18,8 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
                                    NETOS_EVENT_DESC_IPV4_SHORT_HDR_LEN);
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
+
+    pkt_buf->ipv4_offset = pkt_buf->offset;
 
     ipv4_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
     if (ipv4_hdr->version != NETOS_IPV4_VERSION) {
@@ -85,6 +88,21 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->src_ipaddr);
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->dst_ipaddr);
 
-    return ret;
+    ipv4_hdr_len = pkt_buf->offset - pkt_buf->ipv4_offset;
+
+    netos_checksum_t chksum = {
+        .buffer = &pkt_buf->buffer[pkt_buf->ipv4_offset],
+        .len = ipv4_hdr_len
+    };
+
+    uint32_t checksum = netos_ipv4_checksum(&chksum);
+    if (checksum != 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV4_CHECKSUM_FAILED);
+        return NETOS_STATUS_IPV4_MALFORMED_PKT;
+    }
+
+    return NETOS_STATUS_SUCCESS;
 }
 
