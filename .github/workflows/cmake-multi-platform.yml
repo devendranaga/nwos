@@ -12,7 +12,7 @@ jobs:
     - name: Compile
       run: |
         mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j; mkdir dist/; cp -r netos_pgen netosd dist/;
-        tag_name=${GITHUB_REF#refs/tags/}
+        tag_name=`git tag | head -1`
         tar -zcf "netos_release_${tag_name}.tar.gz" -C dist .
     - name: Upload build artifact to Github Actions
       uses: actions/upload-artifact@v4
