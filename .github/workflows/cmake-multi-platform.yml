@@ -11,3 +11,14 @@ jobs:
         sudo apt install -y liblzma-dev libicu-dev
     - name: Compile
       run: mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j
+    - name: Create build artifact
+      run: |
+        mkdir dist/; cp -r netos_pgen netosd dist/;
+        tag_name=${GITHUB_REF#refs/tags/}
+        tar -zcf "netos_release_${tag_name}.tar.gz" -C dist .
+    - name: Upload build artifact to Github Actions
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-${{ github.ref_name }}
+        path: netos_release*.tar.gz
+        retention-days: 7
