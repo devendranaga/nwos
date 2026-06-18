@@ -28,7 +28,8 @@ SET(PROTOCOL_SRC
     ./protocols/ipv6.c
     ./protocols/tcp.c
     ./protocols/udp.c
-    ./protocols/checksum.c)
+    ./protocols/checksum.c
+    ./protocols/icmp.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c)
@@ -38,6 +39,7 @@ SET(PLATFORM_SRC
     ./platform/lib/net_ioctl.c
     ./platform/lib/pthread_intf.c
     ./platform/lib/mmap_intf.c
+    ./platform/gcd/gcd.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
@@ -73,6 +75,7 @@ include_directories(
                 ./protocols/
                 ./common/
                 ./platform/lib/
+                ./platform/gcd/
                 ./logging/
                 ./events/
                 ./egress/

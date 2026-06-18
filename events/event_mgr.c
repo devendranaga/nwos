@@ -2,14 +2,17 @@
 #include "netos_status.h"
 #include "event_buffer.h"
 #include "event_mgr.h"
+#include "gcd.h"
 
 #define NETOS_EVENT_BUFFERS_MAX 1024
 
 // find a way to make it within the global context instead of static global
 static netos_event_mgr_t evt_mgr;
 
-netos_status_t netos_event_mgr_init()
+netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx)
 {
+    evt_mgr.gcd_ctx = gcd_ctx;
+
     // allocate event buffers
     evt_mgr.evt_buf = netos_event_buffer_init(NETOS_EVENT_BUFFERS_MAX);
     if (!evt_mgr.evt_buf) {

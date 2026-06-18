@@ -13,6 +13,7 @@
 #include "egress_controller.h"
 #include "interface_stats.h"
 #include "queue.h"
+#include "gcd.h"
 
 typedef struct netos_cmdargs {
     char *config_file;
@@ -43,6 +44,7 @@ typedef struct netos_ctx {
     netos_cmdargs_t     cmdargs;
     network_config_t    config;
     netos_intf_t        *interfaces;
+    netos_gcd_ctx_t     *gcd_ctx;
 } netos_ctx_t;
 
 #endif

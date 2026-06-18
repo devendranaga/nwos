@@ -105,6 +105,15 @@ Moving to static queues might help to cut down on the repeated calls to the `cal
 Right now, `atomic` seem to be an approach to the single producer and single consumer problem. So new C might have already `_Atomic`
 and this can be used along with the circular buffer.
 
+Notes: 17/06/2026
+
+1. Atomic tests did not yeild good results with CPU load. The waiting must be there somewhere otherwise, the busy lop returns.
+   possible with `futex`, need to learn about that.
+
+2. Hot path limit is also with the buffer pool lock which could also consume some latency.
+
+3. Ring reduces latency by half and now the double digit usec are rare occurence.
+
 ## Network stack
 
 ### Init path

@@ -86,9 +86,9 @@ static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
         return;
     }
 
+    // all the new events will be dropped if we do not have a free buffer
     evt_info = netos_event_mgr_get_evt_buf();
     if (!evt_info) {
-        netos_log_error("No available event buffers\n");
         return;
     }
 
@@ -314,10 +314,16 @@ int main(int argc, char **argv)
         return ret;
     }
 
+    ctx->gcd_ctx = netos_gcd_ctx_init();
+    if (!ctx->gcd_ctx) {
+        netos_log_error("Initializing GCD context failed\n");
+        return NETOS_STATUS_GENERIC_ERROR;
+    }
+
     netos_log_info("Config parse ok\n");
 
     // initialize event manager
-    ret = netos_event_mgr_init();
+    ret = netos_event_mgr_init(ctx->gcd_ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Cannot initialize event manager\n");
         return ret;
@@ -329,9 +335,7 @@ int main(int argc, char **argv)
         return ret;
     }
 
-    while (1) {
-        sleep(1);
-    }
+    netos_gcd_run(ctx->gcd_ctx);
 
     return ret;
 }

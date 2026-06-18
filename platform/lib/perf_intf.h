@@ -13,7 +13,7 @@ typedef struct {
 #define perf_delta_us(__perf_evt) ((__perf_evt).elapsed_ns / 1000.0)
 } netos_perf_event_t;
 
-#if defined(NETOS_PERF)
+#if !defined(NETOS_PERF)
 
 #define NETOS_PERF_EVENT_INITIALIZE(__perf_evt) do {            \
     memset(&(__perf_evt).start_ns, 0, sizeof(struct timespec)); \
