@@ -12,7 +12,6 @@
 - [ ] Event capture and storage tests
 - [ ] ICMP frame parsing
 - [ ] ICMP checksum validation
-- [ ] gcd framework
 - [ ] ARP cache invalidation
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
@@ -27,10 +26,12 @@
 - [ ] Tooling: Generate ARP frames
 - [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
-- [ ] See if we really need ref count on `pkt_buffer`
-- [ ] See if `_Atomic` can be usde on `pkt_buffer`.
 - [ ] Define event storage format, the same format is used for upload of events
 - [ ] Define event storage encryption
+- [ ] ICMP6 frame parsing
+- [ ] ICMP6 checksum validation
+- [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
+- [ ] CMAC PRF
 
 ## Done
 
@@ -42,6 +43,9 @@
 - [x] Static queues using ring buffer
 - [x] Fix leak of packet buffers (never freed)
 - [x] IPv4 checksum validation
+- [x] gcd framework
+- [x] See if we really need ref count on `pkt_buffer`
+- [x] See if `_Atomic` can be usde on `pkt_buffer`.
 
 
 ## Configuration
@@ -114,6 +118,16 @@ Notes: 17/06/2026
 
 3. Ring reduces latency by half and now the double digit usec are rare occurence.
 
+Notes: 18/06/2026
+
+**on IPsec**:
+
+1. IPsec requires a lot of ECDH and KDFs with X.509 exchanges. This means the software needs to understand the certificate formats.
+
+2. 4 message IPsec is very hard to implement from the supported lists and ciphers. Will need to read the spec in detail.
+
+Requires a strong crypto library interface so that the control and data path protocols can be implemented.
+
 ## Network stack
 
 ### Init path
@@ -142,6 +156,10 @@ Egress queue controller orchestrates the queueing and shaping. The following Egr
 4. Loops around each priority queue from 7 to 0.
 5. Dequeues and transmits all the frames from queue 7.
 6. Repeats it for queue 6, 5, .. and so on to queue 0.
+
+Strict priority queueing is particularly useful in case where encrypted traffic could take the highest priority by default because of its sensitivity.
+
+Thus all of the MACsec traffic could go sit on the highest priority queue waiting to be sent.
 
 ## Switching
 
