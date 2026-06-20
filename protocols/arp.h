@@ -29,27 +29,6 @@ extern "C" {
     __tgt_mac[5] = __src_mac[5];\
 } while (0)
 
-#define NETOS_ARP_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa) do {\
-    (__arp_h)->hwtype               = NETOS_ARP_HWTYPE_ETHER;\
-    (__arp_h)->protocol_type        = NETOS_ARP_PROTOCOL_TYPE_IPV4;\
-    (__arp_h)->hw_addr_len          = 6;\
-    (__arp_h)->protocol_len         = 4;\
-    NETOS_SET_MACADDR(((__arp_h)->sender_hwaddr), __sha);\
-    (__arp_h)->sender_protocol_addr = __spa;\
-    NETOS_SET_MACADDR(((__arp_h)->target_hwaddr), __tha);\
-    (__arp_h)->target_protocol_addr = __tpa;\
-} while (0)
-
-#define NETOS_ARP_REQ_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa) do {\
-    (__arp_h)->op = NETOS_ARP_OP_REQUEST;\
-    NETOS_ARP_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa);\
-} while (0)
-
-#define NETOS_ARP_REPLY_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa) do {\
-    (__arp_h)->op = NETOS_ARP_OP_REPLY;\
-    NETOS_ARP_DEFAULTS(__arp_h, __sha, __spa, __tha, __tpa);\
-} while (0)
-
 typedef struct netos_arp_mib {
     uint64_t    in_arp;
     uint64_t    in_arp_invalid;

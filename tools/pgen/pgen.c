@@ -6,6 +6,7 @@
 #include "netos_status.h"
 #include "common.h"
 #include "pkt_buffer.h"
+#include "ethertypes.h"
 #include "pgen.h"
 
 static struct pgen pgen;
@@ -17,6 +18,7 @@ struct pgen_token {
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);
 
 static void pgen_eth_run();
+static void pgen_arp_run();
 
 static struct {
     const char  *str;
@@ -25,6 +27,9 @@ static struct {
 } pgen_run_callback_list[] = {
     {
         "eth", false, pgen_eth_run
+    },
+    {
+        "arp", false, pgen_arp_run
     }
 };
 
@@ -33,10 +38,12 @@ static void pgen_set_defaults()
     const uint8_t dst[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
     const uint8_t src[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
     const uint16_t ethertype = 0x0800;
+    const uint32_t src_ipaddr = 0xc0a8000a; // 192.168.0.10
+    const uint32_t dst_ipaddr = 0xc0a80001; // 192.168.0.1
 
-    memcpy(pgen.eth_hdr.dst, dst, NETOS_MACADDR_LEN);
-    memcpy(pgen.eth_hdr.src, src, NETOS_MACADDR_LEN);
-    pgen.eth_hdr.ethertype = ethertype;
+    NETOS_ETH_DEFAULTS(pgen.eth_hdr, dst, src, ethertype);
+
+    NETOS_ARP_REQ_DEFAULTS((&pgen.arp_hdr), src, src_ipaddr, dst, dst_ipaddr);
 
     // default transmit params
     pgen.ifname     = NULL;
@@ -44,11 +51,31 @@ static void pgen_set_defaults()
     pgen.ipg_ns     = 1000 * 1000 * 100; // every 100ms
     pgen.n_frames   = 10; // 10 frames
     pgen.len        = 100; // 100 bytes
+    pgen.eth_enable = false;
+    pgen.arp_enable = false;
 }
 
 static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen_run_callback_list[0].enable = true;
+}
+
+static void set_arp_enable(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    pgen_run_callback_list[1].enable = true;
+}
+
+static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t op;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &op);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.arp_hdr.op = op;
 }
 
 static void set_eth_da(struct pgen_token *tokens, uint32_t n_tokens)
@@ -101,6 +128,16 @@ static void set_n_frames(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void set_packet_len(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &pgen.len);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+}
+
 static void set_ifname(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
@@ -118,6 +155,24 @@ static void pgen_eth_run()
     if ((pgen.len != 0) && (pgen.len < (sizeof(data_buf) - 80))) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
+    pkt_buffer_set_tx_len_default(&pkt_buf);
+    netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+}
+
+static void pgen_arp_run()
+{
+    uint8_t data_buf[1024] = {0};
+    pkt_buffer_t pkt_buf;
+
+    pkt_buffer_initialize(&pkt_buf);
+    netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_ARP;
+    netos_arp_encode(&pgen.arp_hdr, &pkt_buf);
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+        pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
+    }
+
     pkt_buffer_set_tx_len_default(&pkt_buf);
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 }
@@ -178,6 +233,11 @@ static const struct {
         set_eth_enable,
     },
     {
+        "arp.enable",
+        "Enables the ARP frame generation",
+        set_arp_enable,
+    },
+    {
         "eth.da",
         "Set the Eth DA",
         set_eth_da
@@ -193,6 +253,11 @@ static const struct {
         set_eth_ethertype
     },
     {
+        "arp.op",
+        "Set the ARP operation<request = 1/reply = 2>",
+        set_arp_op
+    },
+    {
         "ipg",
         "Set the inter packet gap in nanoseconds",
         set_ipg
@@ -201,6 +266,11 @@ static const struct {
         "n_frames",
         "Set Number of frames to send",
         set_n_frames
+    },
+    {
+        "len",
+        "Set packet length",
+        set_packet_len,
     },
     {
         "ifname",

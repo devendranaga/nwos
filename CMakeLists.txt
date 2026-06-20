@@ -21,7 +21,7 @@ endif()
 
 SET(PROTOCOL_SRC
     ./protocols/eth.c
-    ./protocols/arp.c
+    ./protocols/arp_parse.c
     ./protocols/vlan.c
     ./protocols/macsec.c
     ./protocols/ipv4.c
@@ -64,6 +64,7 @@ SET(NETOS_SRC
     ./core/main.c
     ./core/packet_parser.c
     ./core/netos_config.c
+    ./protocols/arp.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c)
