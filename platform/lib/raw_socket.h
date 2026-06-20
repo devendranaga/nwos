@@ -25,8 +25,33 @@ typedef struct raw_socket_ctx {
  */
 raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);
 
+/**
+ * @brief - deinitialize raw socket.
+ *
+ * @param [in] raw - raw socket context.
+ */
+void netos_raw_socket_deinit(raw_socket_ctx_t *raw);
+
+/**
+ * @brief - receive a packet in the data pointer.
+ *
+ * @param [in] raw - raw socket context.
+ * @param [out] data - rx buffer.
+ * @param [in] data_len - length of the rx buffer.
+ *
+ * @return rx length on success <=0 on failure.
+ */
 int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
+/**
+ * @brief - transmit a packet from the data pointer.
+ *
+ * @param [in] raw - raw socket context.
+ * @param [in] data - tx buffer.
+ * @param [in] data_len - length of the tx buffer.
+ *
+ * @return tx length on success <=0 on failure.
+ */
 int netos_raw_socket_tx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
 #endif

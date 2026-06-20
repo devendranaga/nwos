@@ -32,27 +32,27 @@ raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
     }
 
     // set the promiscous mode
-    ret = net_ioctl_set_promisc_fd(raw->fd, ifname);
+    ret = netos_ioctl_set_promisc_fd(raw->fd, ifname);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
 
     // bind to device
-    ret = net_ioctl_bind_to_device(raw->fd, ifname);
+    ret = netos_ioctl_bind_to_device(raw->fd, ifname);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
 
     // get the ifindex
-    raw->ifindex = net_ioctl_get_ifindex(raw->fd, ifname);
+    raw->ifindex = netos_ioctl_get_ifindex(raw->fd, ifname);
     if (raw->ifindex == -1) {
         goto err;
     }
 
     memset(&lladdr, 0, sizeof(lladdr));
-    lladdr.sll_ifindex = raw->ifindex;
+    lladdr.sll_ifindex  = raw->ifindex;
     lladdr.sll_protocol = htons(ETH_P_ALL);
-    lladdr.sll_family = AF_PACKET;
+    lladdr.sll_family   = AF_PACKET;
 
     // bind the raw socket
     res = bind(raw->fd, (struct sockaddr *)&lladdr, sizeof(lladdr));
@@ -80,10 +80,27 @@ err:
         if (raw->fd > 0) {
             close(raw->fd);
         }
+        if (raw->ifname) {
+            free(raw->ifname);
+        }
         free(raw);
     }
 
     return NULL;
+}
+
+void netos_raw_socket_deinit(raw_socket_ctx_t *raw)
+{
+    if (raw) {
+        if (raw->fd > 0) {
+            netos_ioctl_clear_promisc_fd(raw->fd, raw->ifname);
+            close(raw->fd);
+        }
+        if (raw->ifname) {
+            free(raw->ifname);
+        }
+        free(raw);
+    }
 }
 
 int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
