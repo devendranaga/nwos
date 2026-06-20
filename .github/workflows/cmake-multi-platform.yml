@@ -12,7 +12,7 @@ jobs:
     - name: Compile
       run: |
         mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on; make -j;
-        cd ../; rm -rf build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on; make -j;
+        rm -rf build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on; make -j;
     - name: Upload build artifact to Github Actions
       uses: actions/upload-artifact@v4
       with:
