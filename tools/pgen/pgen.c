@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 #include <time.h>
 #include "netos_status.h"
 #include "common.h"
@@ -63,6 +64,50 @@ static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
 static void set_arp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen_run_callback_list[1].enable = true;
+}
+
+static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.sender_hwaddr);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+}
+
+static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.sender_protocol_addr);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.arp_hdr.sender_protocol_addr = ntohl(pgen.arp_hdr.sender_protocol_addr);
+}
+
+static void set_arp_tha(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.target_hwaddr);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+}
+
+static void set_arp_tpa(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.target_protocol_addr);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.arp_hdr.target_protocol_addr = ntohl(pgen.arp_hdr.target_protocol_addr);
 }
 
 static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
@@ -256,6 +301,26 @@ static const struct {
         "arp.op",
         "Set the ARP operation<request = 1/reply = 2>",
         set_arp_op
+    },
+    {
+        "arp.sha",
+        "Set the ARP's sender HW Addr",
+        set_arp_sha
+    },
+    {
+        "arp.spa",
+        "Set the ARP sender Ip address",
+        set_arp_spa
+    },
+    {
+        "arp.tha",
+        "Set the ARP's target HW Addr",
+        set_arp_tha
+    },
+    {
+        "arp.tpa",
+        "Set the ARP's target IP addr",
+        set_arp_tpa
     },
     {
         "ipg",

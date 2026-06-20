@@ -9,6 +9,8 @@ netos_status_t netos_get_u32_from_str(const char *u32_str, uint32_t *u32);
 
 netos_status_t netos_get_u64_from_str(const char *u64_str, uint64_t *u64);
 
+netos_status_t netos_get_ipv4addr_from_str(const char *ipv4addr_str, uint32_t *ipv4_addr);
+
 #define NETOS_TIMESPEC_DELTA_NS(__start, __end, __delta) do {\
     __delta = (((__end.tv_sec - __start.tv_sec) * 1000000000L) +\
                (__end.tv_nsec - __start.tv_nsec));\

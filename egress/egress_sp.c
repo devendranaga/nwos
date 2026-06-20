@@ -91,6 +91,14 @@ void netos_egress_sp_enque(void *ctx,
     netos_egress_sp_mgr_t *sp = ctx;
     uint32_t priority = pkt_buf->priority;
 
+    /**
+     * drop if the priority goes out of range.
+     */
+    if (priority >= NETOS_EGRESS_SP_MAX) {
+        netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
+        return;
+    }
+
     pthread_mutex_lock(&sp->sp_lock);
     {
         if (!sp->sp[priority].pkt_buf) {

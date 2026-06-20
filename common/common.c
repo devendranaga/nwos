@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include "netos_status.h"
 
 netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac)
@@ -57,6 +58,18 @@ netos_status_t netos_get_u64_from_str(const char *u64_str, uint64_t *u64)
     *u64 = strtoul(u64_str, &err_ptr, 10);
     if (err_ptr && *err_ptr != '\0') {
         return NETOS_STATUS_COMMON_U64_STR_TO_U64_FAILED;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_get_ipv4addr_from_str(const char *ipv4addr_str, uint32_t *ipv4_addr)
+{
+    int res;
+
+    res = inet_pton(AF_INET, ipv4addr_str, (uint8_t *)ipv4_addr);
+    if (res <= 0) {
+        return NETOS_STATUS_COMMON_IPADDR_STR_TO_HOST_FAILED;
     }
 
     return NETOS_STATUS_SUCCESS;

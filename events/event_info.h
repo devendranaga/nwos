@@ -70,6 +70,12 @@ typedef struct netos_event_info {
     (__evt_info)->s.frame_len = 0;\
 } while (0)
 
+/**
+ * @brief - Copy source string into destination.
+ *
+ * @param [in] __dst - destination string.
+ * @param [in] __src - source string.
+ */
 #define NETOS_STRING_COPY(__dst, __src) do {\
     uint32_t __i = 0;\
     while ((*(__src) != '\0')) {\
@@ -83,12 +89,12 @@ typedef struct netos_event_info {
                                 __sec, __nsec,\
                                 __evt_type, __evt_desc,\
                                 __frame_len) do {\
-    (__evt_info)->s.type = __evt_type;\
-    (__evt_info)->s.desc = __evt_desc;\
-    (__evt_info)->s.sec = __sec;\
-    (__evt_info)->s.nsec = __nsec;\
+    (__evt_info)->s.type        = __evt_type;\
+    (__evt_info)->s.desc        = __evt_desc;\
+    (__evt_info)->s.sec         = __sec;\
+    (__evt_info)->s.nsec        = __nsec;\
     NETOS_STRING_COPY((__evt_info)->s.ifname, ifname);\
-    (__evt_info)->s.frame_len = __frame_len;\
+    (__evt_info)->s.frame_len   = __frame_len;\
 } while (0)
 
 #define NETOS_EVENT_INFO_ADD_EVENT(__evt_head, __evt_tail, __evt_info) do {\

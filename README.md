@@ -16,6 +16,7 @@
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] IPv6 frame parsing
+- [ ] IPv4 serialize and checksum generation
 - [ ] TCP checksum validation
 - [ ] UDP checksum validation
 - [ ] Take pkt buffer numbers from xml config
@@ -23,7 +24,6 @@
 - [ ] CPU affinity per thread
 - [ ] Count number of CPUs and tie each thread to a CPU
 - [ ] Tooling: Generate VLAN frames and multi level VLANs
-- [ ] Tooling: Generate ARP frames
 - [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
 - [ ] Define event storage format, the same format is used for upload of events
@@ -32,6 +32,10 @@
 - [ ] ICMP6 checksum validation
 - [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
 - [ ] CMAC PRF
+- [ ] Tooling: packet replay from a file in pgen
+- [ ] Store the received packets in a PCAP
+- [ ] Tooling: ARP spoofing
+- [ ] Tooling: implement the up arrow and down arrow detection and history buffer
 
 ## Done
 
@@ -46,6 +50,7 @@
 - [x] gcd framework
 - [x] See if we really need ref count on `pkt_buffer`
 - [x] See if `_Atomic` can be usde on `pkt_buffer`.
+- [x] Tooling: Generate ARP frames
 
 
 ## Configuration

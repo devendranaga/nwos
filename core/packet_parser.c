@@ -1,4 +1,5 @@
 #include "pkt_buffer.h"
+#include "protocols.h"
 #include "arp.h"
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
@@ -6,12 +7,6 @@
 #include "netos_log.h"
 #include "netos_status.h"
 #include "netos_config.h"
-
-typedef enum {
-    NETOS_PROTOCOL_ICMP = 1,
-    NETOS_PROTOCOL_TCP = 6,
-    NETOS_PROTOCOL_UDP = 11,
-} netos_protocol_t;
 
 netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
                               netos_packet_parser_t *parsed_data)

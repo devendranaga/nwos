@@ -50,7 +50,6 @@ SET(PLATFORM_SRC
     ./logging/netos_log.c)
 
 SET(EVENT_SRC
-    ./events/event_intf.c
     ./events/event_mgr.c
     ./events/event_buffer.c)
 
