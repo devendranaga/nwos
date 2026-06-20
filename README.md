@@ -10,7 +10,6 @@
 - [ ] IPsec implementation
 - [ ] TCP frame parsing
 - [ ] Event capture and storage tests
-- [ ] ICMP checksum validation
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] IPv6 frame parsing
@@ -52,6 +51,7 @@
 - [x] Tooling: Generate ARP frames
 - [x] ARP cache invalidation
 - [x] ICMP frame parsing
+- [x] ICMP checksum validation
 
 
 ## Configuration

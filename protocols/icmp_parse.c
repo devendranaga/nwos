@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "icmp_hdr.h"
 #include "pkt_buffer.h"
+#include "checksum.h"
 #include "event_info.h"
 #include "netos_status.h"
 
@@ -80,6 +82,8 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
+    icmp_hdr->start_off = pkt_buf->offset;
+
     pkt_buffer_decode_byte(pkt_buf, &icmp_hdr->type);
     pkt_buffer_decode_byte(pkt_buf, &icmp_hdr->code);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->checksum);
@@ -91,6 +95,15 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
             if (ret != NETOS_STATUS_SUCCESS) {
                 return ret;
             }
+
+            netos_checksum_t chksum_info = {
+                .buffer = &(pkt_buf->buffer[icmp_hdr->start_off]),
+                .len = pkt_buf->rx_len - icmp_hdr->start_off,
+            };
+            uint16_t chksum;
+
+            chksum = netos_icmp_checksum(&chksum_info);
+            printf("%x\n", chksum);
         }
     }
 
