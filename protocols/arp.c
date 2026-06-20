@@ -113,8 +113,8 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_arp_rx_process_reply(pkt_buffer_t *pkt_buf,
-                                                 netos_packet_parser_t *pkt_parser)
+static netos_status_t netos_arp_rx_process_request(pkt_buffer_t *pkt_buf,
+                                                   netos_packet_parser_t *pkt_parser)
 {
     netos_status_t ret;
 
@@ -157,7 +157,7 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 
     // if there is an ARP reply process it
     if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
-        ret = netos_arp_rx_process_reply(pkt_buf, pkt_parser);
+        ret = netos_arp_rx_process_request(pkt_buf, pkt_parser);
         if (ret != NETOS_STATUS_SUCCESS) {
             goto unlock;
         }

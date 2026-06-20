@@ -15,10 +15,9 @@ uint16_t netos_ipv4_checksum(netos_checksum_t *chksum)
         checksum += (chksum->buffer[i] << 8);
     }
 
-    uint32_t hi = (checksum & 0xFFFF0000) >> 16;
-    uint32_t lo = (checksum & 0x0000FFFF);
-
-    checksum = hi + lo;
+    while (checksum >> 16) {
+        checksum = (checksum & 0xFFFF) + (checksum >> 16);
+    }
 
     return ~checksum;
 }
