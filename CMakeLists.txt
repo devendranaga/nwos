@@ -29,7 +29,7 @@ SET(PROTOCOL_SRC
     ./protocols/tcp.c
     ./protocols/udp.c
     ./protocols/checksum.c
-    ./protocols/icmp.c)
+    ./protocols/icmp_parse.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c)

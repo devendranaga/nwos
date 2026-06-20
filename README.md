@@ -10,9 +10,7 @@
 - [ ] IPsec implementation
 - [ ] TCP frame parsing
 - [ ] Event capture and storage tests
-- [ ] ICMP frame parsing
 - [ ] ICMP checksum validation
-- [ ] ARP cache invalidation
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] IPv6 frame parsing
@@ -36,6 +34,7 @@
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
 - [ ] Tooling: implement the up arrow and down arrow detection and history buffer
+- [ ] pfifo queueing discipline
 
 ## Done
 
@@ -51,6 +50,8 @@
 - [x] See if we really need ref count on `pkt_buffer`
 - [x] See if `_Atomic` can be usde on `pkt_buffer`.
 - [x] Tooling: Generate ARP frames
+- [x] ARP cache invalidation
+- [x] ICMP frame parsing
 
 
 ## Configuration

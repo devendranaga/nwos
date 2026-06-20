@@ -71,6 +71,11 @@ static inline void pkt_buffer_reset(pkt_buffer_t *pkt_buf)
     pkt_buf->out_intf   = NULL;
 }
 
+static inline bool pkt_buffer_has_short_rx_len(pkt_buffer_t *pkt_buf, uint16_t len)
+{
+    return (pkt_buf->offset + len) > pkt_buf->rx_len;
+}
+
 static inline void pkt_buffer_set_egress_intf_self(pkt_buffer_t *pkt_buf)
 {
     pkt_buf->out_intf = pkt_buf->in_intf;

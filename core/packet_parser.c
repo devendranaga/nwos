@@ -17,6 +17,9 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
         case NETOS_PROTOCOL_UDP:
             ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
         break;
+        case NETOS_PROTOCOL_ICMP:
+            ret = netos_icmp_decode(&parsed_data->l4.icmp_hdr, pkt_buf);
+        break;
         default:
             return NETOS_STATUS_INVAL_PROTOCOL;
     }

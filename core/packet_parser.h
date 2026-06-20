@@ -8,6 +8,7 @@
 #include "macsec_hdr.h"
 #include "ipv4.h"
 #include "udp.h"
+#include "icmp_hdr.h"
 
 #define NETOS_MAX_VLAN_TUNNELS 12
 
@@ -31,6 +32,7 @@ typedef struct netos_packet_parser {
 
     union {
         netos_udp_hdr_t     udp_hdr;
+        netos_icmp_hdr_t    icmp_hdr;
     } l4;
 } netos_packet_parser_t;
 
