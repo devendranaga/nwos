@@ -6,7 +6,7 @@
 #include <libxml2/libxml/tree.h>
 
 #include "netos_status.h"
-#include "network_config.h"
+#include "netos_config.h"
 
 static netos_status_t netos_config_parse_interface_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
 {

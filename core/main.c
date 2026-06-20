@@ -6,9 +6,9 @@
 
 #include "arp.h"
 #include "netos_log.h"
-#include "network_config.h"
+#include "netos_config.h"
 #include "perf_intf.h"
-#include "network_main.h"
+#include "netos_main.h"
 
 static void netos_usage(const char *progname)
 {

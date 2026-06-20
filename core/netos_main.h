@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 #include "raw_socket.h"
-#include "network_config.h"
+#include "netos_config.h"
 #include "pthread_intf.h"
 #include "buffer_pool.h"
 #include "event_mgr.h"

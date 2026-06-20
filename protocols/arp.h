@@ -12,13 +12,12 @@ extern "C" {
 
 #include "protocol_const.h"
 #include "netos_status.h"
-#include "network_config.h"
+#include "netos_config.h"
 #include "buffer_pool.h"
 #include "pkt_buffer.h"
 #include "gcd.h"
 #include "arp_hdr.h"
 #include "packet_parser.h"
-#include "network_config.h"
 #include "hash_tables.h"
 
 #define NETOS_SET_MACADDR(__tgt_mac, __src_mac) do {\

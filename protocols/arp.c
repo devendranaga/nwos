@@ -11,7 +11,7 @@
 #include "ethertypes.h"
 #include "common.h"
 #include "egress_controller.h"
-#include "network_config.h"
+#include "netos_config.h"
 
 static netos_arp_protocol_t arp_protocol;
 

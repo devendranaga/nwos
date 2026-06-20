@@ -60,10 +60,10 @@ SET(LIB_SRC
     ${PLATFORM_SRC}
     ${EVENT_SRC})
 
-SET(NETWORK_SRC
-    ./networking/main.c
-    ./networking/packet_parser.c
-    ./networking/network_config.c
+SET(NETOS_SRC
+    ./core/main.c
+    ./core/packet_parser.c
+    ./core/netos_config.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c)
@@ -80,7 +80,7 @@ include_directories(
                 ./events/
                 ./egress/
                 ./statistics/
-                ./networking/
+                ./core/
                 ./switching/
                 /usr/include/libxml2/
                 ./tools/pgen/)
@@ -108,6 +108,6 @@ target_link_libraries(netos_test_hash_table PRIVATE netos)
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
 target_link_libraries(netos_pgen PRIVATE pthread netos)
 
-add_executable(netosd ${NETWORK_SRC})
+add_executable(netosd ${NETOS_SRC})
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
 

@@ -5,7 +5,7 @@
 #include "ethertypes.h"
 #include "netos_log.h"
 #include "netos_status.h"
-#include "network_config.h"
+#include "netos_config.h"
 
 typedef enum {
     NETOS_PROTOCOL_ICMP = 1,
