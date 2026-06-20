@@ -33,9 +33,6 @@ typedef struct netos_intf {
     // parser thread context
     netos_parser_thread_t       *parser_thr;
 
-    // egress controller for this interface
-    netos_egress_controller_t   *egress_ctrl;
-
     // next interface in the list
     struct netos_intf           *next;
 } netos_intf_t;

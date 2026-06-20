@@ -194,8 +194,8 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     pthread_cond_init(&intf->parser_thr->parse_q_cond, NULL);
 
     // initialize egress controller for this interface
-    intf->egress_ctrl = netos_egress_controller_init(intf->raw);
-    if (!intf->egress_ctrl) {
+    intf->raw->egress_ctrl = netos_egress_controller_init(intf->raw);
+    if (!intf->raw->egress_ctrl) {
         netos_log_error("Failed to initialize egress controller\n");
         goto err;
     }
@@ -226,8 +226,8 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
 err:
     if (intf) {
-        if (intf->egress_ctrl) {
-            netos_egress_controller_deinit(intf->egress_ctrl);
+        if (intf->raw->egress_ctrl) {
+            netos_egress_controller_deinit(intf->raw->egress_ctrl);
         }
         if (intf->parser_thr) {
             if (intf->parser_thr->rx_pool) {
@@ -247,11 +247,12 @@ err:
     return NULL;
 }
 
-static netos_status_t netos_initialize_protocols(network_config_t *config)
+static netos_status_t netos_initialize_protocols(network_config_t *config,
+                                                 netos_gcd_ctx_t *gcd_ctx)
 {
     netos_status_t ret;
 
-    ret = netos_arp_protocol_init(config);
+    ret = netos_arp_protocol_init(config, gcd_ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
@@ -264,7 +265,7 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
     netos_status_t ret;
     uint32_t i;
 
-    ret = netos_initialize_protocols(&ctx->config);
+    ret = netos_initialize_protocols(&ctx->config, ctx->gcd_ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to initialize protocols\n");
         return ret;

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 typedef uint32_t (*hash_fn)(void *key);
-typedef bool (*for_each_fn)(void *key, void *val);
+typedef bool (*for_each_fn)(void *ctx, void *key, void *val);
 typedef bool (*del_fn)(void *key, void *val);
 typedef bool (*cmp_fn)(void *key1, void *key2);
 
@@ -26,7 +26,7 @@ netos_hash_table_t *netos_hash_table_init(uint32_t n_items, hash_fn hash, cmp_fn
 
 netos_status_t netos_hash_item_add(netos_hash_table_t *hash_table, void *key, void *val);
 
-void netos_hash_item_for_each(netos_hash_table_t *hash_table, for_each_fn for_each);
+void netos_hash_item_for_each(netos_hash_table_t *hash_table, void *ctx, for_each_fn for_each);
 
 void *netos_hash_item_find(netos_hash_table_t *hash_table, void *key);
 

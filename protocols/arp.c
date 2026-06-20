@@ -9,6 +9,8 @@
 #include "event_info.h"
 #include "packet_parser.h"
 #include "ethertypes.h"
+#include "common.h"
+#include "egress_controller.h"
 #include "network_config.h"
 
 static netos_arp_protocol_t arp_protocol;
@@ -183,6 +185,7 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 
             if (pkt_parser->arp_hdr.sender_protocol_addr != 0) {
                 memcpy(entry->mac, pkt_parser->eh.src, NETOS_MACADDR_LEN);
+                entry->in_intf = pkt_buf->in_intf;
                 entry->ipaddr = pkt_parser->arp_hdr.sender_protocol_addr;
                 clock_gettime(CLOCK_REALTIME, &entry->last_updated);
 
@@ -223,18 +226,127 @@ static bool netos_arp_entry_compare(void *key1, void *key2)
     return *ipaddr1 == *ipaddr2;
 }
 
-netos_status_t netos_arp_protocol_init(network_config_t *config)
+static bool arp_cache_entry_invalidate(void *key, void *val)
 {
+    free(key); // ipaddr
+    free(val); // arp_entry
+
+    return true;
+}
+
+static void arp_do_request(netos_arp_entry_t *entry)
+{
+    netos_eth_hdr_t eh;
+    netos_arp_hdr_t arp_h;
+    const uint8_t da[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    pkt_buffer_t *pkt_buf;
+
+    pkt_buf = netos_buffer_pool_get_buffer(arp_protocol.pool);
+    if (!pkt_buf) {
+        return;
+    }
+
+    NETOS_ARP_REQ_DEFAULTS((&arp_h),
+                           entry->in_intf->mac,
+                           entry->in_intf->ipaddr,
+                           da,
+                           entry->ipaddr);
+
+    NETOS_ETH_DEFAULTS(eh,
+                       da,
+                       entry->in_intf->mac,
+                       NETOS_ETHERTYPE_ARP);
+
+    pkt_buf->out_intf = entry->in_intf;
+
+    netos_eth_encode(&eh, pkt_buf);
+    netos_arp_encode(&arp_h, pkt_buf);
+
+    netos_egress_enque(entry->in_intf->egress_ctrl,
+                       NETOS_EGRESS_ALG_RR,
+                       pkt_buf);
+}
+
+static bool arp_cache_invalidate(void *ctx, void *key, void *val)
+{
+    uint32_t *ipaddr = key;
+    netos_arp_entry_t *entry = val;
+    struct timespec cur;
+    uint64_t delta;
+    uint32_t cache_invalidation_sec = 30;
+
+    clock_gettime(CLOCK_REALTIME, &cur);
+    NETOS_TIMESPEC_DELTA(cur, entry->last_updated, delta);
+
+    // perform repeated ARP requests until the entry is purged
+    if (delta > cache_invalidation_sec) {
+        arp_do_request(entry);
+    }
+
+    // purge the entry
+    if (delta > (cache_invalidation_sec * 3)) {
+        netos_hash_item_del(arp_protocol.arp_cache, ipaddr, arp_cache_entry_invalidate);
+        return true;
+    }
+
+    return false;
+}
+
+static void netos_arp_cache_timer(void *ctx)
+{
+    pthread_mutex_lock(&arp_protocol.lock);
+    netos_hash_item_for_each(arp_protocol.arp_cache, NULL, arp_cache_invalidate);
+    pthread_mutex_unlock(&arp_protocol.lock);
+}
+
+netos_status_t netos_arp_protocol_init(network_config_t *config,
+                                       netos_gcd_ctx_t *gcd_ctx)
+{
+    netos_status_t ret;
+
+    memset(&arp_protocol, 0, sizeof(arp_protocol));
+
+    arp_protocol.config = config;
+
+    // allocate 32 pkt buffer pools for ARP
+    arp_protocol.pool = netos_buffer_pool_alloc(32);
+    if (!arp_protocol.pool) {
+        ret = NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+        goto err;
+    }
+
     arp_protocol.arp_cache = netos_hash_table_init(
                                         config->protocol_config.arp_config.arp_cache_size,
                                         netos_arp_entry_hash,
                                         netos_arp_entry_compare);
     if (!arp_protocol.arp_cache) {
-        return NETOS_STATUS_HASH_TABLE_ALLOC_FAILURE;
+        ret = NETOS_STATUS_HASH_TABLE_ALLOC_FAILURE;
+        goto err;
     }
+
+    netos_log_info("create arp cache ok\n");
+
+    netos_gcd_timer_set_callback(gcd_ctx,
+                                 10,
+                                 0,
+                                 NULL,
+                                 netos_arp_cache_timer);
+
+    netos_log_info("create arp cache timer\n");
 
     pthread_mutex_init(&arp_protocol.lock, NULL);
 
     return NETOS_STATUS_SUCCESS;
+
+err:
+    if (arp_protocol.arp_cache) {
+        netos_hash_table_deinit(arp_protocol.arp_cache, arp_cache_entry_invalidate);
+    }
+
+    if (arp_protocol.pool) {
+        netos_buffer_pool_free(arp_protocol.pool);
+    }
+
+    return ret;
 }
 

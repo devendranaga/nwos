@@ -16,7 +16,7 @@ uint32_t hash_val(void *key)
     return f;
 }
 
-bool for_each_print(void *key, void *val)
+bool for_each_print(void *ctx, void *key, void *val)
 {
     char *a = key;
     char *b = val;
@@ -56,7 +56,7 @@ int main()
         netos_hash_item_add(hash_table, kv_list[i].key, kv_list[i].val);
     }
 
-    netos_hash_item_for_each(hash_table, for_each_print);
+    netos_hash_item_for_each(hash_table, NULL, for_each_print);
 
     return 0;
 }

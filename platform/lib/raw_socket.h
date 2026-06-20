@@ -13,6 +13,7 @@ typedef struct raw_socket_ctx {
     uint8_t     mac[NETOS_MACADDR_LEN];
     uint32_t    ipaddr;
     int         ifindex;
+    void        *egress_ctrl;
 } raw_socket_ctx_t;
 
 /**

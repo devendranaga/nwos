@@ -9,5 +9,15 @@ netos_status_t netos_get_u32_from_str(const char *u32_str, uint32_t *u32);
 
 netos_status_t netos_get_u64_from_str(const char *u64_str, uint64_t *u64);
 
+#define NETOS_TIMESPEC_DELTA_NS(__start, __end, __delta) do {\
+    __delta = (((__end.tv_sec - __start.tv_sec) * 1000000000L) +\
+               (__end.tv_nsec - __start.tv_nsec));\
+} while (0)
+
+#define NETOS_TIMESPEC_DELTA(__start, __end, __delta) do {\
+    NETOS_TIMESPEC_DELTA_NS(__start, __end, __delta);\
+    __delta /= 1000000000L;\
+} while (0)
+
 #endif
 

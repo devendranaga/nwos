@@ -72,7 +72,7 @@ netos_status_t netos_hash_item_add(netos_hash_table_t *hash_table, void *key, vo
     return NETOS_STATUS_SUCCESS;
 }
 
-void netos_hash_item_for_each(netos_hash_table_t *hash_table, for_each_fn for_each)
+void netos_hash_item_for_each(netos_hash_table_t *hash_table, void *ctx, for_each_fn for_each)
 {
     uint32_t i;
 
@@ -84,7 +84,9 @@ void netos_hash_item_for_each(netos_hash_table_t *hash_table, for_each_fn for_ea
         netos_hash_item_t *item;
 
         for (item = hash_table->items[i]; item != NULL; item = item->next) {
-            for_each(item->key, item->val);
+            if (for_each(ctx, item->key, item->val)) {
+                break;
+            }
         }
     }
 }
