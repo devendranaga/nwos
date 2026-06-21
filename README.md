@@ -20,7 +20,6 @@
 - [ ] static ARP cache allocation strategy
 - [ ] CPU affinity per thread
 - [ ] Count number of CPUs and tie each thread to a CPU
-- [ ] Tooling: Generate VLAN frames and multi level VLANs
 - [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
 - [ ] Define event storage format, the same format is used for upload of events
@@ -34,6 +33,10 @@
 - [ ] Tooling: ARP spoofing
 - [ ] Tooling: implement the up arrow and down arrow detection and history buffer
 - [ ] pfifo queueing discipline
+- [ ] Expand the Events matching to suricata
+- [ ] Skip the IPv4 options if we cannot parse them
+- [ ] Tools: Multilevel VLAN generation.
+- [ ] Tools: Missing error handling in pgen.
 
 ## Done
 
@@ -52,6 +55,7 @@
 - [x] ARP cache invalidation
 - [x] ICMP frame parsing
 - [x] ICMP checksum validation
+- [x] Tooling: Generate VLAN frames
 
 
 ## Configuration
