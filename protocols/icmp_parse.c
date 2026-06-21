@@ -74,7 +74,9 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
 {
     netos_status_t ret;
     uint32_t i;
+    uint16_t start_off;
 
+    // check for short header length
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_HDR_LEN)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
@@ -82,7 +84,7 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    icmp_hdr->start_off = pkt_buf->offset;
+    start_off = pkt_buf->offset;
 
     pkt_buffer_decode_byte(pkt_buf, &icmp_hdr->type);
     pkt_buffer_decode_byte(pkt_buf, &icmp_hdr->code);
@@ -93,17 +95,26 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
             (icmp_hdr->code == netos_icmp_callbacks[i].code)) {
             ret = netos_icmp_callbacks[i].decode(icmp_hdr, pkt_buf);
             if (ret != NETOS_STATUS_SUCCESS) {
+                // the events already raised in the callbacks, nothing do to here.
                 return ret;
             }
 
+            // prepare checksum
             netos_checksum_t chksum_info = {
-                .buffer = &(pkt_buf->buffer[icmp_hdr->start_off]),
-                .len = pkt_buf->rx_len - icmp_hdr->start_off,
+                .buffer     = &(pkt_buf->buffer[start_off]),
+                .len        = pkt_buf->rx_len - start_off,
             };
-            uint16_t chksum;
 
-            chksum = netos_icmp_checksum(&chksum_info);
-            printf("%x\n", chksum);
+            // if checksum not ok, fail
+            if (!netos_icmp_verify_checksum(&chksum_info)) {
+                NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                           NETOS_EVENT_TYPE_DENY,
+                                           NETOS_EVENT_DESC_ICMP_CHECKSUM_VERIFY_FAILED);
+                return NETOS_STATUS_ICMP_MALFORMED_PKT;
+            }
+
+            // this means the match happened and parser successfully parsed the frame
+            break;
         }
     }
 

@@ -44,6 +44,8 @@ static void pgen_set_defaults()
 
     NETOS_ETH_DEFAULTS(pgen.eth_hdr, dst, src, ethertype);
 
+    NETOS_VLAN_DEFAULTS(pgen.vlan_hdr, 1, 1, 0, NETOS_ETHERTYPE_IPV4);
+
     NETOS_ARP_REQ_DEFAULTS((&pgen.arp_hdr), src, src_ipaddr, dst, dst_ipaddr);
 
     // default transmit params
@@ -54,6 +56,49 @@ static void pgen_set_defaults()
     pgen.len        = 100; // 100 bytes
     pgen.eth_enable = false;
     pgen.arp_enable = false;
+}
+
+static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t vid;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &vid);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.vlan_enable = true;
+    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
+    pgen.vlan_hdr.vlan_id = vid;
+}
+
+static void set_vlan_priority(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t priority;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &priority);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.vlan_enable = true;
+    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
+    pgen.vlan_hdr.pcp = priority;
+}
+
+static void set_vlan_next_ethertype(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.vlan_hdr.ethertype);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.vlan_enable = true;
+    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
 }
 
 static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -197,6 +242,9 @@ static void pgen_eth_run()
 
     pkt_buffer_initialize(&pkt_buf);
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+    if (pgen.vlan_enable) {
+        netos_vlan_encode(&pgen.vlan_hdr, &pkt_buf);
+    }
     if ((pgen.len != 0) && (pgen.len < (sizeof(data_buf) - 80))) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
@@ -211,7 +259,11 @@ static void pgen_arp_run()
 
     pkt_buffer_initialize(&pkt_buf);
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
-    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_ARP;
+
+    if (pgen.vlan_enable) {
+        pgen.vlan_hdr.ethertype = NETOS_ETHERTYPE_ARP;
+        netos_vlan_encode(&pgen.vlan_hdr, &pkt_buf);
+    }
     netos_arp_encode(&pgen.arp_hdr, &pkt_buf);
 
     if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
@@ -224,8 +276,14 @@ static void pgen_arp_run()
 
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
+    if (!pgen.ifname) {
+        fprintf(stderr, "Interface name is not present. Interface should be provided via ifname\n");
+        return;
+    }
+
     pgen.raw = netos_raw_socket_init(pgen.ifname);
     if (!pgen.raw) {
+        fprintf(stderr, "Failed to create a raw socket.. is the interface available and up?\n");
         return;
     }
 
@@ -268,9 +326,9 @@ static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
 }
 
 static const struct {
-    const char *str;
-    const char *desc;
-    void (*callback)(struct pgen_token *tokens, uint32_t n_tokens);
+    const char  *str;
+    const char  *desc;
+    void        (*callback)(struct pgen_token *tokens, uint32_t n_tokens);
 } pgen_setup_callbacks[] = {
     {
         "eth.enable",
@@ -296,6 +354,21 @@ static const struct {
         "eth.ethertype",
         "Set the Eth Ethertype",
         set_eth_ethertype
+    },
+    {
+        "vlan.id",
+        "Set the VLAN Id",
+        set_vlan_id
+    },
+    {
+        "vlan.priority",
+        "Set the VLAN priority",
+        set_vlan_priority
+    },
+    {
+        "vlan.next_ether",
+        "Set the VLAN next ethertype",
+        set_vlan_next_ethertype
     },
     {
         "arp.op",
@@ -353,6 +426,11 @@ static const struct {
         pgen_exit
     },
     {
+        "quit",
+        "Exit the pgen",
+        pgen_exit
+    },
+    {
         "help",
         "Print this help",
         pgen_help
@@ -363,11 +441,13 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
 {
     uint32_t i;
 
+    fprintf(stderr, "\n");
     for (i = 0; i < sizeof(pgen_setup_callbacks) /
                     sizeof(pgen_setup_callbacks[0]); i ++) {
-        fprintf(stderr, "%-18s %s\n", pgen_setup_callbacks[i].str,
+        fprintf(stderr, "%-30s %s\n", pgen_setup_callbacks[i].str,
                                        pgen_setup_callbacks[i].desc);
     }
+    fprintf(stderr, "\n");
 }
 
 static uint32_t pgen_tokenize(char *buf, uint32_t len, struct pgen_token *tokens)

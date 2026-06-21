@@ -18,7 +18,6 @@ typedef struct {
     uint8_t     type;
     uint8_t     code;
     uint16_t    checksum;
-    uint16_t    start_off;
 
     union {
         netos_icmp_echo_t echo_req;
