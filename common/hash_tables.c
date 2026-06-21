@@ -130,6 +130,7 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
         hash_table->items[index] = item->next;
         if (del(item->key, item->val)) {
             free(item);
+            return;
         }
     } else {
         netos_hash_item_t *entry;
@@ -140,6 +141,7 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
                 entry->next = item->next;
                 if (del(item->key, item->val)) {
                     free(item);
+                    return;
                 }
             }
             item = item->next;
