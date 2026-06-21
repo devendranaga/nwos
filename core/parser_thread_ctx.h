@@ -16,7 +16,7 @@ typedef struct netos_protocol_context {
 
 typedef struct netos_parser_thread {
     char                        *ifname;
-    raw_socket_ctx_t            *raw;
+    netos_raw_socket_ctx_t      *raw;
     pthread_t                   tid;
     pthread_mutex_t             parse_q_lock;
     pthread_cond_t              parse_q_cond;

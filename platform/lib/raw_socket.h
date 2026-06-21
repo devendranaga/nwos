@@ -7,14 +7,14 @@
 /**
  * @brief - Defines Raw socket context.
  */
-typedef struct raw_socket_ctx {
+typedef struct {
     int         fd;
     char        *ifname;
     uint8_t     mac[NETOS_MACADDR_LEN];
     uint32_t    ipaddr;
     int         ifindex;
     void        *egress_ctrl;
-} raw_socket_ctx_t;
+} netos_raw_socket_ctx_t;
 
 /**
  * @brief - initializes raw socket.
@@ -23,14 +23,14 @@ typedef struct raw_socket_ctx {
  *
  * @return raw socket context on sucess and NULL pointer on failure.
  */
-raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);
+netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname);
 
 /**
  * @brief - deinitialize raw socket.
  *
  * @param [in] raw - raw socket context.
  */
-void netos_raw_socket_deinit(raw_socket_ctx_t *raw);
+void netos_raw_socket_deinit(netos_raw_socket_ctx_t *raw);
 
 /**
  * @brief - receive a packet in the data pointer.
@@ -41,7 +41,7 @@ void netos_raw_socket_deinit(raw_socket_ctx_t *raw);
  *
  * @return rx length on success <=0 on failure.
  */
-int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
+int netos_raw_socket_rx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
 /**
  * @brief - transmit a packet from the data pointer.
@@ -52,7 +52,7 @@ int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
  *
  * @return tx length on success <=0 on failure.
  */
-int netos_raw_socket_tx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
+int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
 #endif
 

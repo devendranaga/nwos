@@ -36,10 +36,10 @@ typedef struct netos_arp_mib {
 } netos_arp_mib_t;
 
 typedef struct netos_arp_entry {
-    uint8_t mac[NETOS_MACADDR_LEN];
-    raw_socket_ctx_t *in_intf; // where this entry reside on
-    uint32_t ipaddr;
-    struct timespec last_updated;
+    uint8_t                 mac[NETOS_MACADDR_LEN];
+    netos_raw_socket_ctx_t  *in_intf; // where this entry reside on
+    uint32_t                ipaddr;
+    struct timespec         last_updated;
 } netos_arp_entry_t;
 
 typedef struct netos_arp_protocol {

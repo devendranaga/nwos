@@ -25,7 +25,7 @@ typedef struct netos_cmdargs {
 typedef struct netos_intf {
     char                        *ifname;
     // initialized raw socket
-    raw_socket_ctx_t            *raw;
+    netos_raw_socket_ctx_t      *raw;
 
     // recieve thread
     pthread_t                   rx_thread;

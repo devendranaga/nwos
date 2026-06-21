@@ -12,14 +12,14 @@
 #include "netos_status.h"
 #include "netos_log.h"
 
-raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
+netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
 {
-    raw_socket_ctx_t *raw;
+    netos_raw_socket_ctx_t *raw;
     netos_status_t ret;
     struct sockaddr_ll lladdr;
     int res;
 
-    raw = calloc(1, sizeof(raw_socket_ctx_t));
+    raw = calloc(1, sizeof(netos_raw_socket_ctx_t));
     if (!raw) {
         netos_log_error("failed to allocate raw socket context\n");
         return NULL;
@@ -89,7 +89,7 @@ err:
     return NULL;
 }
 
-void netos_raw_socket_deinit(raw_socket_ctx_t *raw)
+void netos_raw_socket_deinit(netos_raw_socket_ctx_t *raw)
 {
     if (raw) {
         if (raw->fd > 0) {
@@ -103,7 +103,7 @@ void netos_raw_socket_deinit(raw_socket_ctx_t *raw)
     }
 }
 
-int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
+int netos_raw_socket_rx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
 {
     struct sockaddr_ll lladdr;
     socklen_t len = sizeof(lladdr);
@@ -117,7 +117,7 @@ int netos_raw_socket_rx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
     return ret;
 }
 
-int netos_raw_socket_tx(raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
+int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
 {
     struct sockaddr_ll lladdr;
 

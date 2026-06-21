@@ -15,7 +15,7 @@
 typedef struct netos_packet_parser {
     char                    *ifname;
     void                    *this_thread;
-    raw_socket_ctx_t        *raw;
+    netos_raw_socket_ctx_t  *raw;
     netos_eth_hdr_t         eh;
     netos_arp_hdr_t         arp_hdr;
     uint16_t                ethertype;

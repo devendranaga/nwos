@@ -115,7 +115,7 @@ static void netos_egress_alg_rr_deinit(netos_egress_controller_t *egress_ctrl)
     egress_ctrl->rr = NULL;
 }
 
-netos_egress_controller_t *netos_egress_controller_init(raw_socket_ctx_t *raw)
+netos_egress_controller_t *netos_egress_controller_init(netos_raw_socket_ctx_t *raw)
 {
     netos_egress_controller_t *egress_ctrl;
     netos_status_t ret;
