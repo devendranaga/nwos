@@ -94,3 +94,4 @@ void pkt_buffer_encode_bytes(pkt_buffer_t *pkt_buf, uint8_t *data, uint32_t data
     memcpy(&pkt_buf->buffer[pkt_buf->offset], data, data_len);
     pkt_buf->offset += data_len;
 }
+
