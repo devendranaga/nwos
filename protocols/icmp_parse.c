@@ -91,6 +91,36 @@ netos_icmp_decode_timestamp_reply(netos_icmp_hdr_t *icmp_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t
+netos_icmp_encode_echo_request(netos_icmp_hdr_t *icmp_hdr,
+                               pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_req.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_req.seq_no);
+    if (icmp_hdr->u.echo_req.data_len != 0) {
+        pkt_buffer_encode_bytes(pkt_buf,
+                                icmp_hdr->u.echo_req.data,
+                                icmp_hdr->u.echo_req.data_len);
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
+netos_icmp_encode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
+                             pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_reply.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_reply.seq_no);
+    if (icmp_hdr->u.echo_reply.data_len != 0) {
+        pkt_buffer_encode_bytes(pkt_buf,
+                                icmp_hdr->u.echo_reply.data,
+                                icmp_hdr->u.echo_reply.data_len);
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     uint8_t type;
     uint8_t code;
@@ -102,13 +132,13 @@ static const struct {
     {
         NETOS_ICMP_TYPE_ECHO_REQ,
         NETOS_ICMP_CODE_ECHO_REQ,
-        NULL,
+        netos_icmp_encode_echo_request,
         netos_icmp_decode_echo_request
     },
     {
         NETOS_ICMP_TYPE_ECHO_REPLY,
         NETOS_ICMP_CODE_ECHO_REPLY,
-        NULL,
+        netos_icmp_encode_echo_reply,
         netos_icmp_decode_echo_reply
     },
     {
@@ -147,7 +177,8 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
 
     for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
         if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
-            (icmp_hdr->code == netos_icmp_callbacks[i].code)) {
+            (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
+            (netos_icmp_callbacks[i].decode)) {
             ret = netos_icmp_callbacks[i].decode(icmp_hdr, pkt_buf);
             if (ret != NETOS_STATUS_SUCCESS) {
                 // the events already raised in the callbacks, nothing do to here.
@@ -174,5 +205,28 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
     }
 
     return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_buf)
+{
+    netos_status_t ret = NETOS_STATUS_ICMP_MALFORMED_PKT;
+    uint32_t i;
+
+    pkt_buffer_encode_byte(pkt_buf, icmp_hdr->type);
+    pkt_buffer_encode_byte(pkt_buf, icmp_hdr->code);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->checksum);
+
+    for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
+        if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
+            (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
+            (netos_icmp_callbacks[i].encode)) {
+            ret = netos_icmp_callbacks[i].encode(icmp_hdr, pkt_buf);
+            if (ret != NETOS_STATUS_SUCCESS) {
+                return NETOS_STATUS_ICMP_MALFORMED_PKT;
+            }
+        }
+    }
+
+    return ret;
 }
 

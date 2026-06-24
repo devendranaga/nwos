@@ -27,6 +27,7 @@ typedef struct {
     uint16_t    identifier;
     uint16_t    seq_no;
     uint16_t    data_len;
+    uint8_t     *data;
 } netos_icmp_echo_t;
 
 typedef struct {
