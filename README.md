@@ -37,6 +37,10 @@
 - [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
 - [ ] Tools: Missing error handling in pgen.
+- [ ] ICMP serialize for echo request and reply.
+- [ ] GRE: decode GRE protocol.
+- [ ] Tooling to display ARP cache.
+- [ ] Tooling to support adding the static ARP entries.
 
 ## Done
 
