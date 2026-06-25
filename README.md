@@ -38,7 +38,6 @@ Static build does not work in Github CI. Not sure.
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] IPv6 frame parsing
-- [ ] IPv4 serialize and checksum generation
 - [ ] TCP checksum validation
 - [ ] UDP checksum validation
 - [ ] Take pkt buffer numbers from xml config
@@ -62,10 +61,25 @@ Static build does not work in Github CI. Not sure.
 - [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
 - [ ] Tools: Missing error handling in pgen.
-- [ ] ICMP serialize for echo request and reply.
 - [ ] GRE: decode GRE protocol.
 - [ ] Tooling to display ARP cache.
 - [ ] Tooling to support adding the static ARP entries.
+- [ ] IPv6 frame options parsing
+- [ ] LLDP frame parsing
+- [ ] ICMP6 frame serialization
+- [ ] Tooling: ICMP6 frame generation
+- [ ] Tooling: ICMP seq_no increment for every packet
+- [ ] Tooling: more descriptive help for each command
+- [ ] Tooling: ICMP6 Neighbor solicitations and advertisements generation
+- [ ] Tooling: MACsec farme generation
+- [ ] LLDP frame parsing
+- [ ] LLDP frame generation
+- [ ] NDP implementation
+- [ ] MKA frame parsing
+- [ ] MKA frame generation
+- [ ] recvmsg using the scatter gather approach
+- [ ] 6in4 tunnel frame parsing
+- [ ] 6in4 tunnel frame generation
 
 ## Done
 
@@ -85,6 +99,8 @@ Static build does not work in Github CI. Not sure.
 - [x] ICMP frame parsing
 - [x] ICMP checksum validation
 - [x] Tooling: Generate VLAN frames
+- [x] ICMP serialize for echo request and reply.
+- [x] IPv4 serialize and checksum generation
 
 
 ## Configuration
