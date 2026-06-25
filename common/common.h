@@ -21,5 +21,14 @@ netos_status_t netos_get_ipv4addr_from_str(const char *ipv4addr_str, uint32_t *i
     __delta /= 1000000000L;\
 } while (0)
 
+#define NETOS_SET_MACADDR(__tgt_mac, __src_mac) do {\
+    __tgt_mac[0] = __src_mac[0];\
+    __tgt_mac[1] = __src_mac[1];\
+    __tgt_mac[2] = __src_mac[2];\
+    __tgt_mac[3] = __src_mac[3];\
+    __tgt_mac[4] = __src_mac[4];\
+    __tgt_mac[5] = __src_mac[5];\
+} while (0)
+
 #endif
 

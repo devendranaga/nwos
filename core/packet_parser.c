@@ -48,7 +48,11 @@ check_ethertype:
         return NETOS_STATUS_VLAN_MAX_TUNNELS;
     }
 
-    if (ethertype == NETOS_ETHERTYPE_VLAN) {
+    if ((ethertype == NETOS_ETHERTYPE_VLAN) ||
+        (ethertype == NETOS_ETHERTYPE_NON_STD_VLAN) ||
+        (ethertype == NETOS_ETHERTYPE_8021AD)) {
+
+        parsed_data->vlan_hdr[i].vlan_ethertype = ethertype;
         ret = netos_vlan_decode(&parsed_data->vlan_hdr[i], pkt_buf);
         if (ret == NETOS_STATUS_SUCCESS) {
             parsed_data->has_l2_protocol = true;
