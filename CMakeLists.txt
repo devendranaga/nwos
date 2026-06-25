@@ -8,12 +8,14 @@ set(LINK_SEARCH_END_STATIC ON)
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc")
 
 if(COMPILER_CLANG)
-set(CMAKE_C_COMPILER "clang")
+    set(CMAKE_C_COMPILER "clang")
 elseif(COMPILER_GCC)
-set(CMAKE_C_COMPILER "gcc")
+    set(CMAKE_C_COMPILER "gcc")
+elseif(COMPILER_ARM)
+    set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
 endif()
 
-set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter")
+set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os")
 
 if(DEBUG)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
@@ -106,9 +108,18 @@ target_link_libraries(netos_test_queue PRIVATE netos)
 add_executable(netos_test_hash_table ${TEST_HASH_TABLE_SRC})
 target_link_libraries(netos_test_hash_table PRIVATE netos)
 
+if(STATIC_BUILD)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
 target_link_libraries(netos_pgen PRIVATE pthread netos)
 
 add_executable(netosd ${NETOS_SRC})
+
+if(COMPILER_ARM)
+    target_link_directories(netosd PRIVATE /usr/lib/aarch64-linux-gnu/)
+endif()
+
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
 
