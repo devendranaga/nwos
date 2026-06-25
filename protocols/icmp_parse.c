@@ -209,11 +209,17 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
 
 netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_buf)
 {
+    uint32_t start_off = 0;
+    uint16_t checksum_off = 0;
     netos_status_t ret = NETOS_STATUS_ICMP_MALFORMED_PKT;
     uint32_t i;
 
+    start_off = pkt_buf->offset;
+
     pkt_buffer_encode_byte(pkt_buf, icmp_hdr->type);
     pkt_buffer_encode_byte(pkt_buf, icmp_hdr->code);
+
+    checksum_off = pkt_buf->offset;
     pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->checksum);
 
     for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
@@ -224,6 +230,19 @@ netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
             if (ret != NETOS_STATUS_SUCCESS) {
                 return NETOS_STATUS_ICMP_MALFORMED_PKT;
             }
+
+            if (icmp_hdr->gen_checksum) {
+                netos_checksum_t chksum_info = {
+                    .buffer     = &(pkt_buf->buffer[start_off]),
+                    .len        = pkt_buf->offset - start_off,
+                };
+
+                icmp_hdr->checksum                  = netos_icmp_checksum(&chksum_info);
+                pkt_buf->buffer[checksum_off]       = (icmp_hdr->checksum & 0xFF00) >> 8;
+                pkt_buf->buffer[checksum_off + 1]   = (icmp_hdr->checksum & 0x00FF);
+            }
+
+            break;
         }
     }
 

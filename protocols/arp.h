@@ -20,15 +20,6 @@ extern "C" {
 #include "packet_parser.h"
 #include "hash_tables.h"
 
-#define NETOS_SET_MACADDR(__tgt_mac, __src_mac) do {\
-    __tgt_mac[0] = __src_mac[0];\
-    __tgt_mac[1] = __src_mac[1];\
-    __tgt_mac[2] = __src_mac[2];\
-    __tgt_mac[3] = __src_mac[3];\
-    __tgt_mac[4] = __src_mac[4];\
-    __tgt_mac[5] = __src_mac[5];\
-} while (0)
-
 typedef struct netos_arp_mib {
     uint64_t    in_arp;
     uint64_t    in_arp_invalid;

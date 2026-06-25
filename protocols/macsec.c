@@ -40,6 +40,7 @@ netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t 
     }
 
     uint16_t icv_offset = pkt_buf->rx_len - NETOS_MACSEC_ICV_LEN;
+    pkt_buf->rx_len -= NETOS_MACSEC_ICV_LEN;
     memcpy(macsec_hdr->icv, &pkt_buf->buffer[icv_offset], NETOS_MACSEC_ICV_LEN);
 
     return ret;

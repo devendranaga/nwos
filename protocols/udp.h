@@ -19,6 +19,14 @@ typedef struct netos_udp_hdr {
     uint16_t checksum;
 } netos_udp_hdr_t;
 
+/**
+ * @brief - Decode UDP header.
+ *
+ * @param [inout] udp_hdr - UDP header.
+ * @param [inout] pkt_buf - packet buffer.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr, pkt_buffer_t *pkt_buf);
 
 #if defined(__cplusplus)

@@ -8,7 +8,7 @@
 typedef struct {
     struct timespec start_ns;
     struct timespec end_ns;
-    double elapsed_ns;
+    double          elapsed_ns;
 #define perf_delta(__perf_evt) (__perf_evt).elapsed_ns
 #define perf_delta_us(__perf_evt) ((__perf_evt).elapsed_ns / 1000.0)
 } netos_perf_event_t;
@@ -38,9 +38,9 @@ typedef struct {
 
 #else
 
-#define NETOS_PERF_EVENT_INITIALIZE(__perf_evt) do { } while (0)
-#define NETOS_PERF_EVENT_START(__perf_evt) do { } while (0)
-#define NETOS_PERF_EVENT_END(__perf_evt) do { } while (0)
+#define NETOS_PERF_EVENT_INITIALIZE(__perf_evt)     do { } while (0)
+#define NETOS_PERF_EVENT_START(__perf_evt)          do { } while (0)
+#define NETOS_PERF_EVENT_END(__perf_evt)            do { } while (0)
 
 #endif
 

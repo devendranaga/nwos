@@ -21,6 +21,14 @@ netos_status_t netos_ioctl_set_promisc_fd(int fd, const char *ifname);
  */
 netos_status_t netos_ioctl_clear_promisc_fd(int fd, const char *ifname);
 
+/**
+ * @brief - Bind the fd to the interface.
+ *
+ * @param [in] fd - file descriptor
+ * @param [in] ifname - interface name
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t netos_ioctl_bind_to_device(int fd, const char *ifname);
 
 int netos_ioctl_get_ifindex(int fd, const char *ifname);

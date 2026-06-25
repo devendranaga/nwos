@@ -16,6 +16,7 @@ extern "C" {
  * @brief - Defines VLAN header.
  */
 typedef struct netos_vlan_hdr {
+    uint16_t                vlan_ethertype;
     uint16_t                vlan_id;
     uint8_t                 pcp;
     uint8_t                 dei;
