@@ -1,5 +1,30 @@
 # Nwos
 
+## prerequisites
+
+```bash
+sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+sudo dpkg --add-architecture arm64
+sudo apt update
+sudo apt install libxml2-dev:arm64
+sudo apt install libicu-dev:arm64
+sudo apt install libxml2-dev libicu-dev
+
+```
+
+Static build would most probably work on any 64 bit ARM and may not require any dependencies.
+Static build does not work in Github CI. Not sure.
+
+## Build flags
+
+| S.No | option | description |
+|------|--------|-------------|
+| 1 | COMPILER_GCC | use GCC to compile the code |
+| 2 | COMPILER_CLANG | use CLANG to compile the code |
+| 3 | DEBUG | enable debugging prints |
+| 4 | STATIC_BUILD | static build (does not work 100%) |
+| 5 | COMPILER_ARM | use ARM compiler (arm64) |
+
 ## TODOs
 
 - [ ] WRR egress scheduling
