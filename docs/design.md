@@ -13,6 +13,40 @@
 
 ## MACsec implementation
 
+### Key database format
+
+```c
+
+struct macsec_key_info {
+    uint8_t sci[8];
+    uint8_t is_tx; // 1 - tx sa 0 - rx sa
+    uint8_t an;
+    uint8_t key_len;
+    uint8_t cipher_suite;
+    uint8_t key[32];
+} __attribute__ ((__packed__));
+
+```
+
+```c
+struct macsec_key_metadata {
+    uint8_t     version;
+    uint8_t     n_secy;
+    uint16_t    db_len;
+    // list of MACsec encrypted keys of type macsec_key_info
+} __attribute__ ((__packed__));
+```
+
+**Design details**
+
+1. SCI will link to a particular TxSC or RxSC.
+2. To index into an SA (tx or rx) the SC type is needed either as Tx or Rx.
+3. AN will tell which SA in either tx or rx SAs.
+4. Key length must be known in order to do either 128 or 256 bit is the key.
+5. Key metadata stays in plaintext and the keys are encrypted in a bunch using the AES-KeyWrap.
+6. The wrapping key is stored somewhere securely.
+7. During initialization, keys are decrypted and loaded into secy's SAs.
+
 ## IPv4 implementation
 
 ### Initialization

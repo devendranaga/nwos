@@ -25,6 +25,26 @@ Static build does not work in Github CI. Not sure.
 | 4 | STATIC_BUILD | static build (does not work 100%) |
 | 5 | COMPILER_ARM | use ARM compiler (arm64) |
 
+### Build configuration
+
+**1. GCC Static Build**
+
+```bash
+cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DSTATIC_BUILD=on
+```
+
+**2. Clang Build**
+
+```bash
+cmake .. -DCOMPILER_CLANG=on -DDEBUG=on
+```
+
+**3. ARM Build**
+
+```build
+cmake .. -DCOMPILER_ARM=on -DDEBUG=on
+```
+
 ## TODOs
 
 - [ ] WRR egress scheduling
