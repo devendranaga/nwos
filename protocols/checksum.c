@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 #include "checksum.h"
 
 uint16_t netos_ip_checksum(netos_checksum_t *chksum)
@@ -20,6 +22,43 @@ uint16_t netos_ip_checksum(netos_checksum_t *chksum)
     }
 
     return ~checksum;
+}
+
+uint16_t netos_l4_checksum(netos_checksum_t *chksum)
+{
+    uint32_t checksum32 = 0;
+    uint32_t i = 0;
+    uint32_t pad = 0;
+
+    if (chksum->len % 2) {
+        pad = 1;
+    }
+
+    if (chksum->is_v4) {
+        uint32_t src_ipaddr = (chksum->u.v4.src_ip);
+        uint32_t dst_ipaddr = (chksum->u.v4.dst_ip);
+        checksum32 = ((src_ipaddr & 0xFFFF0000) >> 16) +
+                     (src_ipaddr & 0x0000FFFF);
+        checksum32 += ((dst_ipaddr & 0xFFFF0000) >> 16) +
+                      (dst_ipaddr & 0x0000FFFF);
+    }
+
+    checksum32 += ((chksum->len & 0xFFFF0000) >> 16) + (chksum->len & 0x0000FFFF);
+    checksum32 += chksum->protocol;
+
+    for (i = 0; i <= chksum->len + pad; i += 2) {
+        if (i < chksum->len - 1) {
+            checksum32 += (chksum->buffer[i] << 8) | (chksum->buffer[i + 1]);
+        } else {
+            checksum32 += chksum->buffer[i] << 8;
+        }
+    }
+
+    if (checksum32 > 0xFFFF) {
+        checksum32 = ((checksum32 & 0xFFFF0000) >> 16) + (checksum32 & 0x0000FFFF);
+    }
+
+    return ~checksum32;
 }
 
 

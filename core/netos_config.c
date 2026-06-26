@@ -8,13 +8,15 @@
 #include "netos_status.h"
 #include "netos_config.h"
 
-static netos_status_t netos_config_parse_interface_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t netos_config_parse_interface_config(network_config_t *config,
+                                                          xmlDocPtr doc, xmlNode *node)
 {
     xmlNode *iter;
     uint32_t index = 0;
 
     for (iter = node->children; iter; iter = iter->next) {
-        if ((iter->type == XML_ELEMENT_NODE) && (strcmp((char *)iter->name, "interface") == 0)) {
+        if ((iter->type == XML_ELEMENT_NODE) &&
+            (strcmp((char *)iter->name, "interface") == 0)) {
             xmlChar *val = xmlNodeListGetString(doc, iter->children, 1);
             if (!val) {
                 return NETOS_STATUS_CONFIG_INVAL_XML;
@@ -30,7 +32,8 @@ static netos_status_t netos_config_parse_interface_config(network_config_t *conf
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_config_get_u32(uint32_t *u32_ptr, xmlDocPtr doc, xmlNode *node)
+static netos_status_t netos_config_get_u32(uint32_t *u32_ptr,
+                                           xmlDocPtr doc, xmlNode *node)
 {
     char *err_ptr = NULL;
     xmlChar *val = xmlNodeListGetString(doc, node->children, 1);
@@ -49,7 +52,8 @@ static netos_status_t netos_config_get_u32(uint32_t *u32_ptr, xmlDocPtr doc, xml
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_config_get_bool(bool *bool_ptr, xmlDocPtr doc, xmlNode *node)
+static netos_status_t netos_config_get_bool(bool *bool_ptr,
+                                            xmlDocPtr doc, xmlNode *node)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
     xmlChar *val = xmlNodeListGetString(doc, node->children, 1);
@@ -70,20 +74,25 @@ static netos_status_t netos_config_get_bool(bool *bool_ptr, xmlDocPtr doc, xmlNo
     return ret;
 }
 
-static netos_status_t netos_config_get_arp_cache_size(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_get_arp_cache_size(network_config_t *config,
+                                xmlDocPtr doc, xmlNode *node)
 {
     return netos_config_get_u32(&config->protocol_config.arp_config.arp_cache_size,
                                 doc, node);
 }
 
 static const struct {
-    const char *name;
-    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
 } arp_config_callbacks[] = {
     { "arp_cache_size", netos_config_get_arp_cache_size }
 };
 
-static netos_status_t netos_config_parse_arp_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_parse_arp_config(network_config_t *config,
+                              xmlDocPtr doc, xmlNode *node)
 {
     xmlNode *iter;
     netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
@@ -105,20 +114,25 @@ static netos_status_t netos_config_parse_arp_config(network_config_t *config, xm
     return ret;
 }
 
-static netos_status_t netos_config_get_ipv4_drop_fragments(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_get_ipv4_drop_fragments(network_config_t *config,
+                                     xmlDocPtr doc, xmlNode *node)
 {
     return netos_config_get_bool(&config->protocol_config.ipv4_config.drop_fragments,
                                  doc, node);
 }
 
 static const struct {
-    const char *name;
-    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
 } ipv4_config_callbacks[] = {
     { "drop_fragments", netos_config_get_ipv4_drop_fragments }
 };
 
-static netos_status_t netos_config_parse_ipv4_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_parse_ipv4_config(network_config_t *config,
+                               xmlDocPtr doc, xmlNode *node)
 {
     xmlNode *iter;
     netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
@@ -140,15 +154,59 @@ static netos_status_t netos_config_parse_ipv4_config(network_config_t *config, x
     return ret;
 }
 
+static netos_status_t
+netos_config_get_icmp_echo_payload_len(network_config_t *config,
+                                       xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_u32(&config->protocol_config.icmp_config.echo_payload_len,
+                                doc, node);
+}
+
 static const struct {
-    const char *name;
-    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
-} protocol_config_callbacks[] = {
-    { "arp", netos_config_parse_arp_config },
-    { "ipv4", netos_config_parse_ipv4_config }
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} icmp_config_callbacks[] = {
+    { "min_echo_payload_len", netos_config_get_icmp_echo_payload_len }
 };
 
-static netos_status_t netos_config_parse_protocol_config(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_parse_icmp_config(network_config_t *config,
+                               xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *iter;
+    netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
+
+    for (iter = node->children; iter; iter = iter->next) {
+        if (iter->type == XML_ELEMENT_NODE) {
+            for (uint32_t i = 0; i < sizeof(icmp_config_callbacks) /
+                                     sizeof(icmp_config_callbacks[0]); i ++) {
+                if (strcmp((const char *)iter->name, icmp_config_callbacks[i].name) == 0) {
+                    ret = icmp_config_callbacks[i].callback_fn(config, doc, iter);
+                    if (ret != NETOS_STATUS_SUCCESS) {
+                        return ret;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} protocol_config_callbacks[] = {
+    { "arp",    netos_config_parse_arp_config },
+    { "ipv4",   netos_config_parse_ipv4_config },
+    { "icmp",   netos_config_parse_icmp_config }
+};
+
+static netos_status_t
+netos_config_parse_protocol_config(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node)
 {
     xmlNode *node_ptr;
     netos_status_t ret;
@@ -170,14 +228,17 @@ static netos_status_t netos_config_parse_protocol_config(network_config_t *confi
 }
 
 static const struct {
-    const char *name;
-    netos_status_t (*callback_fn)(network_config_t *config, xmlDocPtr doc, xmlNode *node);
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
 } config_callbacks[] = {
     { "interface_list", netos_config_parse_interface_config },
-    { "protocols", netos_config_parse_protocol_config },
+    { "protocols",      netos_config_parse_protocol_config },
 };
 
-static netos_status_t netos_config_parse_config_callbacks(network_config_t *config, xmlDocPtr doc, xmlNode *node)
+static netos_status_t
+netos_config_parse_config_callbacks(network_config_t *config,
+                                    xmlDocPtr doc, xmlNode *node)
 {
     xmlNode *node_ptr;
     netos_status_t ret;
@@ -224,6 +285,8 @@ netos_status_t netos_config_parse(network_config_t *config, const char *config_p
     xmlFree(root);
     xmlFree(doc);
 
+    netos_config_print(config);
+
     return ret;
 
 end:
@@ -254,6 +317,10 @@ void netos_config_print(const network_config_t *config)
     fprintf(stderr, "        ipv4: {\n");
     fprintf(stderr, "            drop_fragments: %s\n",
                     config->protocol_config.ipv4_config.drop_fragments ? "True": "False");
+    fprintf(stderr, "        }\n");
+    fprintf(stderr, "        icmp: {\n");
+    fprintf(stderr, "            min_echo_payload_len: %d\n",
+                    config->protocol_config.icmp_config.echo_payload_len);
     fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
     fprintf(stderr, "}\n");

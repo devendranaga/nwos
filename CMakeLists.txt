@@ -26,10 +26,10 @@ SET(PROTOCOL_SRC
     ./protocols/arp_parse.c
     ./protocols/vlan.c
     ./protocols/macsec.c
-    ./protocols/ipv4.c
+    ./protocols/ipv4_parse.c
     ./protocols/ipv6.c
-    ./protocols/tcp.c
-    ./protocols/udp.c
+    ./protocols/tcp_parse.c
+    ./protocols/udp_parse.c
     ./protocols/checksum.c
     ./protocols/icmp_parse.c
     ./protocols/icmp.c)

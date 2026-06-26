@@ -32,12 +32,17 @@ typedef struct netos_ipv4_config {
     bool drop_fragments;
 } netos_ipv4_config_t;
 
+typedef struct netos_icmp_config {
+    uint32_t echo_payload_len;
+} netos_icmp_config_t;
+
 /**
  * @brief - Defines protocol configuration.
  */
 typedef struct netos_protocol_config {
-    netos_arp_config_t arp_config;
+    netos_arp_config_t  arp_config;
     netos_ipv4_config_t ipv4_config;
+    netos_icmp_config_t icmp_config;
 } netos_protocol_config_t;
 
 /**

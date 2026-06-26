@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 #include "ethertypes.h"
 #include "protocols.h"
 #include "pgen.h"
+#include "pgen_cmd_strings.h"
 
 static struct pgen pgen;
 
@@ -26,20 +28,33 @@ static void pgen_icmp_run();
 
 static struct {
     const char  *str;
+    const char  *desc;
     bool        enable;
     void        (*callback)();
 } pgen_run_callback_list[] = {
     {
-        "eth",  false, pgen_eth_run
+        "eth",
+        "Ethernet based frame generations",
+        false,
+        pgen_eth_run
     },
     {
-        "arp",  false, pgen_arp_run
+        "arp",
+        "ARP based frame generations",
+        false,
+        pgen_arp_run
     },
     {
-        "ipv4", false, pgen_ipv4_run
+        "ipv4",
+        "IPv4 based frame generations",
+        false,
+        pgen_ipv4_run
     },
     {
-        "icmp", false, pgen_icmp_run
+        "icmp",
+        "ICMP based frame generations",
+        false,
+        pgen_icmp_run
     }
 };
 
@@ -76,6 +91,34 @@ static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen.icmp_enable = true;
     pgen_run_callback_list[3].enable = true;
+}
+
+static void set_icmp_type(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t type;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &type);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ICMP type <%s>\n", tokens[1].name);
+        return;
+    }
+
+    pgen.icmp_hdr.type = type;
+}
+
+static void set_icmp_code(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t code;
+
+    ret = netos_get_u32_from_str(tokens[1].name, &code);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ICMP code <%s>\n", tokens[1].name);
+        return;
+    }
+
+    pgen.icmp_hdr.code = code;
 }
 
 static void set_ipv4_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -145,6 +188,42 @@ static void set_ipv4_protocol(struct pgen_token *tokens, uint32_t n_tokens)
     }
 
     pgen.ipv4_hdr.protocol = protocol;
+}
+
+static void set_ipv4_more_fragments(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    bool val;
+
+    ret = netos_get_bool_from_str(tokens[1].name, &val);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.ipv4_hdr.flags.more_fragment = val;
+}
+
+static void set_ipv4_dont_fragment(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    bool val;
+
+    ret = netos_get_bool_from_str(tokens[1].name, &val);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.ipv4_hdr.flags.dont_fragment = val;
+}
+
+static void set_ipv4_chksum(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.ipv4_hdr.hdr_chksum);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
 }
 
 static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
@@ -273,6 +352,7 @@ static void set_eth_sa(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.eth_hdr.src);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "Invalid Eth.SA <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -373,6 +453,8 @@ static void pgen_ipv4_run()
 
     if (pgen.ipv4_hdr.hdr_chksum == 0) {
         pgen.ipv4_hdr.gen_checksum = true;
+    } else {
+        pgen.ipv4_hdr.gen_checksum = false;
     }
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
@@ -413,13 +495,15 @@ static void pgen_icmp_run()
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
-        fprintf(stderr, "Interface name is not present. Interface should be provided via ifname\n");
+        fprintf(stderr, "Interface name is not present. "
+                        "Interface should be provided via ifname\n");
         return;
     }
 
     pgen.raw = netos_raw_socket_init(pgen.ifname);
     if (!pgen.raw) {
-        fprintf(stderr, "Failed to create a raw socket.. is the interface available and up?\n");
+        fprintf(stderr, "Failed to create a raw socket.. "
+                        "is the interface available and up?\n");
         return;
     }
 
@@ -436,11 +520,11 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
     }
 
     if (!callback_ptr) {
-        fprintf(stderr, "no protocol generation enabled!\n");
+        fprintf(stderr, "No protocol generation enabled!\n");
         return;
     }
 
-    for (i = 0; (callback_ptr) && (i < pgen.n_frames); i ++) {
+    for (i = 0; i < pgen.n_frames; i ++) {
 
         callback_ptr();
 
@@ -461,63 +545,6 @@ static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
     exit(1);
 }
 
-#define ETH_ENABLE_CMD      "eth.enable"
-#define ARP_ENABLE_CMD      "arp.enable"
-#define ETH_DA_CMD          "eth.da"
-#define ETH_SA_CMD          "eth.sa"
-#define ETH_ETHERTYPE_CMD   "eth.ethertype"
-#define VLAN_ID_CMD         "vlan.id"
-#define VLAN_PRIORITY_CMD   "vlan.priority"
-#define VLAN_NEXT_ETHER_CMD "vlan.next_ether"
-#define ARP_OP_CMD          "arp.op"
-#define ARP_SHA_CMD         "arp.sha"
-#define ARP_SPA_CMD         "arp.spa"
-#define ARP_THA_CMD         "arp.tha"
-#define ARP_TPA_CMD         "arp.tpa"
-#define IPV4_ENABLE_CMD     "ipv4.enable"
-#define IPV4_VERSION_CMD    "ipv4.version"
-#define IPV4_SRC_IP_CMD     "ipv4.src_ipaddr"
-#define IPV4_DST_IP_CMD     "ipv4.dst_ipaddr"
-#define IPV4_TTL_CMD        "ipv4.ttl"
-#define IPV4_PROTOCOL_CMD   "ipv4.protocol"
-#define ICMP_ENABLE_CMD     "icmp.enable"
-#define IPG_CMD             "ipg"
-#define N_FRAMES_CMD        "n_frames"
-#define LEN_CMD             "len"
-#define IFNAME_CMD          "ifname"
-#define RUN_CMD             "run"
-#define EXIT_CMD            "exit"
-#define QUIT_CMD            "quit"
-#define HELP_CMD            "help"
-#define ETH_ENABLE_STR      "Enables the Ethernet frame generation"
-#define ARP_ENABLE_STR      "Enables the ARP frame generation"
-#define ETH_DA_STR          "Set the Eth DA"
-#define ETH_SA_STR          "Set the Eth SA"
-#define ETH_ETHERTYPE_STR   "Set the Eth Ethertype"
-#define VLAN_ID_STR         "Set the VLAN Id"
-#define VLAN_PRIORITY_STR   "Set the VLAN priority"
-#define VLAN_NEXT_ETHER_STR "Set the VLAN next ethertype"
-#define ARP_OP_STR          "Set the ARP operation<request = 1/ reply = 2>"
-#define ARP_SHA_STR         "Set the ARP's sender HW Addr"
-#define ARP_SPA_STR         "Set the ARP sender Ip address"
-#define ARP_THA_STR         "Set the ARP's target HW Address"
-#define ARP_TPA_STR         "Set the ARP's target protocol address"
-#define IPV4_VERSION_STR    "Set the IPv4 version"
-#define IPV4_ENABLE_STR     "Enables the IPv4 frame generation"
-#define IPV4_SRC_IP_STR     "Set the ipv4.src_ipaddr"
-#define IPV4_DST_IP_STR     "Set the ipv4.dst_ipaddr"
-#define IPV4_TTL_STR        "Set the IPv4 TTL"
-#define IPV4_PROTOCOL_STR   "Set the IPV4 Protocol"
-#define ICMP_ENABLE_STR     "Set the ICMP enable"
-#define IPG_STR             "Set the Inter packet gap (in nanoseconds)"
-#define N_FRAMES_STR        "Set Number of frames to send"
-#define LEN_STR             "Set the packet length"
-#define IFNAME_STR          "Set the interface name"
-#define RUN_STR             "Run the packet generator"
-#define EXIT_STR            "Exit the packet generator"
-#define QUIT_STR            EXIT_STR
-#define HELP_STR            "Show help"
-
 static const struct {
     const char  *str;
     const char  *desc;
@@ -528,21 +555,31 @@ static const struct {
     { ETH_DA_CMD,           ETH_DA_STR,             set_eth_da },
     { ETH_SA_CMD,           ETH_SA_STR,             set_eth_sa },
     { ETH_ETHERTYPE_CMD,    ETH_ETHERTYPE_STR,      set_eth_ethertype },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { VLAN_ID_CMD,          VLAN_ID_STR,            set_vlan_id },
     { VLAN_PRIORITY_CMD,    VLAN_PRIORITY_STR,      set_vlan_priority },
     { VLAN_NEXT_ETHER_CMD,  VLAN_NEXT_ETHER_STR,    set_vlan_next_ethertype },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { ARP_OP_CMD,           ARP_OP_STR,             set_arp_op },
     { ARP_SHA_CMD,          ARP_SHA_STR,            set_arp_sha },
     { ARP_SPA_CMD,          ARP_SPA_STR,            set_arp_spa },
     { ARP_THA_CMD,          ARP_THA_STR,            set_arp_tha },
     { ARP_TPA_CMD,          ARP_TPA_STR,            set_arp_tpa },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { IPV4_ENABLE_CMD,      IPV4_ENABLE_STR,        set_ipv4_enable },
     { IPV4_VERSION_CMD,     IPV4_VERSION_STR,       set_ipv4_version },
     { IPV4_SRC_IP_CMD,      IPV4_SRC_IP_STR,        set_ipv4_src_ip },
     { IPV4_DST_IP_CMD,      IPV4_DST_IP_STR,        set_ipv4_dst_ip },
     { IPV4_TTL_CMD,         IPV4_TTL_STR,           set_ipv4_ttl },
     { IPV4_PROTOCOL_CMD,    IPV4_PROTOCOL_STR,      set_ipv4_protocol },
+    { IPV4_MF_CMD,          IPV4_MF_STR,            set_ipv4_more_fragments },
+    { IPV4_DF_CMD,          IPV4_DF_STR,            set_ipv4_dont_fragment },
+    { IPV4_CHKSUM_CMD,      IPV4_CHKSUM_STR,        set_ipv4_chksum },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { ICMP_ENABLE_CMD,      ICMP_ENABLE_STR,        set_icmp_enable },
+    { ICMP_TYPE_CMD,        ICMP_TYPE_STR,          set_icmp_type },
+    { ICMP_CODE_CMD,        ICMP_CODE_STR,          set_icmp_code },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { IPG_CMD,              IPG_STR,                set_ipg },
     { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },
     { LEN_CMD,              LEN_STR,                set_packet_len },
@@ -550,7 +587,8 @@ static const struct {
     { RUN_CMD,              RUN_STR,                pgen_run },
     { EXIT_CMD,             EXIT_STR,               pgen_exit },
     { QUIT_CMD,             QUIT_STR,               pgen_exit },
-    { HELP_CMD,             HELP_STR,               pgen_help }
+    { HELP_CMD,             HELP_STR,               pgen_help },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL}
 };
 
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
@@ -558,11 +596,13 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
     uint32_t i;
 
     fprintf(stderr, "\n");
+    fprintf(stderr, "----------------------------------------------------------\n");
     for (i = 0; i < sizeof(pgen_setup_callbacks) /
                     sizeof(pgen_setup_callbacks[0]); i ++) {
         fprintf(stderr, "%-30s %s\n", pgen_setup_callbacks[i].str,
                                        pgen_setup_callbacks[i].desc);
     }
+    fprintf(stderr, "----------------------------------------------------------\n");
     fprintf(stderr, "\n");
 }
 
@@ -615,12 +655,20 @@ int main(int argc, char **argv)
         n_tokens = pgen_tokenize(buf, len, tokens);
         if (n_tokens != 0) {
             uint32_t i;
+            bool valid_cmd = false;
 
             for (i = 0; i < sizeof(pgen_setup_callbacks) /
                             sizeof(pgen_setup_callbacks[0]); i ++) {
-                if (!strcmp(pgen_setup_callbacks[i].str, tokens[0].name)) {
+                if (!strcmp(pgen_setup_callbacks[i].str, tokens[0].name) &&
+                    (pgen_setup_callbacks[i].callback != NULL)) {
+                    valid_cmd = true;
                     pgen_setup_callbacks[i].callback(tokens, n_tokens);
+                    break;
                 }
+            }
+
+            if (!valid_cmd) {
+                fprintf(stderr, "Invalid command <%s>\n", buf);
             }
         }
     }

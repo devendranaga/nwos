@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <interface_list>
-        <interface>wlp4s0</interface>
+        <interface>dummy0</interface>
+        <!-- set mac and ip during the startup if found. -->
+        <mac_address>00:01:02:22:24:44</mac_address>
+        <ip_address>192.168.1.1</ip_address>
     </interface_list>
     <protocols>
+        <macsec>
+            <n_secy>128</n_secy>
+            <keydb_file>./config/macsec_keys.db</keydb_file>
+        </macsec>
         <arp>
             <arp_cache_size>32</arp_cache_size>
+            <arp_entry_invalidation_time_sec>300</arp_entry_invalidation_time_sec>
         </arp>
         <ipv4>
             <drop_fragments>true</drop_fragments>

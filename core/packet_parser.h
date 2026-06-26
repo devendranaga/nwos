@@ -6,8 +6,9 @@
 #include "arp_hdr.h"
 #include "vlan.h"
 #include "macsec_hdr.h"
-#include "ipv4.h"
-#include "udp.h"
+#include "ipv4_hdr.h"
+#include "udp_hdr.h"
+#include "tcp_hdr.h"
 #include "icmp_hdr.h"
 
 #define NETOS_MAX_VLAN_TUNNELS 12
@@ -31,6 +32,7 @@ typedef struct netos_packet_parser {
     uint8_t                 protocol;
 
     union {
+        netos_tcp_hdr_t     tcp_hdr;
         netos_udp_hdr_t     udp_hdr;
         netos_icmp_hdr_t    icmp_hdr;
     } l4;

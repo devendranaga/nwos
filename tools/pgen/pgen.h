@@ -5,9 +5,9 @@
 #include "common.h"
 #include "vlan.h"
 #include "arp_hdr.h"
-#include "ipv4.h"
-#include "tcp.h"
-#include "udp.h"
+#include "ipv4_hdr.h"
+#include "tcp_hdr.h"
+#include "udp_hdr.h"
 #include "icmp_hdr.h"
 #include "raw_socket.h"
 

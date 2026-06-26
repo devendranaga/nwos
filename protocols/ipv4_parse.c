@@ -3,7 +3,7 @@
 
 #include "netos_status.h"
 #include "pkt_buffer.h"
-#include "ipv4.h"
+#include "ipv4_hdr.h"
 #include "checksum.h"
 #include "event_info.h"
 

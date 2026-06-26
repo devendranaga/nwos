@@ -1,8 +1,11 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <arpa/inet.h>
 #include "netos_status.h"
+#include "common.h"
 
 netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac)
 {
@@ -17,12 +20,7 @@ netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac)
         return NETOS_STATUS_COMMON_MAC_STR_TO_U8_FAILED;
     }
 
-    mac[0] = mac_u32[0];
-    mac[1] = mac_u32[1];
-    mac[2] = mac_u32[2];
-    mac[3] = mac_u32[3];
-    mac[4] = mac_u32[4];
-    mac[5] = mac_u32[5];
+    NETOS_SET_MACADDR(mac, mac_u32);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -73,5 +71,20 @@ netos_status_t netos_get_ipv4addr_from_str(const char *ipv4addr_str, uint32_t *i
     }
 
     return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_get_bool_from_str(const char *str, bool *val)
+{
+    netos_status_t ret = NETOS_STATUS_COMMON_BOOL_STR_TO_BOOL_FAILED;
+
+    if (!strcmp(str, "true")) {
+        *val = true;
+        ret = NETOS_STATUS_SUCCESS;
+    } else if (!strcmp(str, "false")) {
+        *val = false;
+        ret = NETOS_STATUS_SUCCESS;
+    }
+
+    return ret;
 }
 
