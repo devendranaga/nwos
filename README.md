@@ -53,13 +53,9 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Cryptography wrapper callback interface
 - [ ] MbedTLS, wolfSSL GCM & GMAC
 - [ ] IPsec implementation
-- [ ] TCP frame parsing
 - [ ] Event capture and storage tests
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
-- [ ] IPv6 frame parsing
-- [ ] TCP checksum validation
-- [ ] UDP checksum validation
 - [ ] Take pkt buffer numbers from xml config
 - [ ] static ARP cache allocation strategy
 - [ ] CPU affinity per thread
@@ -68,8 +64,6 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Handling Ctrl + C
 - [ ] Define event storage format, the same format is used for upload of events
 - [ ] Define event storage encryption
-- [ ] ICMP6 frame parsing
-- [ ] ICMP6 checksum validation
 - [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
 - [ ] CMAC PRF
 - [ ] Tooling: packet replay from a file in pgen
@@ -100,6 +94,7 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] recvmsg using the scatter gather approach
 - [ ] 6in4 tunnel frame parsing
 - [ ] 6in4 tunnel frame generation
+- [ ] IPv6 frame generation
 
 ## Done
 
@@ -121,6 +116,12 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [x] Tooling: Generate VLAN frames
 - [x] ICMP serialize for echo request and reply.
 - [x] IPv4 serialize and checksum generation
+- [x] TCP frame parsing
+- [x] TCP checksum validation
+- [x] UDP checksum validation
+- [x] IPv6 frame parsing
+- [x] ICMP6 frame parsing
+- [x] ICMP6 checksum validation
 
 
 ## Configuration
