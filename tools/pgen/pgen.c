@@ -11,6 +11,7 @@
 #include "ethertypes.h"
 #include "protocols.h"
 #include "pgen.h"
+#include "pgen_const.h"
 #include "pgen_cmd_strings.h"
 
 static struct pgen pgen;
@@ -89,8 +90,8 @@ static void pgen_set_defaults()
 
 static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    pgen.icmp_enable = true;
-    pgen_run_callback_list[3].enable = true;
+    pgen.icmp_enable                    = true;
+    pgen_run_callback_list[3].enable    = true;
 }
 
 static void set_icmp_type(struct pgen_token *tokens, uint32_t n_tokens)
@@ -121,10 +122,43 @@ static void set_icmp_code(struct pgen_token *tokens, uint32_t n_tokens)
     pgen.icmp_hdr.code = code;
 }
 
+static void set_icmp_checksum(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.checksum);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ICMP checksum value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
+static void set_icmp_id(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.identifier);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ICMP identifier value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
+static void set_icmp_seq(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.seq_no);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ICMP seq_no value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
 static void set_ipv4_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    pgen.ipv4_enable = true;
-    pgen_run_callback_list[2].enable = true;
+    pgen.ipv4_enable                    = true;
+    pgen_run_callback_list[2].enable    = true;
 }
 
 static void set_ipv4_version(struct pgen_token *tokens, uint32_t n_tokens)
@@ -134,6 +168,7 @@ static void set_ipv4_version(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &version);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4 version value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -146,6 +181,7 @@ static void set_ipv4_src_ip(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.ipv4_hdr.src_ipaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.src_ip value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -158,6 +194,7 @@ static void set_ipv4_dst_ip(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.ipv4_hdr.dst_ipaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.dst_ip value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -171,6 +208,12 @@ static void set_ipv4_ttl(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &ttl);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.ttl value <%s>\n", tokens[1].name);
+        return;
+    }
+
+    if (ttl > NETOS_TTL_MAX) {
+        fprintf(stderr, "invalid ipv4.ttl value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -184,6 +227,7 @@ static void set_ipv4_protocol(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &protocol);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.protocol value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -197,6 +241,7 @@ static void set_ipv4_more_fragments(struct pgen_token *tokens, uint32_t n_tokens
 
     ret = netos_get_bool_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.more_fragments value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -210,6 +255,7 @@ static void set_ipv4_dont_fragment(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_bool_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.dont_fragment value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -222,6 +268,7 @@ static void set_ipv4_chksum(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.ipv4_hdr.hdr_chksum);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipv4.checksum value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -233,12 +280,13 @@ static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &vid);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invlaid vlan.id value <%s>\n", tokens[1].name);
         return;
     }
 
-    pgen.vlan_enable = true;
-    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
-    pgen.vlan_hdr.vlan_id = vid;
+    pgen.vlan_enable        = true;
+    pgen.eth_hdr.ethertype  = NETOS_ETHERTYPE_VLAN;
+    pgen.vlan_hdr.vlan_id   = vid;
 }
 
 static void set_vlan_priority(struct pgen_token *tokens, uint32_t n_tokens)
@@ -248,12 +296,13 @@ static void set_vlan_priority(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &priority);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid vlan.priority value <%s>\n", tokens[1].name);
         return;
     }
 
-    pgen.vlan_enable = true;
-    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
-    pgen.vlan_hdr.pcp = priority;
+    pgen.vlan_enable        = true;
+    pgen.eth_hdr.ethertype  = NETOS_ETHERTYPE_VLAN;
+    pgen.vlan_hdr.pcp       = priority;
 }
 
 static void set_vlan_next_ethertype(struct pgen_token *tokens, uint32_t n_tokens)
@@ -262,11 +311,12 @@ static void set_vlan_next_ethertype(struct pgen_token *tokens, uint32_t n_tokens
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.vlan_hdr.ethertype);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid vlan.next_ethertype value <%s>\n", tokens[1].name);
         return;
     }
 
-    pgen.vlan_enable = true;
-    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
+    pgen.vlan_enable        = true;
+    pgen.eth_hdr.ethertype  = NETOS_ETHERTYPE_VLAN;
 }
 
 static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -285,6 +335,7 @@ static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.sender_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid arp.sha value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -295,6 +346,7 @@ static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.sender_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid arp.spa value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -307,6 +359,7 @@ static void set_arp_tha(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.target_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid arp.tha value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -317,6 +370,7 @@ static void set_arp_tpa(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.target_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid arp.tpa value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -330,6 +384,7 @@ static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &op);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid arp.op value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -342,6 +397,7 @@ static void set_eth_da(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.eth_hdr.dst);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid eth.da value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -352,7 +408,7 @@ static void set_eth_sa(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.eth_hdr.src);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "Invalid Eth.SA <%s>\n", tokens[1].name);
+        fprintf(stderr, "invalid eth.sa <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -363,6 +419,7 @@ static void set_eth_ethertype(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.eth_hdr.ethertype);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid eth.ethertype <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -373,6 +430,7 @@ static void set_ipg(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u64_from_str(tokens[1].name, &pgen.ipg_ns);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid ipg value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -383,6 +441,7 @@ static void set_n_frames(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &pgen.n_frames);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid n_frames value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -393,15 +452,18 @@ static void set_packet_len(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &pgen.len);
     if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "invalid pkt len <%s>\n", tokens[1].name);
         return;
     }
 }
 
 static void set_ifname(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if (!pgen.ifname) {
-        pgen.ifname = strdup(tokens[1].name);
+    if (pgen.ifname) {
+        free(pgen.ifname);
     }
+
+    pgen.ifname = strdup(tokens[1].name);
 }
 
 static void pgen_eth_run()
@@ -477,7 +539,6 @@ static void pgen_icmp_run()
     pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_ICMP;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
-    pgen.icmp_hdr.checksum = 0;
     if (pgen.len == 0) {
         pgen.icmp_hdr.u.echo_req.data = NULL;
         pgen.icmp_hdr.u.echo_req.data_len = 0;
@@ -485,7 +546,12 @@ static void pgen_icmp_run()
         pgen.icmp_hdr.u.echo_req.data = data_buf;
         pgen.icmp_hdr.u.echo_req.data_len = pgen.len;
     }
-    pgen.icmp_hdr.gen_checksum = true;
+
+    if (pgen.icmp_hdr.checksum == 0) {
+        pgen.icmp_hdr.gen_checksum = true;
+    } else {
+        pgen.icmp_hdr.gen_checksum = false;
+    }
     netos_icmp_encode(&pgen.icmp_hdr, &pkt_buf);
 
     pkt_buffer_set_tx_len_default(&pkt_buf);
@@ -579,6 +645,9 @@ static const struct {
     { ICMP_ENABLE_CMD,      ICMP_ENABLE_STR,        set_icmp_enable },
     { ICMP_TYPE_CMD,        ICMP_TYPE_STR,          set_icmp_type },
     { ICMP_CODE_CMD,        ICMP_CODE_STR,          set_icmp_code },
+    { ICMP_CHECKSUM_CMD,    ICMP_CHECKSUM_STR,      set_icmp_checksum },
+    { ICMP_ID_CMD,          ICMP_ID_STR,            set_icmp_id },
+    { ICMP_SEQ_CMD,         ICMP_SEQ_STR,           set_icmp_seq },
     { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { IPG_CMD,              IPG_STR,                set_ipg },
     { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },

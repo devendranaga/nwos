@@ -25,6 +25,7 @@ netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac)
     return NETOS_STATUS_SUCCESS;
 }
 
+
 netos_status_t netos_get_u16_hex_from_str(const char *hex_str, uint16_t *hex)
 {
     char *err_ptr = NULL;
@@ -32,6 +33,18 @@ netos_status_t netos_get_u16_hex_from_str(const char *hex_str, uint16_t *hex)
     *hex = strtoul(hex_str, &err_ptr, 16);
     if (err_ptr && *err_ptr != '\0') {
         return NETOS_STATUS_COMMON_U16_STR_TO_U16_HEX_FAILED;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_get_u16_from_str(const char *u16_str, uint16_t *u16)
+{
+    char *err_ptr = NULL;
+
+    *u16 = strtoul(u16_str, &err_ptr, 10);
+    if (err_ptr && *err_ptr != '\0') {
+        return NETOS_STATUS_COMMON_U16_STR_TO_U16_FAILED;
     }
 
     return NETOS_STATUS_SUCCESS;

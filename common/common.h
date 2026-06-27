@@ -22,6 +22,16 @@ netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac);
 netos_status_t netos_get_u16_hex_from_str(const char *hex_str, uint16_t *hex);
 
 /**
+ * @brief - Get u16 from the input string.
+ *
+ * @param [in] string - integer string.
+ * @param [out] u16 - output u16.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
+netos_status_t netos_get_u16_from_str(const char *u16_str, uint16_t *u16);
+
+/**
  * @brief - Get u32 from the string.
  *
  * @param [in] u32_str - u32 in string format.
