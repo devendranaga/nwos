@@ -14,12 +14,15 @@ typedef enum {
  * @brief - Defines Event Description.
  */
 typedef enum {
+    // Ethernet related events
     NETOS_EVENT_DESC_ETH_SHORT_HDR                      = 0x00000001,
 
+    // ARP related events
     NETOS_EVENT_DESC_ARP_SHORT_HDR                      = 0x00001000,
     NETOS_EVENT_DESC_ARP_INVAL_SENDER_HWADDR,
     NETOS_EVENT_DESC_ARP_INVAL_SENDER_PROTOCOL_ADDR,
 
+    // IPv4 related events
     NETOS_EVENT_DESC_IPV4_SHORT_HDR_LEN                 = 0x00002000,
     NETOS_EVENT_DESC_IPV4_INVAL_VERSION,
     NETOS_EVENT_DESC_IPV4_INVAL_HDR_LEN,
@@ -30,12 +33,23 @@ typedef enum {
     NETOS_EVENT_DESC_IPV4_CHECKSUM_FAILED,
     NETOS_EVENT_DESC_IPV4_SRC_DST_IP_SAME,
 
+    // ICMP related events
     NETOS_EVENT_DESC_ICMP_SHORT_ECHO_REQ                = 0x00003000,
     NETOS_EVENT_DESC_ICMP_SHORT_ECHO_REPLY,
     NETOS_EVENT_DESC_ICMP_SHORT_TS_REQ,
     NETOS_EVENT_DESC_ICMP_SHORT_TS_REPLY,
     NETOS_EVENT_DESC_ICMP_CHECKSUM_VERIFY_FAILED,
 
+    // TCP related events
+    NETOS_EVENT_DESC_TCP_CHECKSUM_VERIFY_FAILED         = 0x00004000,
+
+    // UDP related events
+    NETOS_EVENT_DESC_UDP_CHECKSUM_VERIFY_FAILED         = 0x00005000,
+
+    // ICMP6 related events
+    NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED       = 0x00006000,
+
+    // invalid event description id
     NETOS_EVENT_DESC_INVAL                              = 0xFAFAFAFA,
 } netos_event_desc_t;
 

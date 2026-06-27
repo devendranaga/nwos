@@ -27,12 +27,13 @@ SET(PROTOCOL_SRC
     ./protocols/vlan.c
     ./protocols/macsec.c
     ./protocols/ipv4_parse.c
-    ./protocols/ipv6.c
+    ./protocols/ipv6_parse.c
     ./protocols/tcp_parse.c
     ./protocols/udp_parse.c
     ./protocols/checksum.c
     ./protocols/icmp_parse.c
-    ./protocols/icmp.c)
+    ./protocols/icmp.c
+    ./protocols/icmp6_parse.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c)

@@ -8,21 +8,27 @@
 #include "netos_status.h"
 #include "netos_config.h"
 #include "checksum.h"
+#include "event_info.h"
 
-static netos_status_t netos_do_checksum_v4_l4(uint16_t start_off,
-                                              uint16_t remaining_len,
-                                              netos_ipv4_hdr_t *ipv4_hdr,
-                                              uint8_t protocol,
-                                              pkt_buffer_t *pkt_buf)
+static netos_status_t netos_do_checksum_l4(uint16_t start_off,
+                                           uint16_t remaining_len,
+                                           netos_packet_parser_t *parsed_data,
+                                           pkt_buffer_t *pkt_buf)
 {
     netos_checksum_t chksum = {
         .buffer         = &pkt_buf->buffer[start_off],
         .len            = remaining_len,
         .is_v4          = true,
-        .u.v4.src_ip    = ipv4_hdr->src_ipaddr,
-        .u.v4.dst_ip    = ipv4_hdr->dst_ipaddr,
-        .protocol       = protocol
+        .u.v4.src_ip    = parsed_data->l3.ipv4_hdr.src_ipaddr,
+        .u.v4.dst_ip    = parsed_data->l3.ipv4_hdr.dst_ipaddr,
+        .protocol       = parsed_data->protocol
     };
+
+    if (NETOS_IS_IPV6_FRAME(parsed_data)) {
+        chksum.is_v4        = false;
+        chksum.u.v6.src_ip  = parsed_data->l3.ipv6_hdr.src_ipaddr;
+        chksum.u.v6.dst_ip  = parsed_data->l3.ipv6_hdr.dst_ipaddr;
+    }
 
     uint16_t checksum = netos_l4_checksum(&chksum);
     if (checksum == 0) {
@@ -39,19 +45,21 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
     uint16_t start_off;
     uint16_t remaining_len;
 
-    start_off = pkt_buf->offset;
-    remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
+    start_off       = pkt_buf->offset;
+    remaining_len   = pkt_buffer_remaining_rx_len(pkt_buf);
 
     switch (parsed_data->protocol) {
         case NETOS_PROTOCOL_UDP:
             ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
             if (ret == NETOS_STATUS_SUCCESS) {
-                ret = netos_do_checksum_v4_l4(start_off,
-                                              remaining_len,
-                                              &parsed_data->l3.ipv4_hdr,
-                                              parsed_data->protocol,
-                                              pkt_buf);
+                ret = netos_do_checksum_l4(start_off,
+                                           remaining_len,
+                                           parsed_data,
+                                           pkt_buf);
                 if (ret != NETOS_STATUS_SUCCESS) {
+                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                               NETOS_EVENT_TYPE_DENY,
+                                               NETOS_EVENT_DESC_UDP_CHECKSUM_VERIFY_FAILED);
                     return ret;
                 }
             }
@@ -59,18 +67,36 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
         case NETOS_PROTOCOL_TCP:
             ret = netos_tcp_decode(&parsed_data->l4.tcp_hdr, pkt_buf);
             if (ret == NETOS_STATUS_SUCCESS) {
-                ret = netos_do_checksum_v4_l4(start_off,
-                                              remaining_len,
-                                              &parsed_data->l3.ipv4_hdr,
-                                              parsed_data->protocol,
-                                              pkt_buf);
+                ret = netos_do_checksum_l4(start_off,
+                                           remaining_len,
+                                           parsed_data,
+                                           pkt_buf);
                 if (ret != NETOS_STATUS_SUCCESS) {
+                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                               NETOS_EVENT_TYPE_DENY,
+                                               NETOS_EVENT_DESC_TCP_CHECKSUM_VERIFY_FAILED);
                     return ret;
                 }
             }
         break;
         case NETOS_PROTOCOL_ICMP:
+            /* The checksum for icmp already verified in the decode. */
             ret = netos_icmp_decode(&parsed_data->l4.icmp_hdr, pkt_buf);
+        break;
+        case NETOS_PROTOCOL_ICMP6:
+            ret = netos_icmp6_decode(&parsed_data->l4.icmp6_hdr, pkt_buf);
+            if (ret == NETOS_STATUS_SUCCESS) {
+                ret = netos_do_checksum_l4(start_off,
+                                           remaining_len,
+                                           parsed_data,
+                                           pkt_buf);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                               NETOS_EVENT_TYPE_DENY,
+                                               NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED);
+                    return ret;
+                }
+            }
         break;
         default:
             return NETOS_STATUS_INVAL_PROTOCOL;
@@ -153,6 +179,12 @@ check_ethertype:
         }
         parsed_data->protocol = parsed_data->l3.ipv4_hdr.protocol;
 
+    } else if (ethertype == NETOS_ETHERTYPE_IPV6) {
+        ret = netos_ipv6_decode(&parsed_data->l3.ipv6_hdr, pkt_buf);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            return ret;
+        }
+        parsed_data->protocol = parsed_data->l3.ipv6_hdr.nh;
     }
 
     if (parsed_data->protocol != 0) {

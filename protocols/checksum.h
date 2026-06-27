@@ -15,6 +15,11 @@ typedef struct {
             uint32_t    src_ip;
             uint32_t    dst_ip;
         } v4;
+
+        struct {
+            uint8_t     *src_ip;
+            uint8_t     *dst_ip;
+        } v6;
     } u;
     uint8_t     protocol;
 } netos_checksum_t;

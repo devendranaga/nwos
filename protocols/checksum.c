@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "checksum.h"
+#include "protocol_const.h"
+#include "netos_log.h"
 
 uint16_t netos_ip_checksum(netos_checksum_t *chksum)
 {
@@ -41,6 +43,15 @@ uint16_t netos_l4_checksum(netos_checksum_t *chksum)
                      (src_ipaddr & 0x0000FFFF);
         checksum32 += ((dst_ipaddr & 0xFFFF0000) >> 16) +
                       (dst_ipaddr & 0x0000FFFF);
+    } else {
+        uint8_t *src_ipaddr = chksum->u.v6.src_ip;
+        uint8_t *dst_ipaddr = chksum->u.v6.dst_ip;
+        for (i = 0; i < NETOS_IPV6_ADDR_LEN; i += 2) {
+            checksum32 += (src_ipaddr[i] << 8) | src_ipaddr[i + 1];
+        }
+        for (i = 0; i < NETOS_IPV6_ADDR_LEN; i += 2) {
+            checksum32 += (dst_ipaddr[i] << 8) | dst_ipaddr[i + 1];
+        }
     }
 
     checksum32 += ((chksum->len & 0xFFFF0000) >> 16) + (chksum->len & 0x0000FFFF);
