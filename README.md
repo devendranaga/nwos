@@ -86,7 +86,6 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Tooling: ICMP seq_no increment for every packet
 - [ ] Tooling: more descriptive help for each command
 - [ ] Tooling: ICMP6 Neighbor solicitations and advertisements generation
-- [ ] Tooling: MACsec farme generation
 - [ ] LLDP frame parsing
 - [ ] LLDP frame generation
 - [ ] NDP implementation
@@ -96,6 +95,13 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] 6in4 tunnel frame parsing
 - [ ] 6in4 tunnel frame generation
 - [ ] IPv6 frame generation
+- [ ] Tooling: MACsec encrypt implementation
+- [ ] Tooling: MACsec key setting via pgen
+- [ ] Tooling: MACsec auto PN increment for every packet that is sent
+- [ ] Tooling: document the command usages
+- [ ] Tooling: when test finishes, reset the PN
+- [ ] Tooling: MACsec: setting any TCI bits via command line
+- [ ] Tooling: IPv4 over MACsec
 
 ## Done
 
@@ -123,6 +129,7 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [x] IPv6 frame parsing
 - [x] ICMP6 frame parsing
 - [x] ICMP6 checksum validation
+- [x] Tooling: MACsec farme generation
 
 
 ## Configuration
