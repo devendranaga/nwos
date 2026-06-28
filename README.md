@@ -19,11 +19,12 @@ Static build does not work in Github CI. Not sure.
 
 | S.No | option | description |
 |------|--------|-------------|
-| 1 | COMPILER_GCC | use GCC to compile the code |
-| 2 | COMPILER_CLANG | use CLANG to compile the code |
-| 3 | DEBUG | enable debugging prints |
-| 4 | STATIC_BUILD | static build (does not work 100%) |
-| 5 | COMPILER_ARM | use ARM compiler (arm64) |
+| 1 | `COMPILER_GCC` | use GCC to compile the code |
+| 2 | `COMPILER_CLANG` | use CLANG to compile the code |
+| 3 | `DEBUG` | enable debugging prints |
+| 4 | `STATIC_BUILD` | static build (does not work 100%) |
+| 5 | `COMPILER_ARM` | use ARM compiler (arm64) |
+| 6 | `WITH_WOLFSSL` | With WolfSSL crypto library |
 
 ### Build configuration
 
