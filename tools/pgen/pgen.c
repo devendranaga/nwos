@@ -86,6 +86,7 @@ static void pgen_set_defaults()
     pgen.eth_enable     = false;
     pgen.arp_enable     = false;
     pgen.ipv4_enable    = false;
+    pgen.crypto_ctx     = netos_crypto_ctx_initialize();
 }
 
 static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)

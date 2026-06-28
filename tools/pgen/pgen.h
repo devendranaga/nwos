@@ -10,6 +10,7 @@
 #include "udp_hdr.h"
 #include "icmp_hdr.h"
 #include "raw_socket.h"
+#include "crypto_ctx.h"
 
 /**
  * @brief - Defines pgen context.
@@ -30,6 +31,7 @@ struct pgen {
     char                        *ifname;
     uint32_t                    len;
     netos_raw_socket_ctx_t      *raw;
+    netos_crypto_ctx_t          *crypto_ctx;
 };
 
 #endif

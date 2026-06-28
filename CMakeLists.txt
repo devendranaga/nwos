@@ -53,6 +53,16 @@ SET(PLATFORM_SRC
     ./common/common.c
     ./logging/netos_log.c)
 
+set(CRYPTO_SRC
+    ./crypto/crypto_intf.c)
+
+if(WITH_WOLFSSL)
+    set(CRYPTO_SRC
+        ${CRYPTO_SRC}
+        ./crypto/crypto_wolfssl_intf.c)
+    set(CRYPTO_LINKER_FLAGS "wolfssl")
+endif()
+
 SET(EVENT_SRC
     ./events/event_mgr.c
     ./events/event_buffer.c)
@@ -86,6 +96,7 @@ include_directories(
                 ./statistics/
                 ./core/
                 ./switching/
+                ./crypto/
                 /usr/include/libxml2/
                 ./tools/pgen/)
 
@@ -113,8 +124,10 @@ if(STATIC_BUILD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 
+add_library(netos_crypto STATIC ${CRYPTO_SRC})
+
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
-target_link_libraries(netos_pgen PRIVATE pthread netos)
+target_link_libraries(netos_pgen PRIVATE pthread netos netos_crypto ${CRYPTO_LINKER_FLAGS})
 
 add_executable(netosd ${NETOS_SRC})
 
