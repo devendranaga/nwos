@@ -25,7 +25,7 @@ SET(PROTOCOL_SRC
     ./protocols/eth.c
     ./protocols/arp_parse.c
     ./protocols/vlan.c
-    ./protocols/macsec.c
+    ./protocols/macsec_parse.c
     ./protocols/ipv4_parse.c
     ./protocols/ipv6_parse.c
     ./protocols/tcp_parse.c

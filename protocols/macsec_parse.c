@@ -45,3 +45,32 @@ netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t 
 
     return ret;
 }
+
+netos_status_t netos_macsec_encode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->buffer[pkt_buf->offset] = macsec_hdr->tci_an.v     << 7;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.es   << 6;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.sc   << 5;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.scb  << 4;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.e    << 3;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.c    << 2;
+    pkt_buf->buffer[pkt_buf->offset] |= macsec_hdr->tci_an.an;
+    pkt_buf->offset ++;
+
+    macsec_hdr->hdr_len = 0;
+
+    pkt_buffer_encode_byte(pkt_buf, macsec_hdr->sl);
+    if (macsec_hdr->tci_an.sc) {
+        pkt_buffer_encode_bytes(pkt_buf, macsec_hdr->sci, NETOS_MACSEC_SCI_LEN);
+        macsec_hdr->hdr_len += NETOS_MACSEC_SCI_LEN;
+    }
+
+    pkt_buffer_encode_4_bytes(pkt_buf, macsec_hdr->pn);
+    pkt_buffer_encode_2_bytes(pkt_buf, macsec_hdr->ethertype);
+    macsec_hdr->hdr_len += NETOS_MACSEC_MIN_HDR_LEN;
+
+    // caller must fill the tag in the caller after the GCM / GMAC
+
+    return NETOS_STATUS_SUCCESS;
+}
+

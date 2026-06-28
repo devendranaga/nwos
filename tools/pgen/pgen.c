@@ -26,6 +26,7 @@ static void pgen_eth_run();
 static void pgen_arp_run();
 static void pgen_ipv4_run();
 static void pgen_icmp_run();
+static void pgen_macsec_run();
 
 static struct {
     const char  *str;
@@ -56,6 +57,12 @@ static struct {
         "ICMP based frame generations",
         false,
         pgen_icmp_run
+    },
+    {
+        "macsec",
+        "MACsec based frame generations",
+        false,
+        pgen_macsec_run
     }
 };
 
@@ -66,6 +73,7 @@ static void pgen_set_defaults()
     const uint16_t ethertype    = 0x0800;
     const uint32_t src_ipaddr   = 0xc0a8000a; // 192.168.0.10
     const uint32_t dst_ipaddr   = 0xc0a80001; // 192.168.0.1
+    const uint8_t sci[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
     NETOS_ETH_DEFAULTS(pgen.eth_hdr, dst, src, ethertype);
 
@@ -77,6 +85,8 @@ static void pgen_set_defaults()
 
     NETOS_ICMP_ECHO_REQ_DEFAULTS(pgen.icmp_hdr, 0x1234, 0x1234);
 
+    NETOS_MACSEC_DEFAULTS(pgen.macsec_hdr, 0, sci, 1, 0, 0, 1, 1, 0);
+
     // default transmit params
     pgen.ifname         = NULL;
     pgen.raw            = NULL;
@@ -87,6 +97,58 @@ static void pgen_set_defaults()
     pgen.arp_enable     = false;
     pgen.ipv4_enable    = false;
     pgen.crypto_ctx     = netos_crypto_ctx_initialize();
+    if (!pgen.crypto_ctx) {
+        return;
+    }
+
+    pgen.gcm_ctx        = netos_crypto_init_gmac(pgen.crypto_ctx);
+    if (!pgen.gcm_ctx) {
+        return;
+    }
+}
+
+static void set_macsec_enable(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    pgen.macsec_enable                  = true;
+    pgen_run_callback_list[4].enable    = true;
+}
+
+static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    netos_crypto_key_t key;
+
+    memset(&key, 0, sizeof(key));
+    key.key_len = 32;
+    ret = netos_crypto_set_gmac_key(pgen.crypto_ctx,
+                                    pgen.gcm_ctx,
+                                    &key);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "failed to set key\n");
+        return;
+    }
+}
+
+static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if (!strcmp(tokens[1].name, "on")) {
+        pgen.macsec_hdr.tci_an.e = 1;
+    } else if (!strcmp(tokens[1].name, "off")) {
+        pgen.macsec_hdr.tci_an.e = 0;
+    } else {
+        fprintf(stderr, "invalid encrypt mode value <%s>\n", tokens[1].name);
+    }
+}
+
+static void set_macsec_changed(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if (!strcmp(tokens[1].name, "on")) {
+        pgen.macsec_hdr.tci_an.c = 1;
+    } else if (!strcmp(tokens[1].name, "off")) {
+        pgen.macsec_hdr.tci_an.c = 0;
+    } else {
+        fprintf(stderr, "invalid changed mode value <%s>\n", tokens[1].name);
+    }
 }
 
 static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -559,6 +621,54 @@ static void pgen_icmp_run()
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 }
 
+static void pgen_macsec_run()
+{
+    uint8_t data_buf[1024] = {0};
+    pkt_buffer_t pkt_buf;
+    netos_status_t ret;
+    uint8_t iv[12] = {0};
+    uint8_t tag[16] = {0};
+
+    pkt_buffer_initialize(&pkt_buf);
+    pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_MACSEC;
+    netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+
+    pgen.macsec_hdr.hdr_len = 0;
+    pgen.macsec_hdr.sl = 0;
+    pgen.macsec_hdr.data = data_buf;
+    if (pgen.len < 48) {
+        pgen.macsec_hdr.sl = pgen.len;
+    }
+
+    uint16_t aad_off_start = pkt_buf.offset;
+
+    netos_macsec_encode(&pgen.macsec_hdr, &pkt_buf);
+    memcpy(data_buf, &pkt_buf.buffer[aad_off_start], pgen.macsec_hdr.hdr_len);
+
+    if ((pgen.macsec_hdr.tci_an.e == 0) &&
+        (pgen.macsec_hdr.tci_an.c == 1)) {
+        netos_crypto_aes_gmac_params_t gmac_params = {
+            .aad = data_buf,
+            .aad_len = pgen.macsec_hdr.hdr_len + pgen.len,
+            .iv = iv,
+            .tag = tag,
+        };
+        ret = netos_crypto_generate_gmac(pgen.crypto_ctx,
+                                         pgen.gcm_ctx,
+                                         &gmac_params);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            printf("failed to crypto GMAC\n");
+            return;
+        }
+    }
+
+    pkt_buffer_encode_bytes(&pkt_buf, &data_buf[pgen.macsec_hdr.hdr_len], pgen.len);
+    pkt_buffer_encode_bytes(&pkt_buf, tag, 16);
+
+    pkt_buffer_set_tx_len_default(&pkt_buf);
+    netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+}
+
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
@@ -650,6 +760,11 @@ static const struct {
     { ICMP_ID_CMD,          ICMP_ID_STR,            set_icmp_id },
     { ICMP_SEQ_CMD,         ICMP_SEQ_STR,           set_icmp_seq },
     { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+    { MACSEC_ENABLE_CMD,    MACSEC_ENABLE_STR,      set_macsec_enable },
+    { MACSEC_KEY_CMD,       MACSEC_KEY_STR,         set_macsec_key },
+    { MACSEC_ENCRYPT_CMD,   MACSEC_ENCRYPT_STR,     set_macsec_encrypt },
+    { MACSEC_CHANGED_CMD,   MACSEC_CHANGED_STR,     set_macsec_changed },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { IPG_CMD,              IPG_STR,                set_ipg },
     { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },
     { LEN_CMD,              LEN_STR,                set_packet_len },
@@ -718,6 +833,10 @@ int main(int argc, char **argv)
 
         uint32_t len = strlen(buf) - 1;
         buf[len] = '\0';
+
+        if (len < 1) {
+            continue;
+        }
 
         struct pgen_token tokens[10];
         uint32_t n_tokens;

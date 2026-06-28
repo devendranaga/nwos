@@ -9,6 +9,7 @@
 #include "tcp_hdr.h"
 #include "udp_hdr.h"
 #include "icmp_hdr.h"
+#include "macsec_hdr.h"
 #include "raw_socket.h"
 #include "crypto_ctx.h"
 
@@ -21,17 +22,20 @@ struct pgen {
     netos_arp_hdr_t             arp_hdr;
     netos_ipv4_hdr_t            ipv4_hdr;
     netos_icmp_hdr_t            icmp_hdr;
+    netos_macsec_hdr_t          macsec_hdr;
     bool                        eth_enable;
     bool                        vlan_enable;
     bool                        arp_enable;
     bool                        ipv4_enable;
     bool                        icmp_enable;
+    bool                        macsec_enable;
     uint64_t                    ipg_ns;
     uint32_t                    n_frames;
     char                        *ifname;
     uint32_t                    len;
     netos_raw_socket_ctx_t      *raw;
     netos_crypto_ctx_t          *crypto_ctx;
+    void                        *gcm_ctx;
 };
 
 #endif
