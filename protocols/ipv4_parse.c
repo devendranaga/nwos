@@ -6,6 +6,7 @@
 #include "ipv4_hdr.h"
 #include "checksum.h"
 #include "event_info.h"
+#include "netos_log.h"
 
 netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_buf)
 {
@@ -160,5 +161,27 @@ netos_status_t netos_ipv4_encode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     }
 
     return NETOS_STATUS_SUCCESS;
+}
+
+void netos_ipv4_print(netos_ipv4_hdr_t *ipv4_hdr)
+{
+    netos_log_debug("IPv4: {\n");
+    netos_log_debug("\t version: %d\n", ipv4_hdr->version);
+    netos_log_debug("\t ihl: %d\n", ipv4_hdr->header_len);
+    netos_log_debug("\t dscp: %d\n", ipv4_hdr->dscp);
+    netos_log_debug("\t ecn: %d\n", ipv4_hdr->ecn);
+    netos_log_debug("\t total_len: %d\n", ipv4_hdr->total_len);
+    netos_log_debug("\t id: %d\n", ipv4_hdr->identification);
+    netos_log_debug("\t flags:\n");
+    netos_log_debug("\t\t reserved: %d\n", ipv4_hdr->flags.reserved);
+    netos_log_debug("\t\t dont_fragment: %d\n", ipv4_hdr->flags.dont_fragment);
+    netos_log_debug("\t\t more_fragment: %d\n", ipv4_hdr->flags.more_fragment);
+    netos_log_debug("\t\t frag_off: %d\n", ipv4_hdr->flags.frag_off);
+    netos_log_debug("\t ttl: %d\n", ipv4_hdr->ttl);
+    netos_log_debug("\t protocol: %d\n", ipv4_hdr->protocol);
+    netos_log_debug("\t hdr_chksum: 0x%04x\n", ipv4_hdr->hdr_chksum);
+    netos_log_debug("\t src_ipaddr: 0x%x\n", ipv4_hdr->src_ipaddr);
+    netos_log_debug("\t dst_ipaddr: 0x%x\n", ipv4_hdr->dst_ipaddr);
+    netos_log_debug("}\n");
 }
 

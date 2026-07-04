@@ -23,9 +23,6 @@ if len(sys.argv) != 4:
 ifname_str = sys.argv[2]
 n_ifname = int(sys.argv[3])
 
-print(n_ifname)
-print(sys.argv[1] + " " + sys.argv[2])
-
 for i in range(n_ifname):
     ifname = ifname_str + str(i)
     if sys.argv[1] == "create":

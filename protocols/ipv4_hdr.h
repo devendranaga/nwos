@@ -80,6 +80,13 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
  */
 netos_status_t netos_ipv4_encode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_buf);
 
+/**
+ * @brief - Print IPv4 header.
+ *
+ * @param [in] ipv4_hdr - IPv4 header.
+ */
+void netos_ipv4_print(netos_ipv4_hdr_t *ipv4_hdr);
+
 #if defined(__cplusplus)
 }
 #endif

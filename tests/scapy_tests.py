@@ -6,16 +6,30 @@ from scapy.all import *
 def run_icmp6(ifname):
     sendp(Ether()/IPv6(dst="ff02::1")/ICMPv6EchoRequest(), iface=ifname)
 
+def run_icmp(ifname):
+    sendp(Ether()/IP(dst="192.168.0.1")/ICMP(id=8, seq=1) / "Payload", iface=ifname)
+
 def run_udp(ifname):
     sendp(Ether()/IPv6(dst="ff02::1")/UDP(dport=8000), iface=ifname)
 
+def run_udp4(ifname):
+    sendp(Ether()/IP(dst="192.168.0.1")/UDP(dport=8000), iface=ifname)
+
 def run_tcp(ifname):
     sendp(Ether()/IPv6(dst="ff02::1")/TCP(dport=80, flags="S"), iface=ifname)
+
+def run_tcp4(ifname):
+    sendp(Ether()/IP(dst="192.168.0.1")/TCP(dport=80, flags="S"), iface=ifname)
 
 def run_ipv6_tests(ifname):
     run_tcp(ifname)
     run_udp(ifname)
     run_icmp6(ifname)
+
+def run_ipv4_tests(ifname):
+    run_tcp4(ifname)
+    run_udp4(ifname)
+    run_icmp(ifname)
 
 def main():
     parser = argparse.ArgumentParser(description="Argument parser for netos tests")
@@ -26,6 +40,7 @@ def main():
     args = parser.parse_args()
 
     run_ipv6_tests(args.interface)
+    run_ipv4_tests(args.interface)
 
 if __name__ == "__main__":
     main()

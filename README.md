@@ -102,6 +102,33 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Tooling: when test finishes, reset the PN
 - [ ] Tooling: MACsec: setting any TCI bits via command line
 - [ ] Tooling: IPv4 over MACsec
+- [ ] bfifo queueing discipline
+- [ ] Tooling: IPv6 frame generation
+- [ ] Tooling: UDP over IPV4
+- [ ] Tooling: UDP over IPv6
+- [ ] Tooling: TCP over IPV4
+- [ ] Tooling: TCP over IPv6
+- [ ] Tooling: packet capturing tooling
+- [ ] UDP generation over IPv4
+- [ ] UDP generation over IPv6
+- [ ] TCP generation over IPv4
+- [ ] TCP generation over IPv6
+- [ ] stateful NAT implementation
+- [ ] stateful NAT64 implementation
+- [ ] IPv4 options parsing
+- [ ] DHCP frame parsing
+- [ ] DHCP frame serialization
+- [ ] DHCPv6 frame parsing
+- [ ] DHCPv6 frame serialization
+- [ ] DNS frame parsing
+- [ ] DNS frame serializataion
+- [ ] EAPOL-MKA frame parsing
+- [ ] EAPOL-MKA frame serialization
+- [ ] MKA key generation
+- [ ] Cipher: CMAC routine interface
+- [ ] Cipher: WolfSSL CMAC interface
+- [ ] 8021br frame parsing
+- [ ] 8021br frame serialization
 
 ## Done
 

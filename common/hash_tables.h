@@ -5,9 +5,9 @@
 #include <stdint.h>
 
 typedef uint32_t (*hash_fn)(void *key);
-typedef bool (*for_each_fn)(void *ctx, void *key, void *val);
-typedef bool (*del_fn)(void *key, void *val);
-typedef bool (*cmp_fn)(void *key1, void *key2);
+typedef bool     (*for_each_fn)(void *ctx, void *key, void *val);
+typedef bool     (*del_fn)(void *key, void *val);
+typedef bool     (*cmp_fn)(void *key1, void *key2);
 
 typedef struct netos_hash_item {
     void *key;
