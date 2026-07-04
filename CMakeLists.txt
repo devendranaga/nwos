@@ -42,6 +42,7 @@ SET(PLATFORM_SRC
     ./platform/lib/raw_socket.c
     ./platform/lib/net_ioctl.c
     ./platform/lib/pthread_intf.c
+    ./platform/lib/cpu_affinity.c
     ./platform/lib/mmap_intf.c
     ./platform/gcd/gcd.c
     ./common/hash_tables.c

@@ -7,6 +7,7 @@
 #include "arp.h"
 #include "netos_log.h"
 #include "netos_config.h"
+#include "cpu_affinity.h"
 #include "perf_intf.h"
 #include "netos_main.h"
 
@@ -221,6 +222,22 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     }
 
     netos_log_info("Created rx thread on interface [%s]\n", intf->ifname);
+
+    ret = netos_attach_thread_to_cpu(0, &intf->rx_thread);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to attach rx thread to cpu 0\n");
+        goto err;
+    }
+
+    netos_log_info("Attach rx thread on [%s] to CPU 0\n", intf->ifname);
+
+    ret = netos_attach_thread_to_cpu(1, &intf->parser_thr->tid);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to attach parser thread to cpu 1\n");
+        goto err;
+    }
+
+    netos_log_info("Attach parser thread on [%s] to CPU 1\n", intf->ifname);
 
     return intf;
 
