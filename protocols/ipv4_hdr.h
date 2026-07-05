@@ -42,6 +42,16 @@ typedef struct netos_ipv4_hdr {
     uint32_t            dst_ipaddr;
 } netos_ipv4_hdr_t;
 
+/**
+ * @brief - Set the IPv4 header defaults.
+ *
+ * @param [out] __ipv4_hdr - IPv4 header.
+ * @param [in] __total_len - total length.
+ * @param [in] __id - IPv4 id.
+ * @param [in] __protocol - IPv4 protocol.
+ * @param [in] __src_ipaddr - IPv4 src ip address.
+ * @param [in] __dst_ipaddr - IPV4 dst ip address.
+ */
 #define NETOS_IPV4_DEFAULTS(__ipv4_hdr, __total_len, __id, __protocol, __src_ipaddr, __dst_ipaddr) do {\
     (__ipv4_hdr).version                = NETOS_IPV4_VERSION;\
     (__ipv4_hdr).header_len             = (NETOS_IPV4_HDR_LEN_DEFAULT / 4);\

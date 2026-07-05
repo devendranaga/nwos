@@ -27,6 +27,7 @@ static void pgen_arp_run();
 static void pgen_ipv4_run();
 static void pgen_icmp_run();
 static void pgen_macsec_run();
+static void pgen_pcap_run();
 
 static struct {
     const char  *str;
@@ -63,6 +64,12 @@ static struct {
         "MACsec based frame generations",
         false,
         pgen_macsec_run
+    },
+    {
+        "pcap",
+        "Replay pcap",
+        false,
+        pgen_pcap_run
     }
 };
 
@@ -96,6 +103,7 @@ static void pgen_set_defaults()
     pgen.eth_enable     = false;
     pgen.arp_enable     = false;
     pgen.ipv4_enable    = false;
+    pgen.pcap_ctx       = NULL;
     pgen.crypto_ctx     = netos_crypto_ctx_initialize();
     if (!pgen.crypto_ctx) {
         return;
@@ -103,6 +111,23 @@ static void pgen_set_defaults()
 
     pgen.gcm_ctx        = netos_crypto_init_gmac(pgen.crypto_ctx);
     if (!pgen.gcm_ctx) {
+        return;
+    }
+}
+
+static void set_pcap_enable(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    pgen_run_callback_list[5].enable = true;
+}
+
+static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if (pgen.pcap_ctx) {
+        netos_pcap_close_file(pgen.pcap_ctx);
+    }
+
+    pgen.pcap_ctx = netos_pcap_read_file(tokens[1].name);
+    if (!pgen.pcap_ctx) {
         return;
     }
 }
@@ -392,24 +417,50 @@ static void set_arp_enable(struct pgen_token *tokens, uint32_t n_tokens)
     pgen_run_callback_list[1].enable = true;
 }
 
+static inline void set_arp_sha_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "arp.sha <mac-address> - sets the sender hw addess\n"
+                    "Example: arp.sha 01:01:02:03:04:05\n");
+}
+
 static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
+    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+        set_arp_sha_help();
+        return;
+    }
+
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.sender_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.sha value <%s>\n", tokens[1].name);
+        set_arp_sha_help();
         return;
     }
+}
+
+static inline void set_arp_spa_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "arp.spa <ipv4-address> - sets the sender protocol address\n"
+                    "Example: arp.spa 192.168.0.1\n");
 }
 
 static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
+    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+        set_arp_spa_help();
+        return;
+    }
+
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.sender_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.spa value <%s>\n", tokens[1].name);
+        set_arp_spa_help();
         return;
     }
 
@@ -669,6 +720,43 @@ static void pgen_macsec_run()
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 }
 
+static void pgen_pcap_run()
+{
+    pkt_buffer_t pkt_buf;
+    netos_pcap_packet_header_t pkt_hdr;
+    uint32_t n_replayed = 0;
+    netos_status_t ret;
+
+    do {
+        pkt_buffer_initialize(&pkt_buf);
+
+        ret = netos_pcap_read_file_entry(pgen.pcap_ctx, &pkt_hdr, pkt_buf.buffer);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            if (ret == NETOS_STATUS_PCAP_EOF) {
+                fprintf(stderr, "end of pcap record\n");
+            } else {
+                fprintf(stderr, "invalid pcap record\n");
+            }
+            break;
+        }
+
+        pkt_buf.offset = pkt_hdr.incl_len;
+        pkt_buffer_set_tx_len_default(&pkt_buf);
+        netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+
+        n_replayed ++;
+
+        struct timespec tp = {
+            .tv_sec  = 0,
+            .tv_nsec = pgen.ipg_ns,
+        };
+
+        clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+    } while (1);
+
+    fprintf(stderr, "Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
+}
+
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
@@ -701,19 +789,23 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
         return;
     }
 
-    for (i = 0; i < pgen.n_frames; i ++) {
+    // pcap config is enabled
+    if (pgen_run_callback_list[5].enable) {
+        pgen_run_callback_list[5].callback();
+    } else {
+        for (i = 0; i < pgen.n_frames; i ++) {
 
-        callback_ptr();
+            callback_ptr();
 
-        struct timespec tp = {
-            .tv_sec  = 0,
-            .tv_nsec = pgen.ipg_ns,
-        };
+            struct timespec tp = {
+                .tv_sec  = 0,
+                .tv_nsec = pgen.ipg_ns,
+            };
 
-        clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+            clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+            fprintf(stderr, "sent %d frames\n", pgen.n_frames);
+        }
     }
-
-    fprintf(stderr, "sent %d frames\n", pgen.n_frames);
 }
 
 static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
@@ -722,6 +814,9 @@ static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
     exit(1);
 }
 
+/**
+ * Defines a list of pgen callbacks for function implementations.
+ */
 static const struct {
     const char  *str;
     const char  *desc;
@@ -764,6 +859,9 @@ static const struct {
     { MACSEC_KEY_CMD,       MACSEC_KEY_STR,         set_macsec_key },
     { MACSEC_ENCRYPT_CMD,   MACSEC_ENCRYPT_STR,     set_macsec_encrypt },
     { MACSEC_CHANGED_CMD,   MACSEC_CHANGED_STR,     set_macsec_changed },
+    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+    { PCAP_ENABLE_CMD,      PCAP_ENABLE_STR,        set_pcap_enable },
+    { PCAP_OPEN_CMD,        PCAP_OPEN_STR,          set_pcap_open },
     { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { IPG_CMD,              IPG_STR,                set_ipg },
     { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },

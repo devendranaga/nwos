@@ -10,6 +10,7 @@
 #include "udp_hdr.h"
 #include "icmp_hdr.h"
 #include "macsec_hdr.h"
+#include "pcap_intf.h"
 #include "raw_socket.h"
 #include "crypto_ctx.h"
 
@@ -29,10 +30,12 @@ struct pgen {
     bool                        ipv4_enable;
     bool                        icmp_enable;
     bool                        macsec_enable;
+    bool                        pcap_enable;
     uint64_t                    ipg_ns;
     uint32_t                    n_frames;
     char                        *ifname;
     uint32_t                    len;
+    netos_pcap_context_t        *pcap_ctx;
     netos_raw_socket_ctx_t      *raw;
     netos_crypto_ctx_t          *crypto_ctx;
     void                        *gcm_ctx;

@@ -42,6 +42,19 @@ netos_icmp_decode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
 }
 
 static netos_status_t
+netos_icmp_encode_timestamp_req(netos_icmp_hdr_t *icmp_hdr,
+                                pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_req.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_req.seq_no);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.originate_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.receive_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.transmit_ts);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
 netos_icmp_decode_timestamp_req(netos_icmp_hdr_t *icmp_hdr,
                                 pkt_buffer_t *pkt_buf)
 {
@@ -92,6 +105,19 @@ netos_icmp_decode_timestamp_reply(netos_icmp_hdr_t *icmp_hdr,
 }
 
 static netos_status_t
+netos_icmp_encode_timestamp_reply(netos_icmp_hdr_t *icmp_hdr,
+                                  pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_reply.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_reply.seq_no);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.originate_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.receive_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.transmit_ts);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
 netos_icmp_encode_echo_request(netos_icmp_hdr_t *icmp_hdr,
                                pkt_buffer_t *pkt_buf)
 {
@@ -121,13 +147,17 @@ netos_icmp_encode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * @brief - defines a list of callbacks for encode and decode
+*           a list of icmp types and icmp codes.
+*/
 static const struct {
-    uint8_t type;
-    uint8_t code;
-    netos_status_t (*encode)(netos_icmp_hdr_t *icmp_hdr,
-                             pkt_buffer_t *pkt_buf);
-    netos_status_t (*decode)(netos_icmp_hdr_t *icmp_hdr,
-                             pkt_buffer_t *pkt_buf);
+    uint8_t         type;
+    uint8_t         code;
+    netos_status_t  (*encode)(netos_icmp_hdr_t *icmp_hdr,
+                              pkt_buffer_t *pkt_buf);
+    netos_status_t  (*decode)(netos_icmp_hdr_t *icmp_hdr,
+                              pkt_buffer_t *pkt_buf);
 } netos_icmp_callbacks[] = {
     {
         NETOS_ICMP_TYPE_ECHO_REQ,
@@ -144,13 +174,13 @@ static const struct {
     {
         NETOS_ICMP_TYPE_TIMESTAMP_REQ,
         NETOS_ICMP_CODE_TIMESTAMP_REQ,
-        NULL,
+        netos_icmp_encode_timestamp_req,
         netos_icmp_decode_timestamp_req
     },
     {
         NETOS_ICMP_TYPE_TIMESTAMP_REPLY,
         NETOS_ICMP_CODE_TIMESTAMP_REPLY,
-        NULL,
+        netos_icmp_encode_timestamp_reply,
         netos_icmp_decode_timestamp_reply
     }
 };
@@ -175,6 +205,9 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_decode_byte(pkt_buf, &icmp_hdr->code);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->checksum);
 
+    /**
+     * match type and code in the list of supported callbacks and call them.
+     */
     for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
         if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
             (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
@@ -222,6 +255,9 @@ netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
     checksum_off = pkt_buf->offset;
     pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->checksum);
 
+    /**
+     * match type and code and call the encode callback.
+     */
     for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
         if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
             (icmp_hdr->code == netos_icmp_callbacks[i].code) &&

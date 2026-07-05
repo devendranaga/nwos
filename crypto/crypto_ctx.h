@@ -12,8 +12,18 @@ typedef struct {
     const void *crypto_intf;
 } netos_crypto_ctx_t;
 
+/**
+ * @brief - initialize the crypto context and return it.
+ */
 netos_crypto_ctx_t *netos_crypto_ctx_initialize();
 
+/**
+ * @brief - initialize the GMAC context to operate on GMAC.
+ *
+ * @param [in] ctx - crypto context.
+ *
+ * @return returns gmac_ctx on success and NULL pointer on failure.
+ */
 void *netos_crypto_init_gmac(netos_crypto_ctx_t *ctx);
 
 netos_status_t

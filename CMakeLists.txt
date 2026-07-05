@@ -45,6 +45,7 @@ SET(PLATFORM_SRC
     ./platform/lib/cpu_affinity.c
     ./platform/lib/mmap_intf.c
     ./platform/gcd/gcd.c
+    ./platform/lib/pcap_intf.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c

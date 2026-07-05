@@ -37,6 +37,12 @@ typedef struct netos_intf {
     struct netos_intf           *next;
 } netos_intf_t;
 
+/**
+ * @brief - Defines a netos context.
+ *
+ * Almost all of the initialization and non static global contexts
+ * come from here.
+ */
 typedef struct netos_ctx {
     netos_cmdargs_t     cmdargs;
     network_config_t    config;
