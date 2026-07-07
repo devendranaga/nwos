@@ -1,8 +1,10 @@
 # Core build configuration
 OUTPUT_DIRECTORY       = docs
-GENERATE_HTML          = YES
-GENERATE_LATEX         = NO
+GENERATE_HTML          = NO
+GENERATE_XML           = YES
 RECURSIVE              = YES
+INPUT                  = .
+FILE_PATTERNS          = *.c *.h
 
 # Force Doxygen to look everywhere in your repository
 INPUT                  = .
