@@ -183,7 +183,12 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
     }
 
     memset(&key, 0, sizeof(key));
-    (void)fread(key.key, 1, s.st_size, key_fp);
+    res = fread(key.key, 1, s.st_size, key_fp);
+    if (res == 0) {
+        fprintf(stderr, "invalid macsec keyfile\n");
+        fclose(key_fp);
+        return;
+    }
     fclose(key_fp);
 
     if ((s.st_size != 16) && (s.st_size != 32)) {
