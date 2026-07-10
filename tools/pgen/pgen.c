@@ -5,6 +5,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <sys/stat.h>
 #include "netos_status.h"
 #include "common.h"
 #include "pkt_buffer.h"
@@ -29,6 +30,11 @@ static void pgen_icmp_run();
 static void pgen_macsec_run();
 static void pgen_pcap_run();
 
+/**
+ * @brief - Defines a set of registered run callbacks.
+ *
+ * These are only called when they are enabled during the "run" command.
+ */
 static struct {
     const char  *str;
     const char  *desc;
@@ -73,6 +79,9 @@ static struct {
     }
 };
 
+/**
+ * @brief - set defaults for the all the headers and protocols.
+ */
 static void pgen_set_defaults()
 {
     const uint8_t dst[]         = {0x00, 0x01, 0x02, 0x03, 0x04, 0x01};
@@ -120,16 +129,31 @@ static void set_pcap_enable(struct pgen_token *tokens, uint32_t n_tokens)
     pgen_run_callback_list[5].enable = true;
 }
 
+static inline void set_pcap_open_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "pcap.open <pcap file>\n"
+                    "Ex: pcap.open macsec_replay.pcap\n");
+}
+
 static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
 {
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_pcap_open_help();
+        return;
+    }
+
     if (pgen.pcap_ctx) {
         netos_pcap_close_file(pgen.pcap_ctx);
     }
 
     pgen.pcap_ctx = netos_pcap_read_file(tokens[1].name);
     if (!pgen.pcap_ctx) {
+        fprintf(stderr, "failed to open the pcap file for reading: %s\n", tokens[1].name);
         return;
     }
+
+    fprintf(stderr, "pcap file [%s] opened\n", tokens[1].name);
 }
 
 static void set_macsec_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -142,14 +166,37 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
     netos_crypto_key_t key;
+    FILE *key_fp;
+    struct stat s;
+    int res;
+
+    res = stat(tokens[1].name, &s);
+    if (res != 0) {
+        fprintf(stderr, "cannot find <%s>\n", tokens[1].name);
+        return;
+    }
+
+    key_fp = fopen(tokens[1].name, "rb");
+    if (!key_fp) {
+        fprintf(stderr, "cannot open <%s> for reading\n", tokens[1].name);
+        return;
+    }
 
     memset(&key, 0, sizeof(key));
-    key.key_len = 32;
+    fread(key.key, 1, s.st_size, key_fp);
+    fclose(key_fp);
+
+    if ((s.st_size != 16) && (s.st_size != 32)) {
+        fprintf(stderr, "key cannot be %ld, it must be either 16 or 32\n", s.st_size);
+        return;
+    }
+
+    key.key_len = s.st_size;
     ret = netos_crypto_set_gmac_key(pgen.crypto_ctx,
                                     pgen.gcm_ctx,
                                     &key);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "failed to set key\n");
+        fprintf(stderr, "failed to set key <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -803,8 +850,8 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
             };
 
             clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
-            fprintf(stderr, "sent %d frames\n", pgen.n_frames);
         }
+        fprintf(stderr, "sent %d frames\n", pgen.n_frames);
     }
 }
 

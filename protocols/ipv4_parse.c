@@ -131,10 +131,10 @@ netos_status_t netos_ipv4_encode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
 
     pkt_buffer_encode_2_bytes(pkt_buf, ipv4_hdr->total_len);
     pkt_buffer_encode_2_bytes(pkt_buf, ipv4_hdr->identification);
-    pkt_buf->buffer[pkt_buf->offset] = (ipv4_hdr->flags.reserved << 8);
-    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.dont_fragment << 7);
-    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.more_fragment << 6);
-    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.frag_off & 0x1f00);
+    pkt_buf->buffer[pkt_buf->offset] = (ipv4_hdr->flags.reserved << 7);
+    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.dont_fragment << 6);
+    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.more_fragment << 5);
+    pkt_buf->buffer[pkt_buf->offset] |= (ipv4_hdr->flags.frag_off & 0x1f00) >> 8;
     pkt_buf->offset ++;
 
     pkt_buf->buffer[pkt_buf->offset] = ipv4_hdr->flags.frag_off & 0x00FF;

@@ -30,7 +30,6 @@ struct pgen {
     bool                        ipv4_enable;
     bool                        icmp_enable;
     bool                        macsec_enable;
-    bool                        pcap_enable;
     uint64_t                    ipg_ns;
     uint32_t                    n_frames;
     char                        *ifname;

@@ -77,7 +77,7 @@ netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *rr)
     pthread_cond_init(&rr->rr_cond, NULL);
 
     // create rr tx thread for the 8 queues
-    ret = netos_pthread_create_detached(&rr->rr_tid, netos_egress_rr_tx_queue_thread, rr);
+    ret = netos_pthread_create_detached(&rr->rr_tid, 1, netos_egress_rr_tx_queue_thread, rr);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }

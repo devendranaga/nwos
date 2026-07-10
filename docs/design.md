@@ -81,3 +81,12 @@ Routing must always be done with longest prefix match first. Gemini says `Radix 
 **Reassembly**
 
 
+## Tooling
+
+### Packet generator
+
+**Design**
+
+1. A simple console is provided to enter in commands.
+2. User presented with some set of executable commands.
+3. 

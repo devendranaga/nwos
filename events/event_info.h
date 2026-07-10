@@ -75,20 +75,25 @@ typedef struct netos_event_info {
 } netos_event_info_t;
 
 /**
- * @brief - Initializes the event info structure.
+ * @brief - Initializes the event type and description.
  */
 #define NETOS_EVENT_INIT(__evt_type, __evt_desc) do {\
     __evt_type = NETOS_EVENT_TYPE_INVAL;\
     __evt_desc = NETOS_EVENT_DESC_INVAL;\
 } while (0)
 
+/**
+ * @brief - Initialize the event info structure.
+ *
+ * @param [in] __evt_info - initialize the event info structure.
+ */
 #define NETOS_EVENT_INFO_INIT(__evt_info) do {\
-    (__evt_info)->s.type = NETOS_EVENT_TYPE_INVAL;\
-    (__evt_info)->s.desc = NETOS_EVENT_DESC_INVAL;\
+    (__evt_info)->s.type        = NETOS_EVENT_TYPE_INVAL;\
+    (__evt_info)->s.desc        = NETOS_EVENT_DESC_INVAL;\
     memset((__evt_info)->s.ifname, 0, sizeof((__evt_info)->ifname));\
-    (__evt_info)->s.sec = 0;\
-    (__evt_info)->s.nsec = 0;\
-    (__evt_info)->s.frame_len = 0;\
+    (__evt_info)->s.sec         = 0;\
+    (__evt_info)->s.nsec        = 0;\
+    (__evt_info)->s.frame_len   = 0;\
 } while (0)
 
 /**
@@ -99,13 +104,24 @@ typedef struct netos_event_info {
  */
 #define NETOS_STRING_COPY(__dst, __src) do {\
     uint32_t __i = 0;\
-    while ((*(__src) != '\0')) {\
+    while ((__src) && (*(__src) != '\0')) {\
         (__dst)[__i] = *(__src);\
         __i ++;\
-        __src++;\
+        __src ++;\
     }\
 } while (0)
 
+/**
+ * @brief - Create an Event info structure.
+ *
+ * @param [out] __evt_info - Event Info.
+ * @param [in] __ifname - interface name.
+ * @param [in] __sec - timestamp seconds.
+ * @param [in] __nsec - timestamp nanoseconds.
+ * @param [in] __evt_type - event type.
+ * @param [in] __evt_desc - event description.
+ * @param [in] __frame_len - frame length.
+ */
 #define NETOS_EVENT_INFO_CREATE(__evt_info, __ifname,\
                                 __sec, __nsec,\
                                 __evt_type, __evt_desc,\
@@ -114,10 +130,13 @@ typedef struct netos_event_info {
     (__evt_info)->s.desc        = __evt_desc;\
     (__evt_info)->s.sec         = __sec;\
     (__evt_info)->s.nsec        = __nsec;\
-    NETOS_STRING_COPY((__evt_info)->s.ifname, ifname);\
+    NETOS_STRING_COPY((__evt_info)->s.ifname, __ifname);\
     (__evt_info)->s.frame_len   = __frame_len;\
 } while (0)
 
+/**
+ * @brief - Add an event.
+ */
 #define NETOS_EVENT_INFO_ADD_EVENT(__evt_head, __evt_tail, __evt_info) do {\
     if (!__evt_head) {\
         __evt_head = __evt_info;\
@@ -128,11 +147,16 @@ typedef struct netos_event_info {
     }\
 } while (0)
 
+/**
+ * @brief - Delete an event from head. Move the head to next element.
+ */
 #define NETOS_EVENT_INFO_DEL_EVENT_HEAD(__evt_head) do {\
     struct netos_event_info *item;\
     item = (__evt_head);\
-    (__evt_head) = (__evt_head)->next;\
-    free(item);\
+    if (__evt_head) {\
+        (__evt_head) = (__evt_head)->next;\
+        free(item);\
+    }\
 } while (0)
 
 #endif

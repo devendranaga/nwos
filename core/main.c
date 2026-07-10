@@ -129,9 +129,6 @@ static void *netos_intf_parse_callback(void *cbdata)
                 continue;
             }
 
-            // stats increment
-            parse_thr->if_stats.in_rx_bytes += pkt->rx_len;
-
             // parse the frame
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
@@ -206,7 +203,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     intf->next = NULL;
 
     // create parse thread
-    ret = netos_pthread_create_detached(&intf->parser_thr->tid, netos_intf_parse_callback, intf->parser_thr);
+    ret = netos_pthread_create_detached(&intf->parser_thr->tid, 1, netos_intf_parse_callback, intf->parser_thr);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to create rx parse thread\n");
         goto err;
@@ -215,29 +212,13 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     netos_log_info("Created rx parse thread\n");
 
     // create receive thread
-    ret = netos_pthread_create_detached(&intf->rx_thread, netos_intf_rx_callback, intf);
+    ret = netos_pthread_create_detached(&intf->rx_thread, 0, netos_intf_rx_callback, intf);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to create rx thread on [%s]\n", intf->ifname);
         goto err;
     }
 
     netos_log_info("Created rx thread on interface [%s]\n", intf->ifname);
-
-    ret = netos_attach_thread_to_cpu(0, &intf->rx_thread);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        netos_log_error("failed to attach rx thread to cpu 0\n");
-        goto err;
-    }
-
-    netos_log_info("Attach rx thread on [%s] to CPU 0\n", intf->ifname);
-
-    ret = netos_attach_thread_to_cpu(1, &intf->parser_thr->tid);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        netos_log_error("failed to attach parser thread to cpu 1\n");
-        goto err;
-    }
-
-    netos_log_info("Attach parser thread on [%s] to CPU 1\n", intf->ifname);
 
     return intf;
 

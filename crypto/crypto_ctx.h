@@ -26,11 +26,29 @@ netos_crypto_ctx_t *netos_crypto_ctx_initialize();
  */
 void *netos_crypto_init_gmac(netos_crypto_ctx_t *ctx);
 
+/**
+ * @brief - Set the GMAC keys.
+ *
+ * @param [in] ctx - crypto context.
+ * @param [in] gmac_ctx - GMAC context.
+ * @param [in] key - Crypto key.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t
 netos_crypto_set_gmac_key(netos_crypto_ctx_t *ctx,
                           void *gmac_ctx,
                           netos_crypto_key_t *key);
 
+/**
+ * @brief - Generate the GMAC.
+ *
+ * @param [in] ctx - crypto context.
+ * @param [in] gmac_ctx - GMAC context.
+ * @param [in] params - GMAC params.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t
 netos_crypto_generate_gmac(netos_crypto_ctx_t *ctx,
                            void *gmac_ctx,

@@ -45,6 +45,10 @@ void netos_dll_for_each(netos_dll_impl_t *impl, void (*for_each_cb)(void *item))
 {
     netos_dll_t *dll = impl->head;
 
+    if (!dll) {
+        return;
+    }
+
     do {
         printf("head %p last %p dll %p\n", impl->head, impl->last, dll);
         if (for_each_cb) {

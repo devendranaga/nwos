@@ -22,8 +22,8 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
     netos_eth_hdr_t eth_h;
 
     NETOS_ETH_DEFAULTS(eth_h,
-                       pkt_parser->eh.dst,
                        pkt_parser->eh.src,
+                       pkt_parser->eh.dst,
                        NETOS_ETHERTYPE_ARP);
 
     NETOS_ARP_REPLY_DEFAULTS((&arp_h),
@@ -39,6 +39,12 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
     netos_arp_encode(&arp_h, pkt_buf);
 
     pkt_buffer_set_tx_len_default(pkt_buf);
+
+    pkt_buf->out_intf = pkt_buf->in_intf;
+
+    netos_egress_enque(pkt_buf->out_intf->egress_ctrl,
+                       NETOS_EGRESS_ALG_SP,
+                       pkt_buf);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -85,12 +91,14 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
         goto unlock;
     }
 
-    // if there is an ARP reply process it
-    if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
+    // if there is an ARP request process it
+    if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REQUEST) {
         ret = netos_arp_rx_process_request(pkt_buf, pkt_parser);
         if (ret != NETOS_STATUS_SUCCESS) {
             goto unlock;
         }
+    } else if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
+        // check if packet destination mac and address is us.
     }
 
     // if sender's protocol address is known, add it. be it ARP request or reply
@@ -192,7 +200,7 @@ static void arp_do_request(netos_arp_entry_t *entry)
     netos_eth_encode(&eh, pkt_buf);
     netos_arp_encode(&arp_h, pkt_buf);
 
-    netos_egress_enque(entry->in_intf->egress_ctrl,
+    netos_egress_enque(pkt_buf->out_intf->egress_ctrl,
                        NETOS_EGRESS_ALG_RR,
                        pkt_buf);
 }
@@ -206,7 +214,7 @@ static bool arp_cache_invalidate(void *ctx, void *key, void *val)
     uint32_t cache_invalidation_sec = 30;
 
     clock_gettime(CLOCK_REALTIME, &cur);
-    NETOS_TIMESPEC_DELTA(cur, entry->last_updated, delta);
+    NETOS_TIMESPEC_DELTA(entry->last_updated, cur, delta);
 
     // perform repeated ARP requests until the entry is purged
     if (delta > cache_invalidation_sec) {

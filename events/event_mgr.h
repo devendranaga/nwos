@@ -5,6 +5,9 @@
 #include "gcd.h"
 #include "event_buffer.h"
 
+/**
+ * @brief - Defines an event manager.
+ */
 typedef struct netos_event_mgr {
     netos_event_buffer_t    *evt_buf;
     netos_event_info_t      *evt_list_head;

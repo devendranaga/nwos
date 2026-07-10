@@ -38,6 +38,13 @@ void *netos_egress_sp_tx_queue_thread(void *ctx)
 
                 // perform transmit of the packet
                 sp_item->pkt_buf = pkt_buf->next;
+
+                // egress the frame
+                if (pkt_buf->out_intf) {
+                    netos_raw_socket_tx(pkt_buf->out_intf,
+                                        pkt_buf->buffer,
+                                        pkt_buf->tx_len);
+                }
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
             }
         }
@@ -63,7 +70,7 @@ netos_status_t netos_egress_sp_init(netos_egress_sp_mgr_t *sp)
     pthread_cond_init(&sp->sp_cond, NULL);
 
     // create sp tx thread for the 8 queues
-    ret = netos_pthread_create_detached(&sp->sp_tid, netos_egress_sp_tx_queue_thread, sp);
+    ret = netos_pthread_create_detached(&sp->sp_tid, 1, netos_egress_sp_tx_queue_thread, sp);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }

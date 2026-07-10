@@ -8,22 +8,32 @@ extern "C" {
 #include <stdint.h>
 #include "netos_status.h"
 
+// macro definitions
 #define NETOS_CRYPTO_KEY_LEN_MAX        32
 #define NETOS_CRYPTO_IV_LEN_DEFAULT     12
 #define NETOS_CRYPTO_TAG_LEN_DEFAULT    16
 
+/**
+ * @brief - Defines a crypto key.
+ */
 typedef struct {
     uint8_t     key[NETOS_CRYPTO_KEY_LEN_MAX];
-    uint32_t    key_len;
+    uint32_t    key_len; // 16 or 32
 } netos_crypto_key_t;
 
+/**
+ * @brief - Defines GMAC params.
+ */
 typedef struct {
-    uint8_t     *aad;
-    uint32_t    aad_len;
-    uint8_t     *iv;
-    uint8_t     *tag;
+    uint8_t     *aad; //input
+    uint32_t    aad_len; //input
+    uint8_t     *iv; //input
+    uint8_t     *tag; //output
 } netos_crypto_aes_gmac_params_t;
 
+/**
+ * @brief - Defines crypto interface.
+ */
 typedef struct {
     // GMAC params
     void            *(*init_gmac)(void);
