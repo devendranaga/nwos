@@ -8,11 +8,10 @@ jobs:
     - name: Install System Packages
       run: |
         sudo apt update
-        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev
+        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev
     - name: Compile
       run: |
-        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
-        rm -rf build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
+        cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
     - name: Upload build artifact to Github Actions
       uses: actions/upload-artifact@v4
       with:
