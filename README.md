@@ -52,22 +52,20 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] correct handling of ref count in rx and egress
 - [ ] MACsec implementation
 - [ ] Cryptography wrapper callback interface
-- [ ] MbedTLS, wolfSSL GCM & GMAC
+- [ ] MbedTLS, wolfSSL GCM
 - [ ] IPsec implementation
 - [ ] Event capture and storage tests
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] Take pkt buffer numbers from xml config
 - [ ] static ARP cache allocation strategy
-- [ ] CPU affinity per thread
-- [ ] Count number of CPUs and tie each thread to a CPU
+- [ ] select cpus statically based on the numbers
 - [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
 - [ ] Define event storage format, the same format is used for upload of events
 - [ ] Define event storage encryption
 - [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
 - [ ] CMAC PRF
-- [ ] Tooling: packet replay from a file in pgen
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
 - [ ] Tooling: implement the up arrow and down arrow detection and history buffer
@@ -129,6 +127,25 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Cipher: WolfSSL CMAC interface
 - [ ] 8021br frame parsing
 - [ ] 8021br frame serialization
+- [ ] Mirror mode operation
+- [ ] Linux RNG interface to /dev/random
+- [ ] IP forwarding support using NAT / NAT64
+- [ ] IP fragmentation and reassembly support
+- [ ] TCP statemachine
+- [ ] UDP Demux and Mux
+- [ ] TCP Demux and Mux
+- [ ] ICMP echo reply generation for a echo request frame
+- [ ] ARP request generation from the IP query to ARP
+- [ ] recvmsg and sendmsg support
+- [ ] PKT_MMAP or PF_RING support to receive and transmit frames
+- [ ] global MIBs for all protocols
+- [ ] Tooling: CLI tool for statistics
+- [ ] Enable PCAP write mode
+- [ ] Event manager to write logs to a network or to a file
+- [ ] Gtest support
+- [ ] Signal handling
+- [ ] Tooling: Multiple interface transmit on pgen
+- [ ] ATU implementation
 
 ## Done
 
@@ -157,6 +174,10 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [x] ICMP6 frame parsing
 - [x] ICMP6 checksum validation
 - [x] Tooling: MACsec farme generation
+- [x] WolfSSL GMAC interface
+- [x] CPU affinity per thread
+- [x] Count number of CPUs and tie each thread to a CPU
+- [x] Tooling: packet replay from a file in pgen
 
 
 ## Configuration
