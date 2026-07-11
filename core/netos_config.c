@@ -74,6 +74,13 @@ static netos_status_t netos_config_get_bool(bool *bool_ptr,
     return ret;
 }
 
+static netos_status_t netos_config_parse_rx_buffer_pool_size(network_config_t *config,
+                                                             xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_u32(&config->rx_pkt_buffer_pool_len,
+                                doc, node);
+}
+
 static netos_status_t
 netos_config_get_arp_cache_size(network_config_t *config,
                                 xmlDocPtr doc, xmlNode *node)
@@ -233,6 +240,7 @@ static const struct {
                                    xmlDocPtr doc, xmlNode *node);
 } config_callbacks[] = {
     { "interface_list", netos_config_parse_interface_config },
+    { "rx_buffer_pool_size", netos_config_parse_rx_buffer_pool_size },
     { "protocols",      netos_config_parse_protocol_config },
 };
 
@@ -283,7 +291,6 @@ netos_status_t netos_config_parse(network_config_t *config, const char *config_p
     }
 
     xmlFree(root);
-    xmlFree(doc);
 
     netos_config_print(config);
 
@@ -309,6 +316,8 @@ void netos_config_print(const network_config_t *config)
     for (i = 0; i < config->n_if_config; i ++) {
         fprintf(stderr, "        ifname: %s\n", config->if_config[i].ifname);
     }
+    fprintf(stderr, "    }\n");
+    fprintf(stderr, "    rx_buffer_pool_size: %d\n", config->rx_pkt_buffer_pool_len);
     fprintf(stderr, "    protocols: {\n");
     fprintf(stderr, "        arp: {\n");
     fprintf(stderr, "            arp_cache_size: %d\n",
