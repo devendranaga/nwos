@@ -51,7 +51,7 @@ typedef struct netos_protocol_config {
 typedef struct network_config {
     network_if_config_t     if_config[NETOS_IFLIST_MAX];
     uint32_t                n_if_config;
-    uint32_t                pkt_buffer_pool_len;
+    uint32_t                rx_pkt_buffer_pool_len;
     netos_protocol_config_t protocol_config;
 } network_config_t;
 

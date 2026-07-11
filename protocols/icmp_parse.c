@@ -9,6 +9,7 @@ static netos_status_t
 netos_icmp_decode_echo_request(netos_icmp_hdr_t *icmp_hdr,
                                pkt_buffer_t *pkt_buf)
 {
+    // short header length check for echo request
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_ECHO_REQ_LEN)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,

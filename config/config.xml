@@ -6,6 +6,7 @@
         <mac_address>00:01:02:22:24:44</mac_address>
         <ip_address>192.168.1.1</ip_address>
     </interface_list>
+    <rx_buffer_pool_size>1024</rx_buffer_pool_size>
     <protocols>
         <macsec>
             <n_secy>128</n_secy>

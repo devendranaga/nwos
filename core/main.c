@@ -160,6 +160,8 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
     intf->ifname = strdup(intf_config->ifname);
 
+    // initialize the raw socket.. probably doing raw socket is
+    // not a  bright idea, but could do better interface someday.
     intf->raw = netos_raw_socket_init(intf_config->ifname);
     if (!intf->raw) {
         netos_log_error("failed to initialize the raw socket\n");
@@ -245,11 +247,20 @@ err:
     return NULL;
 }
 
+/**
+ * @brief - Initialize protocols.
+ *
+ * @param [in] config - netos configuration.
+ * @param [in] gcd - netos gcd context.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 static netos_status_t netos_initialize_protocols(network_config_t *config,
                                                  netos_gcd_ctx_t *gcd_ctx)
 {
     netos_status_t ret;
 
+    // initialize the ARP protocol
     ret = netos_arp_protocol_init(config, gcd_ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
@@ -258,20 +269,21 @@ static netos_status_t netos_initialize_protocols(network_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * @brief - initialize network interfaces.
+ *
+ * @param [in] ctx - netos context.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
 {
-    netos_status_t ret;
     uint32_t i;
-
-    ret = netos_initialize_protocols(&ctx->config, ctx->gcd_ctx);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        netos_log_error("failed to initialize protocols\n");
-        return ret;
-    }
 
     for (i = 0; i < ctx->config.n_if_config; i ++) {
         netos_intf_t *intf;
 
+        // initialize interface
         intf = netos_initialize_interface(&ctx->config.if_config[i]);
         if (!intf) {
             return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
@@ -300,6 +312,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // parse command line arguments
     ret = netos_parse_cmdargs(argc, argv, &ctx->cmdargs);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
@@ -307,12 +320,14 @@ int main(int argc, char **argv)
 
     netos_log_info("Parse command line arguments ok\n");
 
+    // parse config file
     ret = netos_config_parse(&ctx->config, ctx->cmdargs.config_file);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Config parse failure error : %x\n", ret);
         return ret;
     }
 
+    // initialize the GCD context
     ctx->gcd_ctx = netos_gcd_ctx_init();
     if (!ctx->gcd_ctx) {
         netos_log_error("Initializing GCD context failed\n");
@@ -328,12 +343,21 @@ int main(int argc, char **argv)
         return ret;
     }
 
+    // initialize all the protocols
+    ret = netos_initialize_protocols(&ctx->config, ctx->gcd_ctx);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to initialize protocols\n");
+        return ret;
+    }
+
+    // initialize netos interfaces
     ret = netos_initialize_interfaces(ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Interface list initialization failed error : %x\n", ret);
         return ret;
     }
 
+    // run the gcd
     netos_gcd_run(ctx->gcd_ctx);
 
     return ret;
