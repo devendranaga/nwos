@@ -57,9 +57,8 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Event capture and storage tests
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
-- [ ] Take pkt buffer numbers from xml config
 - [ ] static ARP cache allocation strategy
-- [ ] select cpus statically based on the numbers
+- [ ] select cpus statically based on the number of CPUs in the system
 - [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
 - [ ] Define event storage format, the same format is used for upload of events
@@ -69,7 +68,6 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
 - [ ] Tooling: implement the up arrow and down arrow detection and history buffer
-- [ ] pfifo queueing discipline
 - [ ] Expand the Events matching to suricata
 - [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
@@ -90,15 +88,14 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] MKA frame parsing
 - [ ] MKA frame generation
 - [ ] recvmsg using the scatter gather approach
+- [ ] recvfrom using the PACKET_MMAP with tpacketv3
 - [ ] 6in4 tunnel frame parsing
 - [ ] 6in4 tunnel frame generation
 - [ ] IPv6 frame generation
 - [ ] Tooling: MACsec encrypt implementation
-- [ ] Tooling: MACsec key setting via pgen
 - [ ] Tooling: MACsec auto PN increment for every packet that is sent
 - [ ] Tooling: document the command usages
 - [ ] Tooling: when test finishes, reset the PN
-- [ ] Tooling: MACsec: setting any TCI bits via command line
 - [ ] Tooling: IPv4 over MACsec
 - [ ] bfifo queueing discipline
 - [ ] Tooling: IPv6 frame generation
@@ -106,7 +103,6 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Tooling: UDP over IPv6
 - [ ] Tooling: TCP over IPV4
 - [ ] Tooling: TCP over IPv6
-- [ ] Tooling: packet capturing tooling
 - [ ] UDP generation over IPv4
 - [ ] UDP generation over IPv6
 - [ ] TCP generation over IPv4
@@ -178,6 +174,11 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [x] CPU affinity per thread
 - [x] Count number of CPUs and tie each thread to a CPU
 - [x] Tooling: packet replay from a file in pgen
+- [x] Tooling: packet capturing tooling
+- [x] Tooling: MACsec: setting any TCI bits via command line
+- [x] Tooling: MACsec key setting via pgen
+- [x] pfifo queueing discipline
+- [x] Take pkt buffer numbers from xml config
 
 
 ## Configuration
