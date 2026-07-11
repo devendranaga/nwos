@@ -7,6 +7,9 @@ extern "C" {
 
 #include <stdint.h>
 
+// TCP protocol macro defines
+#define NETOS_TCP_HDR_LEN_DEFAULT 20
+
 /**
  * @brief - TCP flags.
  */

@@ -2,7 +2,7 @@
 #define NETOS_STATUS_H
 
 //
-// Define status codes
+// Defines status codes
 typedef enum {
     NETOS_STATUS_SUCCESS                            = 0,
 
@@ -16,6 +16,7 @@ typedef enum {
     NETOS_STATUS_ICMP_MALFORMED_PKT                 = 0x00000008,
     NETOS_STATUS_L4_CHECKSUM_FAILED                 = 0x00000009,
     NETOS_STATUS_ICMP6_MALFORMED_PKT                = 0x0000000A,
+    NETOS_STATUS_TCP_MALFORMED_PKT                  = 0x0000000B,
 
     NETOS_STATUS_IOCTL_GET_FLAGS_FAILED             = 0x00000100,
     NETOS_STATUS_IOCTL_SET_FLAGS_FAILED             = 0x00000101,

@@ -3,9 +3,18 @@
 #include "tcp_hdr.h"
 #include "netos_log.h"
 #include "checksum.h"
+#include "event_info.h"
 
 netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
 {
+    // short header length check
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_TCP_HDR_LEN_DEFAULT)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_SHORT_HDR_LEN);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->src_port);
     pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->dst_port);
     pkt_buffer_decode_4_bytes(pkt_buf, &tcp_hdr->seq_no);
