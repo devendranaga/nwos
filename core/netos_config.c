@@ -234,14 +234,85 @@ netos_config_parse_protocol_config(network_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t
+netos_config_get_pfifo_max_packets(network_config_t *config,
+                                     xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_u32(&config->egress_ctrl.pfifo.max_pkts,
+                                doc, node);
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} pfifo_config_callbacks[] = {
+    { "max_packets", netos_config_get_pfifo_max_packets }
+};
+
+static netos_status_t
+netos_config_parse_pfifo_config(network_config_t *config,
+                                xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
+    netos_status_t ret;
+
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (uint32_t i = 0; i < sizeof(protocol_config_callbacks) /
+                                 sizeof(protocol_config_callbacks[0]); i ++) {
+            if ((node_ptr->type == XML_ELEMENT_NODE) &&
+                (strcmp((const char *)node_ptr->name, pfifo_config_callbacks[i].name) == 0)) {
+                ret = pfifo_config_callbacks[i].callback_fn(config, doc, node_ptr);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+            }
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} egress_config_callbacks[] = {
+    { "pfifo",    netos_config_parse_pfifo_config },
+};
+
+static netos_status_t
+netos_config_parse_egress_config(network_config_t *config,
+                                 xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
+    netos_status_t ret;
+
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (uint32_t i = 0; i < sizeof(protocol_config_callbacks) /
+                                 sizeof(protocol_config_callbacks[0]); i ++) {
+            if ((node_ptr->type == XML_ELEMENT_NODE) &&
+                (strcmp((const char *)node_ptr->name, egress_config_callbacks[i].name) == 0)) {
+                ret = egress_config_callbacks[i].callback_fn(config, doc, node_ptr);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+            }
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(network_config_t *config,
                                    xmlDocPtr doc, xmlNode *node);
 } config_callbacks[] = {
-    { "interface_list", netos_config_parse_interface_config },
-    { "rx_buffer_pool_size", netos_config_parse_rx_buffer_pool_size },
-    { "protocols",      netos_config_parse_protocol_config },
+    { "interface_list",         netos_config_parse_interface_config },
+    { "rx_buffer_pool_size",    netos_config_parse_rx_buffer_pool_size },
+    { "protocols",              netos_config_parse_protocol_config },
+    { "egress_control",         netos_config_parse_egress_config },
 };
 
 static netos_status_t
@@ -330,6 +401,12 @@ void netos_config_print(const network_config_t *config)
     fprintf(stderr, "        icmp: {\n");
     fprintf(stderr, "            min_echo_payload_len: %d\n",
                     config->protocol_config.icmp_config.echo_payload_len);
+    fprintf(stderr, "        }\n");
+    fprintf(stderr, "    }\n");
+    fprintf(stderr, "    egress_control: {\n");
+    fprintf(stderr, "        pfifo:{\n");
+    fprintf(stderr, "            max_packets: %d\n",
+                    config->egress_ctrl.pfifo.max_pkts);
     fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
     fprintf(stderr, "}\n");

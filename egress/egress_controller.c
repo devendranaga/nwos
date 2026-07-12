@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "netos_status.h"
+#include "netos_config.h"
 #include "egress_sp.h"
 #include "egress_rr.h"
 #include "egress_controller.h"
@@ -83,7 +84,8 @@ static netos_status_t netos_egress_alg_pfifo_init(netos_egress_controller_t *egr
         goto err;
     }
 
-    ret = netos_egress_pfifo_init(egress_ctrl->pfifo);
+    ret = netos_egress_pfifo_init(egress_ctrl->pfifo,
+                                  egress_ctrl->config->egress_ctrl.pfifo.max_pkts);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
@@ -108,7 +110,9 @@ static void netos_egress_alg_pfifo_deinit(netos_egress_controller_t *egress_ctrl
     egress_ctrl->pfifo = NULL;
 }
 
-netos_egress_controller_t *netos_egress_controller_init(netos_raw_socket_ctx_t *raw)
+netos_egress_controller_t *
+netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
+                             network_config_t *config)
 {
     netos_egress_controller_t *egress_ctrl;
     netos_status_t ret;
@@ -117,6 +121,8 @@ netos_egress_controller_t *netos_egress_controller_init(netos_raw_socket_ctx_t *
     if (!egress_ctrl) {
         return NULL;
     }
+
+    egress_ctrl->config = config;
 
     ret = netos_egress_alg_sp_init(egress_ctrl);
     if (ret != NETOS_STATUS_SUCCESS) {

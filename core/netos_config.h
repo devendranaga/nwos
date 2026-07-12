@@ -45,6 +45,14 @@ typedef struct netos_protocol_config {
     netos_icmp_config_t icmp_config;
 } netos_protocol_config_t;
 
+typedef struct netos_egress_pfifo {
+    uint32_t max_pkts;
+} netos_egress_pfifo_t;
+
+typedef struct netos_egress_control {
+    netos_egress_pfifo_t pfifo;
+} netos_egress_control_t;
+
 /**
  * @brief - Defines network config.
  */
@@ -53,6 +61,7 @@ typedef struct network_config {
     uint32_t                n_if_config;
     uint32_t                rx_pkt_buffer_pool_len;
     netos_protocol_config_t protocol_config;
+    netos_egress_control_t  egress_ctrl;
 } network_config_t;
 
 /**

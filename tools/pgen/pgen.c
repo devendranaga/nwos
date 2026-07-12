@@ -11,6 +11,7 @@
 #include "pkt_buffer.h"
 #include "ethertypes.h"
 #include "protocols.h"
+#include "netos_log.h"
 #include "pgen.h"
 #include "pgen_const.h"
 #include "pgen_cmd_strings.h"
@@ -131,14 +132,16 @@ static void set_pcap_enable(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_pcap_open_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "pcap.open <pcap file>\n"
-                    "Ex: pcap.open macsec_replay.pcap\n");
+    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_GREEN_COLOR("pcap.open <pcap file>\n"
+                                "Ex: pcap.open macsec_replay.pcap\n");
 }
 
 static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_pcap_open_help();
         return;
     }
@@ -149,11 +152,13 @@ static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
 
     pgen.pcap_ctx = netos_pcap_read_file(tokens[1].name);
     if (!pgen.pcap_ctx) {
-        fprintf(stderr, "failed to open the pcap file for reading: %s\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("failed to open the pcap file for reading: %s\n",
+                                    tokens[1].name);
         return;
     }
 
-    fprintf(stderr, "pcap file [%s] opened\n", tokens[1].name);
+    NETOS_PRINT_STD_GREEN_COLOR("pcap file [%s] opened\n",
+                                tokens[1].name);
 }
 
 static void set_macsec_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -172,27 +177,28 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
 
     res = stat(tokens[1].name, &s);
     if (res != 0) {
-        fprintf(stderr, "cannot find <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("cannot find <%s>\n", tokens[1].name);
         return;
     }
 
     key_fp = fopen(tokens[1].name, "rb");
     if (!key_fp) {
-        fprintf(stderr, "cannot open <%s> for reading\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("cannot open <%s> for reading\n", tokens[1].name);
         return;
     }
 
     memset(&key, 0, sizeof(key));
     res = fread(key.key, 1, s.st_size, key_fp);
     if (res == 0) {
-        fprintf(stderr, "invalid macsec keyfile\n");
+        NETOS_PRINT_STD_ERROR_COLOR("invalid macsec keyfile\n");
         fclose(key_fp);
         return;
     }
     fclose(key_fp);
 
     if ((s.st_size != 16) && (s.st_size != 32)) {
-        fprintf(stderr, "key cannot be %ld, it must be either 16 or 32\n", s.st_size);
+        NETOS_PRINT_STD_ERROR_COLOR("key cannot be %ld, it must be either 16 or 32\n",
+                                    s.st_size);
         return;
     }
 
@@ -201,31 +207,208 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
                                     pgen.gcm_ctx,
                                     &key);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "failed to set key <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("failed to set key <%s>\n", tokens[1].name);
         return;
     }
 }
 
+static inline void set_macsec_encrypt_help()
+{
+    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.encrypt <on/off> - turn MACsec encryption on or off\n");
+}
+
 static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
 {
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_encrypt_help();
+        return;
+    }
+
     if (!strcmp(tokens[1].name, "on")) {
         pgen.macsec_hdr.tci_an.e = 1;
     } else if (!strcmp(tokens[1].name, "off")) {
         pgen.macsec_hdr.tci_an.e = 0;
     } else {
-        fprintf(stderr, "invalid encrypt mode value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid encrypt mode value <%s>\n",
+                                    tokens[1].name);
     }
+}
+
+static inline void set_macsec_changed_help()
+{
+    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.changed <on/off> - turn MACsec authentication on or off\n");
 }
 
 static void set_macsec_changed(struct pgen_token *tokens, uint32_t n_tokens)
 {
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_changed_help();
+        return;
+    }
+
     if (!strcmp(tokens[1].name, "on")) {
         pgen.macsec_hdr.tci_an.c = 1;
     } else if (!strcmp(tokens[1].name, "off")) {
         pgen.macsec_hdr.tci_an.c = 0;
     } else {
-        fprintf(stderr, "invalid changed mode value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid changed mode value <%s>\n",
+                                    tokens[1].name);
     }
+}
+
+static inline void set_macsec_es_help()
+{
+    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.es <on/off> - turn MACsec ES on or off\n");
+}
+
+static void set_macsec_es(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_es_help();
+        return;
+    }
+
+    if (!strcmp(tokens[1].name, "on")) {
+        pgen.macsec_hdr.tci_an.es = 1;
+    } else if (!strcmp(tokens[1].name, "off")) {
+        pgen.macsec_hdr.tci_an.es = 0;
+    } else {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ES mode value <%s>\n",
+                                    tokens[1].name);
+    }
+}
+
+static inline void set_macsec_sc_help()
+{
+    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.sc <on/off> - turn MACsec SCI on or off\n");
+}
+
+static void set_macsec_sc(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_sc_help();
+        return;
+    }
+
+    if (!strcmp(tokens[1].name, "on")) {
+        pgen.macsec_hdr.tci_an.sc = 1;
+    } else if (!strcmp(tokens[1].name, "off")) {
+        pgen.macsec_hdr.tci_an.sc = 0;
+    } else {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid SC mode value <%s>\n",
+                                    tokens[1].name);
+    }
+}
+
+static inline void set_macsec_pn_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "macsec.pn <value> - Set MACsec PN value\n");
+}
+
+static void set_macsec_pn(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_pn_help();
+        return;
+    }
+
+    ret = netos_get_u32_from_str(tokens[1].name, &pgen.macsec_hdr.pn);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+}
+
+static inline void set_macsec_version_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "macsec.version <value> - Set Version <1 bit value 0 or 1>\n");
+}
+
+static void set_macsec_version(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t val;
+
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_version_help();
+        return;
+    }
+
+    ret = netos_get_u32_from_str(tokens[1].name, &val);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    pgen.macsec_hdr.tci_an.v = 1;
+}
+
+static inline void set_macsec_sci_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "macsec.sci <8 bytes> - Set the SCI value\n"
+                    "macsec.sci 00:11:22:33:44:55:66:11\n");
+}
+
+static void set_macsec_sci(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    uint32_t sci[NETOS_MACSEC_SCI_LEN] = {0};
+    int ret;
+
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_sci_help();
+        return;
+    }
+
+    ret = sscanf(tokens[1].name,
+                 "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
+                 &sci[0], &sci[1], &sci[2], &sci[3],
+                 &sci[4], &sci[5], &sci[6], &sci[7]);
+    if (ret != 8) {
+        fprintf(stderr, "invalid SCI format\n");
+        set_macsec_sci_help();
+        return;
+    }
+
+    pgen.macsec_hdr.sci[0] = sci[0];
+    pgen.macsec_hdr.sci[1] = sci[1];
+    pgen.macsec_hdr.sci[2] = sci[2];
+    pgen.macsec_hdr.sci[3] = sci[3];
+    pgen.macsec_hdr.sci[4] = sci[4];
+    pgen.macsec_hdr.sci[5] = sci[5];
+    pgen.macsec_hdr.sci[6] = sci[6];
+    pgen.macsec_hdr.sci[7] = sci[7];
+}
+
+static inline void set_macsec_an_help()
+{
+    fprintf(stderr, "\nHelp:\n");
+    fprintf(stderr, "macsec.an <0/1/2/3>\n");
+}
+
+static void set_macsec_an(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+    uint32_t val;
+
+    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+        set_macsec_an_help();
+        return;
+    }
+
+    ret = netos_get_u32_from_str(tokens[1].name, &val);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        fprintf(stderr, "Invalid MACsec an value <%s>\n", tokens[1].name);
+        return;
+    }
+
+    pgen.macsec_hdr.tci_an.an = val;
 }
 
 static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
@@ -563,7 +746,7 @@ static void set_eth_da(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.eth_hdr.dst);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid eth.da value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid eth.da value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -574,7 +757,7 @@ static void set_eth_sa(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.eth_hdr.src);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid eth.sa <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid eth.sa <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -585,7 +768,7 @@ static void set_eth_ethertype(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.eth_hdr.ethertype);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid eth.ethertype <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid eth.ethertype <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -596,7 +779,7 @@ static void set_ipg(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u64_from_str(tokens[1].name, &pgen.ipg_ns);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipg value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipg value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -607,7 +790,7 @@ static void set_n_frames(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &pgen.n_frames);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid n_frames value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid n_frames value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -618,7 +801,7 @@ static void set_packet_len(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &pgen.len);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid pkt len <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid pkt len <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -911,6 +1094,12 @@ static const struct {
     { MACSEC_KEY_CMD,       MACSEC_KEY_STR,         set_macsec_key },
     { MACSEC_ENCRYPT_CMD,   MACSEC_ENCRYPT_STR,     set_macsec_encrypt },
     { MACSEC_CHANGED_CMD,   MACSEC_CHANGED_STR,     set_macsec_changed },
+    { MACSEC_ES_CMD,        MACSEC_ES_STR,          set_macsec_es },
+    { MACSEC_SC_CMD,        MACSEC_SC_STR,          set_macsec_sc },
+    { MACSEC_PN_CMD,        MACSEC_PN_STR,          set_macsec_pn },
+    { MACSEC_V_CMD,         MACSEC_V_STR,           set_macsec_version },
+    { MACSEC_AN_CMD,        MACSEC_AN_STR,          set_macsec_an },
+    { MACSEC_SCI_CMD,       MACSEC_SCI_STR,         set_macsec_sci },
     { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
     { PCAP_ENABLE_CMD,      PCAP_ENABLE_STR,        set_pcap_enable },
     { PCAP_OPEN_CMD,        PCAP_OPEN_STR,          set_pcap_open },
@@ -930,15 +1119,13 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
 {
     uint32_t i;
 
-    fprintf(stderr, "\n");
-    fprintf(stderr, "----------------------------------------------------------\n");
+    NETOS_PRINT_STD_GREEN_COLOR("----------------------------------------------------------\n");
     for (i = 0; i < sizeof(pgen_setup_callbacks) /
                     sizeof(pgen_setup_callbacks[0]); i ++) {
-        fprintf(stderr, "%-30s %s\n", pgen_setup_callbacks[i].str,
-                                       pgen_setup_callbacks[i].desc);
+        NETOS_PRINT_STD_GREEN_COLOR("%-30s %s\n", pgen_setup_callbacks[i].str,
+                                    pgen_setup_callbacks[i].desc);
     }
-    fprintf(stderr, "----------------------------------------------------------\n");
-    fprintf(stderr, "\n");
+    NETOS_PRINT_STD_GREEN_COLOR("----------------------------------------------------------\n");
 }
 
 static uint32_t pgen_tokenize(char *buf, uint32_t len, struct pgen_token *tokens)

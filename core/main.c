@@ -147,7 +147,8 @@ static void *netos_intf_parse_callback(void *cbdata)
     return NULL;
 }
 
-static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config)
+static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config,
+                                                network_config_t *config)
 {
     netos_intf_t *intf;
     netos_status_t ret;
@@ -178,7 +179,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
         goto err;
     }
 
-    intf->parser_thr->rx_pool = netos_buffer_pool_alloc(1024);
+    intf->parser_thr->rx_pool = netos_buffer_pool_alloc(config->rx_pkt_buffer_pool_len);
     if (!intf->parser_thr->rx_pool) {
         netos_log_error("Failed to allocate rx buffer pool\n");
         goto err;
@@ -194,7 +195,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     pthread_cond_init(&intf->parser_thr->parse_q_cond, NULL);
 
     // initialize egress controller for this interface
-    intf->raw->egress_ctrl = netos_egress_controller_init(intf->raw);
+    intf->raw->egress_ctrl = netos_egress_controller_init(intf->raw, config);
     if (!intf->raw->egress_ctrl) {
         netos_log_error("Failed to initialize egress controller\n");
         goto err;
@@ -284,7 +285,8 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
         netos_intf_t *intf;
 
         // initialize interface
-        intf = netos_initialize_interface(&ctx->config.if_config[i]);
+        intf = netos_initialize_interface(&ctx->config.if_config[i],
+                                          &ctx->config);
         if (!intf) {
             return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
         }

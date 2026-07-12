@@ -25,7 +25,6 @@ netos_status_t netos_get_mac_addr_from_str(const char *mac_str, uint8_t *mac)
     return NETOS_STATUS_SUCCESS;
 }
 
-
 netos_status_t netos_get_u16_hex_from_str(const char *hex_str, uint16_t *hex)
 {
     char *err_ptr = NULL;

@@ -29,6 +29,9 @@ typedef struct netos_udp_hdr {
  */
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr, pkt_buffer_t *pkt_buf);
 
+netos_status_t netos_udp_encode(netos_udp_hdr_t *udp_hdr,
+                                pkt_buffer_t *pkt_buf);
+
 #if defined(__cplusplus)
 }
 #endif

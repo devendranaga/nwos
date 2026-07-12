@@ -7,15 +7,14 @@
 #include "pthread_intf.h"
 #include "pkt_buffer.h"
 
-// maps to the number of PCPs available in VLAN
-#define NETOS_EGRESS_SP_MAX 8
-
 typedef struct netos_egress_pfifo_queue {
     pkt_buffer_t        *pkt_buf;
     pkt_buffer_t        *pkt_buf_last;
 } netos_egress_pfifo_queue_t;
 
 typedef struct netos_egress_pfifo_mgr {
+    uint32_t                    n_pkts;
+    uint32_t                    in_pkts;
     netos_egress_pfifo_queue_t  queue;
     bool                        thread_started;
     bool                        terminate_signal;
@@ -25,7 +24,9 @@ typedef struct netos_egress_pfifo_mgr {
     pthread_cond_t              pfifo_cond;
 } netos_egress_pfifo_mgr_t;
 
-netos_status_t netos_egress_pfifo_init(netos_egress_pfifo_mgr_t *sp);
+netos_status_t
+netos_egress_pfifo_init(netos_egress_pfifo_mgr_t *sp,
+                        uint32_t n_pkts);
 
 void netos_egress_pfifo_enque(void *ctx,
                               pkt_buffer_t *pkt_buf);

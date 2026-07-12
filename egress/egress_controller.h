@@ -2,6 +2,7 @@
 #define NETOS_EGRESS_CONTROLLER_H
 
 #include "raw_socket.h"
+#include "netos_config.h"
 #include "egress_sp.h"
 #include "egress_rr.h"
 #include "egress_pfifo.h"
@@ -30,6 +31,7 @@ typedef struct netos_egress_controller_mib {
  */
 typedef struct netos_egress_controller {
     char                            *ifname;
+    network_config_t                *config;
     netos_raw_socket_ctx_t          *raw;
     netos_egress_sp_mgr_t           *sp;
     netos_egress_rr_mgr_t           *rr;
@@ -37,7 +39,9 @@ typedef struct netos_egress_controller {
     netos_egress_controller_mib_t   mib;
 } netos_egress_controller_t;
 
-netos_egress_controller_t *netos_egress_controller_init(netos_raw_socket_ctx_t *raw);
+netos_egress_controller_t *
+netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
+                             network_config_t *config);
 
 void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
                         netos_egress_queueing_alg_t alg,

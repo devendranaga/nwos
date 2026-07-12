@@ -1,8 +1,10 @@
+#include "buffer_pool.h"
 #include "egress_pfifo.h"
 
-void *netos_egress_pfifo_tx_queue_thread(void *ctx)
+static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
 {
     netos_egress_pfifo_mgr_t *pfifo = ctx;
+    uint32_t i;
 
     pthread_mutex_lock(&pfifo->pfifo_lock);
     pfifo->pkts_in_queue= false;
@@ -24,16 +26,17 @@ void *netos_egress_pfifo_tx_queue_thread(void *ctx)
         pfifo->pkts_in_queue = false;
 
         pkt_buffer_t *pkt_buf = pfifo->queue.pkt_buf;
-        while (pkt_buf) {
-            pkt_buffer_t *pkt_buf = pfifo->queue.pkt_buf;
 
-            if (pkt_buf->out_intf) {
+        for (i = 0; pkt_buf && (i < pfifo->n_pkts); i ++) {
+            if (pkt_buf && pkt_buf->out_intf) {
                 netos_raw_socket_tx(pkt_buf->out_intf,
                                     pkt_buf->buffer,
                                     pkt_buf->tx_len);
-            }
 
-            pkt_buf = pkt_buf->next;
+                netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
+
+                pkt_buf = pkt_buf->next;
+            }
         }
         pthread_mutex_unlock(&pfifo->pfifo_lock);
     }
@@ -41,10 +44,14 @@ void *netos_egress_pfifo_tx_queue_thread(void *ctx)
     return NULL;
 }
 
-netos_status_t netos_egress_pfifo_init(netos_egress_pfifo_mgr_t *pfifo)
+netos_status_t
+netos_egress_pfifo_init(netos_egress_pfifo_mgr_t *pfifo,
+                        uint32_t n_pkts)
 {
     netos_status_t ret;
 
+    pfifo->n_pkts = n_pkts;
+    pfifo->in_pkts = 0;
     pthread_mutex_init(&pfifo->pfifo_lock, NULL);
     pthread_cond_init(&pfifo->pfifo_cond, NULL);
 
@@ -66,6 +73,10 @@ void netos_egress_pfifo_enque(void *ctx,
                               pkt_buffer_t *pkt_buf)
 {
     netos_egress_pfifo_mgr_t *pfifo = ctx;
+
+    if (pfifo->in_pkts > pfifo->n_pkts) {
+        return;
+    }
 
     pthread_mutex_lock(&pfifo->pfifo_lock);
     {
