@@ -1,14 +1,13 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod pcapng;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn test_pcapng() {
+        let mut p_handle = pcapng::pcapng::new();
+        let res = p_handle.open("test.pcapng".to_string());
+        println!("res {}", res);
     }
 }
