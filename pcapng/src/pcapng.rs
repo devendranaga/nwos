@@ -2,8 +2,8 @@
 #![allow(dead_code)]
 
 const SHB_BLOCK_MAGIC : [u8; 4] = [0x0A, 0x0D, 0x0D, 0x0A];
-const SHB_BYTE_ORDER_MAGIC_BE : [u8; 4] = [0x4D, 0x3C, 0x2B, 0x1A];
-const SHB_BYTE_ORDER_MAGIC_LE : [u8; 4] = [0x1A, 0x2B, 0x3C, 0x4D];
+const SHB_BYTE_ORDER_MAGIC_BE : [u8; 4] = [0x1A, 0x2B, 0x3C, 0x4D];
+const SHB_BYTE_ORDER_MAGIC_LE : [u8; 4] = [0x4D, 0x3C, 0x2B, 0x1A];
 
 const SHB_OP_HW : u32 = 2;
 const SHB_OP_OS : u32 = 3;
@@ -42,6 +42,7 @@ pub struct pcapng {
     shb_hdr : pcapng_shb,
     pkt_buffer : [u8; 4096],
     big_endian : bool,
+    offset : usize,
 }
 
 impl pcapng {
@@ -51,7 +52,37 @@ impl pcapng {
             shb_hdr : pcapng_shb::new(),
             pkt_buffer : [0; 4096],
             big_endian : false,
+            offset : 0,
         }
+    }
+
+    fn get_u16(&mut self) -> u16 {
+        let u16_val : u16;
+
+        if self.big_endian {
+            u16_val = ((self.pkt_buffer[self.offset] as u16) << 8) |
+                        self.pkt_buffer[self.offset + 1] as u16;
+        } else {
+            u16_val = ((self.pkt_buffer[self.offset + 1] as u16) << 8) |
+                        self.pkt_buffer[self.offset] as u16;
+        }
+        self.offset += 2;
+        return u16_val;
+    }
+
+    fn get_u64(&mut self) -> u64 {
+        let u64_bytes : [u8; 8] = self.pkt_buffer[16..24].
+                                                    try_into().
+                                                    expect("Buffer is shorter than 8 bytes");
+        let u64_val : u64;
+
+        if self.big_endian {
+            u64_val = u64::from_be_bytes(u64_bytes);
+        } else {
+            u64_val = u64::from_le_bytes(u64_bytes);
+        }
+        self.offset += 8;
+        return u64_val;
     }
 
     pub fn open(&mut self, filename : String) -> i32 {
@@ -96,17 +127,10 @@ impl pcapng {
                 println!("little endian order");
             }
 
-            self.shb_hdr.major_version = ((self.pkt_buffer[12] as u16) << 8) | self.pkt_buffer[13] as u16;
-            self.shb_hdr.minor_version = ((self.pkt_buffer[14] as u16) << 8) | self.pkt_buffer[15] as u16;
-
-            let section_hdr_bytes : [u8; 8] = self.pkt_buffer[16..24].
-                                                    try_into().
-                                                    expect("Buffer is shorter than 8 bytes");
-            if self.big_endian {
-                self.shb_hdr.section_len = u64::from_be_bytes(section_hdr_bytes);
-            } else {
-                self.shb_hdr.section_len = u64::from_le_bytes(section_hdr_bytes);
-            }
+            self.offset = 24;
+            self.shb_hdr.major_version = self.get_u16();
+            self.shb_hdr.minor_version = self.get_u16();
+            self.shb_hdr.section_len = self.get_u64();
         }
         0
     }
