@@ -13,7 +13,8 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     uint32_t hdr_len;
     uint32_t ipv4_hdr_len;
 
-    if ((pkt_buf->offset + NETOS_IPV4_HDR_LEN_DEFAULT) > pkt_buf->rx_len) {
+    // short header
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_IPV4_HDR_LEN_DEFAULT)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_SHORT_HDR_LEN);
@@ -23,7 +24,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buf->ipv4_offset = pkt_buf->offset;
 
     ipv4_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
-    if (ipv4_hdr->version != NETOS_IPV4_VERSION) {
+    if (ipv4_hdr->version != NETOS_IPV4_VERSION) { /* invalid IPv4 version. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_INVAL_VERSION);
@@ -32,7 +33,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
 
     ipv4_hdr->header_len = (pkt_buf->buffer[pkt_buf->offset] & 0x0F);
     hdr_len = ipv4_hdr->header_len * 4;
-    if (hdr_len < NETOS_IPV4_HDR_LEN_DEFAULT) {
+    if (hdr_len < NETOS_IPV4_HDR_LEN_DEFAULT) { /* short header length */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_INVAL_HDR_LEN);
@@ -46,7 +47,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buf->offset ++;
 
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv4_hdr->total_len);
-    if (ipv4_hdr->total_len == 0) {
+    if (ipv4_hdr->total_len == 0) { /* ipv4 payload length is 0. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_TOTAL_LEN_ZERO);
@@ -56,7 +57,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv4_hdr->identification);
 
     ipv4_hdr->flags.reserved = !!(pkt_buf->buffer[pkt_buf->offset] & 0x80);
-    if (ipv4_hdr->flags.reserved) {
+    if (ipv4_hdr->flags.reserved) { /* reserved bit set. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_RESERVED_BIT_SET);
@@ -65,7 +66,8 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
 
     ipv4_hdr->flags.dont_fragment = !!(pkt_buf->buffer[pkt_buf->offset] & 0x40);
     ipv4_hdr->flags.more_fragment = !!(pkt_buf->buffer[pkt_buf->offset] & 0x20);
-    if (ipv4_hdr->flags.dont_fragment && ipv4_hdr->flags.more_fragment) {
+    if (ipv4_hdr->flags.dont_fragment &&
+        ipv4_hdr->flags.more_fragment) { /* both df and mf are set. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_DF_MF_SET);
@@ -77,7 +79,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buf->offset += 2;
 
     pkt_buffer_decode_byte(pkt_buf, &ipv4_hdr->ttl);
-    if (ipv4_hdr->ttl == 0) {
+    if (ipv4_hdr->ttl == 0) { /* zero ttl. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_TTL_ZERO);
@@ -89,7 +91,7 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->src_ipaddr);
     pkt_buffer_decode_4_bytes(pkt_buf, &ipv4_hdr->dst_ipaddr);
 
-    if (ipv4_hdr->src_ipaddr == ipv4_hdr->dst_ipaddr) {
+    if (ipv4_hdr->src_ipaddr == ipv4_hdr->dst_ipaddr) { /* src and dst are same. */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_SRC_DST_IP_SAME);
@@ -99,12 +101,12 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     ipv4_hdr_len = pkt_buf->offset - pkt_buf->ipv4_offset;
 
     netos_checksum_t chksum = {
-        .buffer = &pkt_buf->buffer[pkt_buf->ipv4_offset],
-        .len = ipv4_hdr_len
+        .buffer     = &pkt_buf->buffer[pkt_buf->ipv4_offset],
+        .len        = ipv4_hdr_len
     };
 
     uint32_t checksum = netos_ipv4_checksum(&chksum);
-    if (checksum != 0) {
+    if (checksum != 0) { /* invalid checksum */
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_IPV4_CHECKSUM_FAILED);

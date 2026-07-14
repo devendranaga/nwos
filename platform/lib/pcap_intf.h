@@ -4,19 +4,26 @@
 #include <stdio.h>
 #include <stdint.h>
 
+// PCAP Magic header
 #define NETOS_PCAP_MAGIC_NUMBER_BE 0xA1B2C3D4
 #define NETOS_PCAP_MAGIC_NUMBER_LE 0xD4C4B2A1
 
+/**
+ * @brief - PCAP global header.
+ */
 typedef struct {
-    uint32_t magic;         // Magic number (0xa1b2c3d4 or 0xd4c3b2a1)
-    uint16_t version_major; // Major version number
-    uint16_t version_minor; // Minor version number
-    int32_t  thiszone;      // GMT to local correction
-    uint32_t sigfigs;       // Timestamp accuracy
-    uint32_t snaplen;       // Max snapshot length
-    uint32_t network;       // Link-layer header type (e.g., 1 for Ethernet)
+    uint32_t    magic;         // Magic number (0xa1b2c3d4 or 0xd4c3b2a1)
+    uint16_t    version_major; // Major version number
+    uint16_t    version_minor; // Minor version number
+    int32_t     thiszone;      // GMT to local correction
+    uint32_t    sigfigs;       // Timestamp accuracy
+    uint32_t    snaplen;       // Max snapshot length
+    uint32_t    network;       // Link-layer header type (e.g., 1 for Ethernet)
 } netos_pcap_global_header_t;
 
+/**
+ * @brief - PCAP packet header.
+ */
 typedef struct {
     uint32_t ts_sec;   // Timestamp seconds
     uint32_t ts_usec;  // Timestamp microseconds/nanoseconds

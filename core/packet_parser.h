@@ -45,8 +45,6 @@ typedef struct netos_packet_parser {
     } l4;
 } netos_packet_parser_t;
 
-#define HAS_IPV4
-
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
                                  netos_packet_parser_t *parsed_data);
 

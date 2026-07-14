@@ -33,7 +33,8 @@ SET(PROTOCOL_SRC
     ./protocols/checksum.c
     ./protocols/icmp_parse.c
     ./protocols/icmp.c
-    ./protocols/icmp6_parse.c)
+    ./protocols/icmp6_parse.c
+    ./protocols/ipv4.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c)
@@ -148,4 +149,8 @@ if(COMPILER_ARM)
 endif()
 
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
+
+add_custom_target(pcapng_rust ALL
+    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/pcapng/Cargo.toml
+    COMMENT "Building Rust pcapng library")
 

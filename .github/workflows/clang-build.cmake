@@ -1,4 +1,4 @@
-name: C cmake CI
+name: clang build
 on: [push, pull_request]
 jobs:
   build:

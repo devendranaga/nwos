@@ -1,4 +1,4 @@
-name: C cmake CI
+name: gcc build
 on: [push, pull_request]
 jobs:
   build:

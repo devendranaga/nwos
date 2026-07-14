@@ -5,6 +5,7 @@
 #include <getopt.h>
 
 #include "arp.h"
+#include "ipv4.h"
 #include "netos_log.h"
 #include "netos_config.h"
 #include "cpu_affinity.h"
@@ -266,6 +267,16 @@ static netos_status_t netos_initialize_protocols(network_config_t *config,
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
+
+    netos_log_info("ARP initialized\n");
+
+    // initialize the IPv4 protocol
+    ret = netos_ipv4_initialize(config);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    netos_log_info("IPv4 initialized\n");
 
     return NETOS_STATUS_SUCCESS;
 }
