@@ -1,14 +1,22 @@
 #![allow(non_camel_case_types)]
 #![allow(dead_code)]
 
-const SHB_BLOCK_MAGIC : [u8; 4] = [0x0A, 0x0D, 0x0D, 0x0A];
-const SHB_BYTE_ORDER_MAGIC_BE : [u8; 4] = [0x1A, 0x2B, 0x3C, 0x4D];
-const SHB_BYTE_ORDER_MAGIC_LE : [u8; 4] = [0x4D, 0x3C, 0x2B, 0x1A];
+// constants
+const SHB_BLOCK_MAGIC           : [u8; 4] = [0x0A, 0x0D, 0x0D, 0x0A];
+const SHB_BYTE_ORDER_MAGIC_BE   : [u8; 4] = [0x1A, 0x2B, 0x3C, 0x4D];
+const SHB_BYTE_ORDER_MAGIC_LE   : [u8; 4] = [0x4D, 0x3C, 0x2B, 0x1A];
 
-const SHB_OP_HW : u32 = 2;
-const SHB_OP_OS : u32 = 3;
-const SHB_OP_USER_APP : u32 = 4;
+const SHB_OP_COMMENT    : u16 = 1;
+const SHB_OP_HW         : u16 = 2;
+const SHB_OP_OS         : u16 = 3;
+const SHB_OP_USER_APP   : u16 = 4;
 
+const SHB_OPT_COMMENT   : u32 = 0x00000001;
+const SHB_OPT_HW        : u32 = 0x00000002;
+const SHB_OPT_OS        : u32 = 0x00000004;
+const SHB_OPT_USER_APP  : u32 = 0x00000008;
+
+/// SHB header
 struct pcapng_shb {
     block_type          : u32,
     total_len           : u32,
@@ -31,28 +39,32 @@ impl pcapng_shb {
     }
 }
 
-struct pcapng_shb_opt_hw {
-    opt_type    : u16,
-    opt_len     : u16,
-    opt_data    : Vec<u8>,
-}
-
 pub struct pcapng {
-    handle  : i32,
-    shb_hdr : pcapng_shb,
-    pkt_buffer : [u8; 4096],
-    big_endian : bool,
-    offset : usize,
+    handle          : i32,
+    shb_hdr         : pcapng_shb,
+    pkt_buffer      : [u8; 4096],
+    shb_opts        : u32,
+    hw              : Vec<u8>,
+    os              : Vec<u8>,
+    application     : Vec<u8>,
+    comment         : Vec<u8>,
+    big_endian      : bool,
+    offset          : usize,
 }
 
 impl pcapng {
     pub fn new() -> Self {
         Self {
-            handle  : -1,
-            shb_hdr : pcapng_shb::new(),
-            pkt_buffer : [0; 4096],
-            big_endian : false,
-            offset : 0,
+            handle          : -1,
+            shb_hdr         : pcapng_shb::new(),
+            pkt_buffer      : [0; 4096],
+            shb_opts        : 0,
+            hw              : Vec::new(),
+            os              : Vec::new(),
+            application     : Vec::new(),
+            comment         : Vec::new(),
+            big_endian      : false,
+            offset          : 0,
         }
     }
 
@@ -109,6 +121,8 @@ impl pcapng {
 
                 option = self.get_u16();
                 option_len = self.get_u16();
+                let original_option_len = option_len as usize;
+
                 println!("read options_len {}", option_len);
                 if option_len % 4 != 0 {
                     option_len = (option_len + 3) & !3;
@@ -121,6 +135,26 @@ impl pcapng {
                 if res != option_len.try_into().unwrap() {
                     println!("invalid read length {}", res);
                     return -1;
+                }
+
+                match option {
+                    SHB_OP_HW => {
+                        self.hw = self.pkt_buffer[0..original_option_len].to_vec();
+                        self.shb_opts |= SHB_OPT_HW;
+                    },
+                    SHB_OP_OS => {
+                        self.os = self.pkt_buffer[0..original_option_len].to_vec();
+                        self.shb_opts |= SHB_OPT_OS;
+                    },
+                    SHB_OP_USER_APP => {
+                        self.application = self.pkt_buffer[0..original_option_len].to_vec();
+                        self.shb_opts |= SHB_OPT_USER_APP;
+                    },
+                    SHB_OP_COMMENT => {
+                        self.comment = self.pkt_buffer[0..original_option_len].to_vec();
+                        self.shb_opts |= SHB_OPT_COMMENT;
+                    },
+                    _ => (),
                 }
             }
         }
