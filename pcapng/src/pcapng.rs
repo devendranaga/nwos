@@ -85,6 +85,47 @@ impl pcapng {
         return u64_val;
     }
 
+    fn parse_options(&mut self) -> i32 {
+        let mut option : u16;
+        let mut option_len : u16;
+
+        loop {
+            unsafe {
+                let mut res = libc::read(self.handle, self.pkt_buffer.as_ptr() as *mut libc::c_void, 4);
+                if res != 4 {
+                    println!("invalid read length {}", res);
+                    return -1;
+                }
+
+                if (self.pkt_buffer[0] == 0) &&
+                   (self.pkt_buffer[1] == 0) &&
+                   (self.pkt_buffer[2] == 0) &&
+                   (self.pkt_buffer[3] == 0) {
+                    println!("end of options reached");
+                    return 0;
+                }
+
+                self.offset = 0;
+
+                option = self.get_u16();
+                option_len = self.get_u16();
+                println!("read options_len {}", option_len);
+                if option_len % 4 != 0 {
+                    option_len = (option_len + 3) & !3;
+                }
+                println!("option {} option_len {}", option, option_len);
+
+                self.offset = 0;
+
+                res = libc::read(self.handle, self.pkt_buffer.as_ptr() as *mut libc::c_void, option_len as usize);
+                if res != option_len.try_into().unwrap() {
+                    println!("invalid read length {}", res);
+                    return -1;
+                }
+            }
+        }
+    }
+
     pub fn open(&mut self, filename : String) -> i32 {
         unsafe {
             self.handle = libc::open(filename.as_ptr() as *const i8, libc::O_RDONLY);
@@ -127,10 +168,17 @@ impl pcapng {
                 println!("little endian order");
             }
 
-            self.offset = 24;
+            self.offset = 12;
             self.shb_hdr.major_version = self.get_u16();
             self.shb_hdr.minor_version = self.get_u16();
             self.shb_hdr.section_len = self.get_u64();
+
+            println!("major {} minor {} section header len 0x{:02x}",
+                            self.shb_hdr.major_version,
+                            self.shb_hdr.minor_version,
+                            self.shb_hdr.section_len);
+
+            self.parse_options();
         }
         0
     }
