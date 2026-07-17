@@ -47,6 +47,7 @@ SET(PLATFORM_SRC
     ./platform/lib/mmap_intf.c
     ./platform/gcd/gcd.c
     ./platform/lib/pcap_intf.c
+    ./platform/lib/pcapng.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
@@ -93,6 +94,9 @@ set(TOOL_PKTDUMP_SRC
     ./tools/pktdump/pktdump.c
     ./tools/pktdump/pktdump_ui.c
     ./tools/pktdump/pktdump_decoder.c)
+
+set(TEST_PCAPNG
+    ./tests/test_pcapng.c)
 
 include_directories(
                 ./protocols/
@@ -143,6 +147,9 @@ add_executable(netos_pktdump ${TOOL_PKTDUMP_SRC})
 target_link_libraries(netos_pktdump PRIVATE ncurses pthread netos netos_crypto ${CRYPTO_LINKER_FLAGS})
 
 add_executable(netosd ${NETOS_SRC})
+
+add_executable(netos_pcapng_test ${TEST_PCAPNG})
+target_link_libraries(netos_pcapng_test PRIVATE netos)
 
 if(COMPILER_ARM)
     target_link_directories(netosd PRIVATE /usr/lib/aarch64-linux-gnu/)

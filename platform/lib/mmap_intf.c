@@ -74,6 +74,53 @@ err:
     return NULL;
 }
 
+netos_mmap_file_io_t *netos_mmap_open_file_read(const char *filename)
+{
+    netos_mmap_file_io_t *fileio;
+    struct stat st;
+    int ret;
+
+    ret = stat(filename, &st);
+    if (ret != 0) {
+        return NULL;
+    }
+
+    fileio = calloc(1, sizeof(netos_mmap_file_io_t));
+    if (!fileio) {
+        return NULL;
+    }
+
+    fileio->fd = open(filename, O_RDONLY);
+    if (fileio->fd < 0) {
+        goto err;
+    }
+
+    ret = ftruncate(fileio->fd, st.st_size);
+    if (ret != 0) {
+        goto err;
+    }
+
+    fileio->memory = mmap(NULL, st.st_size,
+                          PROT_READ,
+                          MAP_SHARED,
+                          fileio->fd, 0);
+    if (fileio->memory == MAP_FAILED) {
+        goto err;
+    }
+
+    return fileio;
+
+err:
+    if (fileio) {
+        if (fileio->fd >= 0) {
+            close(fileio->fd);
+        }
+        free(fileio);
+    }
+
+    return NULL;
+}
+
 void netos_mmap_close_file(netos_mmap_file_io_t *fileio, uint32_t written_bytes)
 {
     if (fileio) {
