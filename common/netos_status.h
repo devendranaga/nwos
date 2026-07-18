@@ -70,6 +70,8 @@ typedef enum {
 
     NETOS_STATUS_INIT_SCREEN_FAILURE                = 0x00000D00,
 
+    NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK             = 0x00000E00,
+
     NETOS_STATUS_GENERIC_ERROR                      = 0xFAFAFAFA,
 } netos_status_t;
 
