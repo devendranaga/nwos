@@ -144,7 +144,7 @@ static netos_status_t netos_pcapng_parse_epb(netos_pcapng_ctx_t *ctx,
     ctx->rec.epb.ts_low         = netos_pcapng_get_u32(ctx);
     ctx->rec.epb.captured_len   = netos_pcapng_get_u32(ctx);
     ctx->rec.epb.original_len   = netos_pcapng_get_u32(ctx);
-    ctx->rec.epb.pkt_data       = &ctx->mapped_memory[ctx->offset];
+    ctx->rec.epb.pkt_data       = (uint8_t *)(ctx->mapped_memory + ctx->offset);
 
     netos_pcapng_frame_t frame = {
         .original_len   = ctx->rec.epb.original_len,
