@@ -15,8 +15,18 @@ typedef enum {
 } netos_pcapng_op_t;
 
 typedef struct {
-    uint16_t link_type;
-    uint32_t snaplen;
+    char    *ifname;
+    char    *ifdesc;
+    uint8_t ts_resol;
+    char    *iffilter;
+    char    *os;
+    uint8_t fcs_len;
+} netos_pcapng_idb_opt_t;
+
+typedef struct {
+    uint16_t                link_type;
+    uint32_t                snaplen;
+    netos_pcapng_idb_opt_t  idb_opt;
 } netos_pcapng_idb_t;
 
 typedef struct {
@@ -30,6 +40,10 @@ typedef struct {
 
 typedef struct {
     bool                big_endian;
+    char                *comment;
+    char                *hw;
+    char                *os;
+    char                *app;
     netos_pcapng_idb_t  idb;
     netos_pcapng_epb_t  epb;
 } netos_pcapng_file_record_t;
