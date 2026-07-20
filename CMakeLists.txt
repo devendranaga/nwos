@@ -158,6 +158,6 @@ endif()
 target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
 
 add_custom_target(pcapng_rust ALL
-    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/pcapng/Cargo.toml
+    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pcapng/Cargo.toml
     COMMENT "Building Rust pcapng library")
 
