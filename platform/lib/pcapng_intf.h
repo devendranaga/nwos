@@ -30,6 +30,18 @@ typedef struct {
 } netos_pcapng_idb_t;
 
 typedef struct {
+    uint32_t secrets_type;
+    uint32_t secrets_length;
+    uint8_t *secrets_data;
+} netos_pcapng_dsb_t;
+
+typedef struct {
+    uint16_t rec_type;
+    uint16_t rec_len;
+    uint8_t *rec;
+} netos_pcapng_nrb_t;
+
+typedef struct {
     uint32_t    intf_id;
     uint32_t    ts_high;
     uint32_t    ts_low;
@@ -39,6 +51,11 @@ typedef struct {
 } netos_pcapng_epb_t;
 
 typedef struct {
+    uint32_t    original_len;
+    uint8_t     *packet_data;
+} netos_pcapng_spb_t;
+
+typedef struct {
     bool                big_endian;
     char                *comment;
     char                *hw;
@@ -46,6 +63,9 @@ typedef struct {
     char                *app;
     netos_pcapng_idb_t  idb;
     netos_pcapng_epb_t  epb;
+    netos_pcapng_dsb_t  dsb;
+    netos_pcapng_nrb_t  nrb;
+    netos_pcapng_spb_t  spb;
 } netos_pcapng_file_record_t;
 
 typedef void (*netos_pcapng_parse_cb)(void *ctx, netos_pcapng_frame_t *frame);

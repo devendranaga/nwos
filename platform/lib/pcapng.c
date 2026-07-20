@@ -16,10 +16,12 @@
 #define NETOS_PCAPNG_ENDIAN_LE 0x1a2b3c4d
 
 // defines list of packet blocks
-#define NETOS_PCAPNG_IDB 1
-#define NETOS_PCAPNG_SPB 3
-#define NETOS_PCAPNG_ISB 5
-#define NETOS_PCAPNG_EPB 6
+#define NETOS_PCAPNG_IDB    0x01
+#define NETOS_PCAPNG_SPB    0x03
+#define NETOS_PCAPNG_NRB    0x04
+#define NETOS_PCAPNG_ISB    0x05
+#define NETOS_PCAPNG_EPB    0x06
+#define NETOS_PCAPNG_DSB    0x0a
 
 #define NETOS_IDB_OPT_IFNAME 2
 #define NETOS_IDB_OPT_IFDESC 3
@@ -28,10 +30,15 @@
 #define NETOS_IDB_OPT_OS 12
 #define NETOS_IDB_OPT_FCS_LEN 13
 
-#define NETOS_SHB_OPT_COMMENT   1
-#define NETOS_SHB_OPT_HW        2
-#define NETOS_SHB_OPT_OS        3
-#define NETOS_SHB_OPT_APP       4
+#define NETOS_SHB_OPT_COMMENT   0x01
+#define NETOS_SHB_OPT_HW        0x02
+#define NETOS_SHB_OPT_OS        0x03
+#define NETOS_SHB_OPT_APP       0x04
+
+#define NETOS_EPB_OPT_COMMENT   0x01
+
+#define NETOS_NRB_REC_IPV4 1
+#define NETOS_NRB_REC_IPV6 2
 
 // defines an SHB block typecasted to the mapped memory
 typedef struct __attribute__ ((__packed__)) {
@@ -150,8 +157,6 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.comment, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.comment[opt_len] = '\0';
-
-                    printf("comment %s\n", ctx->rec.comment);
                 } break;
                 case NETOS_SHB_OPT_HW: {
                     ctx->rec.hw = calloc(1, sizeof(char) * (opt_len + 1));
@@ -161,8 +166,6 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.hw, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.hw[opt_len] = '\0';
-
-                    printf("hw %s\n", ctx->rec.hw);
                 } break;
                 case NETOS_SHB_OPT_OS: {
                     ctx->rec.os = calloc(1, sizeof(char) * (opt_len + 1));
@@ -172,8 +175,6 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.os, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.os[opt_len] = '\0';
-
-                    printf("os %s\n", ctx->rec.os);
                 } break;
                 case NETOS_SHB_OPT_APP: {
                     ctx->rec.app = calloc(1, sizeof(char) * (opt_len + 1));
@@ -183,8 +184,6 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.app, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.app[opt_len] = '\0';
-
-                    printf("app %s\n", ctx->rec.app);
                 } break;
                 default:
                     fprintf(stderr, "Invalid opt_type %04x opt_len %d\n", opt_type, opt_len);
@@ -227,8 +226,6 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
             opt_type = netos_pcapng_get_u16(ctx);
             opt_len = netos_pcapng_get_u16(ctx);
 
-            printf("%s opt_type %04x opt_len %d\n", __func__, opt_type, opt_len);
-
             netos_pcapng_idb_opt_t *idb_opt = &ctx->rec.idb.idb_opt;
 
             switch (opt_type) {
@@ -243,6 +240,9 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
                     }
                 } break;
                 case NETOS_IDB_OPT_IFNAME: {
+                    if (idb_opt->ifname) {
+                        free(idb_opt->ifname);
+                    }
                     idb_opt->ifname = calloc(1, sizeof(char) * (opt_len + 1));
                     if (!idb_opt->ifname) {
                         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
@@ -250,8 +250,6 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->ifname, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->ifname[opt_len] = '\0';
-
-                    printf("ifname %s\n", idb_opt->ifname);
                 } break;
                 case NETOS_IDB_OPT_IFDESC: {
                     idb_opt->ifdesc = calloc(1, sizeof(char) * (opt_len + 1));
@@ -261,13 +259,9 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->ifdesc, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->ifdesc[opt_len] = '\0';
-
-                    printf("ifdesc %s\n", idb_opt->ifdesc);
                 } break;
                 case NETOS_IDB_OPT_TSRESOL: {
                     idb_opt->ts_resol = *(uint8_t *)(ctx->mapped_memory + ctx->offset);
-
-                    printf("tsresol %d\n", idb_opt->ts_resol);
                 } break;
                 case NETOS_IDB_OPT_IFFILTER: {
                     idb_opt->iffilter = calloc(1, sizeof(char) * (opt_len + 1));
@@ -277,8 +271,6 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->iffilter, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->iffilter[opt_len] = '\0';
-
-                    printf("iffilter %s %d\n", idb_opt->iffilter, opt_len);
                 } break;
                 case NETOS_IDB_OPT_OS: {
                     idb_opt->os = calloc(1, sizeof(char) * (opt_len + 1));
@@ -288,21 +280,15 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->os, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->os[opt_len] = '\0';
-
-                    printf("---> opt_len %d\n", opt_len);
-                    printf("os %s\n", idb_opt->os);
                 } break;
                 case NETOS_IDB_OPT_FCS_LEN: {
                     idb_opt->fcs_len = *(uint8_t *)(ctx->mapped_memory + ctx->offset);
-
-                    printf("fcs len %d\n", idb_opt->fcs_len);
                 } break;
                 default:
                     netos_log_error("%s: %u: unknown opt_type %04x opt_len %d\n", __func__, __LINE__, opt_type, opt_len);
                     return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
             }
 
-            printf("offset before %d opt_len %d %d\n", ctx->offset, opt_len, netos_pcapng_get_len_pad(opt_len));
             ctx->offset += netos_pcapng_get_len_pad(opt_len);
         } while (1);
     }
@@ -335,9 +321,154 @@ static netos_status_t netos_pcapng_parse_epb(netos_pcapng_ctx_t *ctx,
     block_len = netos_pcapng_get_u32(ctx);
     if (block_len != block_total_len) {
         // options
+        ctx->offset -= 4;
+
+        uint16_t opt_type;
+        uint16_t opt_len;
+
+        do {
+            opt_type = netos_pcapng_get_u16(ctx);
+            opt_len = netos_pcapng_get_u16(ctx);
+
+            if ((opt_type == 0) && (opt_len == 0)) {
+                block_len = netos_pcapng_get_u32(ctx);
+                if (block_len != block_total_len) {
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+                }
+
+                return NETOS_STATUS_SUCCESS;
+            }
+
+            switch (opt_type) {
+                case NETOS_EPB_OPT_COMMENT: {
+                    char *comment = calloc(1, sizeof(char) * (opt_len + 1));
+                    if (!comment) {
+                        return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                    }
+
+                    memcpy(comment, ctx->mapped_memory + ctx->offset, opt_len);
+                    comment[opt_len] = '\0';
+
+                    ctx->offset += netos_pcapng_get_len_pad(opt_len);
+                    free(comment);
+                } break;
+                default:
+                    netos_log_error("unknown opt_type %x opt_len %d\n", opt_type, opt_len);
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+            }
+        } while (1);
+        ctx->offset += netos_pcapng_get_len_pad(opt_len);
+
     } else if (block_len == block_total_len) {
         *no_options = true;
     }
+
+    ctx->parse_cb(ctx->user_ctx, &frame);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_pcapng_parse_dsb(netos_pcapng_ctx_t *ctx,
+                                             uint16_t block_total_len,
+                                             bool *no_options)
+{
+    uint32_t block_len;
+
+    ctx->rec.dsb.secrets_type = netos_pcapng_get_u32(ctx);
+    ctx->rec.dsb.secrets_length = netos_pcapng_get_u32(ctx);
+    ctx->rec.dsb.secrets_data = (uint8_t *)(ctx->mapped_memory + ctx->offset);
+
+    ctx->offset += netos_pcapng_get_len_pad(ctx->rec.dsb.secrets_length);
+
+    block_len = netos_pcapng_get_u32(ctx);
+
+    if (block_len == block_total_len) {
+        // no options
+        return NETOS_STATUS_SUCCESS;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_pcapng_parse_nrb(netos_pcapng_ctx_t *ctx,
+                                             uint16_t block_total_len,
+                                             bool *no_options)
+{
+    uint32_t block_len;
+
+    do {
+        ctx->rec.nrb.rec_type = netos_pcapng_get_u16(ctx);
+        ctx->rec.nrb.rec_len = netos_pcapng_get_u16(ctx);
+
+        if ((ctx->rec.nrb.rec_type == 0) &&
+            (ctx->rec.nrb.rec_len == 0)) {
+            break;
+        }
+
+        switch (ctx->rec.nrb.rec_type) {
+            case NETOS_NRB_REC_IPV4: {
+                uint32_t ipaddr;
+                char *ipaddr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len));
+                if (!ipaddr_str) {
+                    return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                }
+
+                ipaddr = netos_pcapng_get_u32(ctx);
+                ipaddr = NETOS_NTOHL(ipaddr);
+                memcpy(ipaddr_str, ctx->mapped_memory + ctx->offset, ctx->rec.nrb.rec_len - 4);
+
+                ipaddr_str[ctx->rec.nrb.rec_len - 4] = '\0';
+
+                ctx->offset += netos_pcapng_get_len_pad(ctx->rec.nrb.rec_len - 4);
+            } break;
+            case NETOS_NRB_REC_IPV6: {
+                //uint8_t *ip6addr;
+                char *ip6addr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len));
+                if (!ip6addr_str) {
+                    return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                }
+
+                //ip6addr = (uint8_t *)(ctx->mapped_memory + ctx->offset);
+                ctx->offset += 16;
+
+                memcpy(ip6addr_str, ctx->mapped_memory + ctx->offset, ctx->rec.nrb.rec_len - 16);
+
+                ip6addr_str[ctx->rec.nrb.rec_len - 16] = '\0';
+
+                ctx->offset += netos_pcapng_get_len_pad(ctx->rec.nrb.rec_len - 16);
+            } break;
+        }
+    } while (1);
+
+    block_len = netos_pcapng_get_u32(ctx);
+    if (block_len == block_total_len) {
+        return NETOS_STATUS_SUCCESS;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_pcapng_parse_spb(netos_pcapng_ctx_t *ctx,
+                                             uint32_t block_total_len,
+                                             bool *no_options)
+{
+    netos_pcapng_spb_t spb;
+    uint32_t block_len;
+
+    spb.original_len = netos_pcapng_get_u32(ctx);
+    spb.packet_data = (uint8_t *)(ctx->mapped_memory + ctx->offset);
+    block_len = netos_pcapng_get_u32(ctx);
+
+    if (block_len != block_total_len) {
+        fprintf(stderr, "invalid spb block length\n");
+        return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+    }
+
+    netos_pcapng_frame_t frame = {
+        .original_len   = spb.original_len,
+        .captured_len   = spb.original_len,
+        .pkt            = spb.packet_data,
+    };
 
     ctx->parse_cb(ctx->user_ctx, &frame);
 
@@ -365,8 +496,18 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
                     return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
                 }
             } break;
-            case NETOS_PCAPNG_SPB:
-            break;
+            case NETOS_PCAPNG_SPB: {
+                ret = netos_pcapng_parse_spb(ctx, block_total_len, &has_options);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+                }
+            } break;
+            case NETOS_PCAPNG_NRB: {
+                ret = netos_pcapng_parse_nrb(ctx, block_total_len, &has_options);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+                }
+            } break;
             case NETOS_PCAPNG_EPB: {
                 has_options = false;
 
@@ -375,8 +516,12 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
                     return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
                 }
             } break;
-            case NETOS_PCAPNG_ISB:
-            break;
+            case NETOS_PCAPNG_DSB: {
+                ret = netos_pcapng_parse_dsb(ctx, block_total_len, &has_options);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+                }
+            } break;
             default:
                 netos_log_error("%s: Unknown block_type %08x and block_total_len %d\n",
                                 __func__, block_type, block_total_len);
@@ -449,6 +594,7 @@ netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
             goto err;
         }
 
+        munmap(ctx->mapped_memory, st.st_size);
         return ctx;
     }
 

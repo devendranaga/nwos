@@ -4,13 +4,14 @@
 
 void packet_callback(void *ctx, netos_pcapng_frame_t *frame)
 {
+    static uint32_t count = 1;
     uint32_t i;
 
-    printf("frame: [%d] ", frame->captured_len);
+    fprintf(stderr, "frame[%d]: [%d] ", count ++, frame->captured_len);
     for (i = 0; i < frame->captured_len; i ++) {
-        printf("%02x", frame->pkt[i]);
+        fprintf(stderr, "%02x", frame->pkt[i]);
     }
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 int main(int argc, char **argv)
