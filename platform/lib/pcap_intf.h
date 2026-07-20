@@ -11,7 +11,7 @@
 /**
  * @brief - PCAP global header.
  */
-typedef struct {
+typedef struct __attribute__ ((__packed__)) {
     uint32_t    magic;         // Magic number (0xa1b2c3d4 or 0xd4c3b2a1)
     uint16_t    version_major; // Major version number
     uint16_t    version_minor; // Minor version number
@@ -24,23 +24,35 @@ typedef struct {
 /**
  * @brief - PCAP packet header.
  */
-typedef struct {
+typedef struct __attribute__ ((__packed__)) {
     uint32_t ts_sec;   // Timestamp seconds
     uint32_t ts_usec;  // Timestamp microseconds/nanoseconds
     uint32_t incl_len; // Number of bytes captured and saved in file
     uint32_t orig_len; // Actual length of packet on the wire
 } netos_pcap_packet_header_t;
 
+/**
+ * @brief - Defines a pcap context.
+ */
 typedef struct {
-    FILE *fp;
-    netos_pcap_global_header_t glob_hdr;
+    // valid fd until the netos_pcap_close_file is called
+    int                         fd;
+    // memory is mapped from the input file into this
+    void                        *mapped_memory;
+
+    // defines the file size in bytes
+    uint32_t                    file_size;
+
+    // offset bytes
+    uint32_t                    offset;
+    netos_pcap_global_header_t  *glob_hdr;
 } netos_pcap_context_t;
 
 netos_pcap_context_t *netos_pcap_read_file(const char *filename);
 
 netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
-                                          netos_pcap_packet_header_t *pkt_hdr,
-                                          uint8_t *buf);
+                                          netos_pcap_packet_header_t **pkt_hdr,
+                                          uint8_t **buf);
 
 void netos_pcap_close_file(netos_pcap_context_t *ctx);
 

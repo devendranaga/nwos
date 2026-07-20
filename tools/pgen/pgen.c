@@ -958,14 +958,15 @@ static void pgen_macsec_run()
 static void pgen_pcap_run()
 {
     pkt_buffer_t pkt_buf;
-    netos_pcap_packet_header_t pkt_hdr;
+    netos_pcap_packet_header_t *pkt_hdr = NULL;
     uint32_t n_replayed = 0;
     netos_status_t ret;
 
     do {
         pkt_buffer_initialize(&pkt_buf);
+        uint8_t *buffer = NULL;
 
-        ret = netos_pcap_read_file_entry(pgen.pcap_ctx, &pkt_hdr, pkt_buf.buffer);
+        ret = netos_pcap_read_file_entry(pgen.pcap_ctx, &pkt_hdr, &buffer);
         if (ret != NETOS_STATUS_SUCCESS) {
             if (ret == NETOS_STATUS_PCAP_EOF) {
                 fprintf(stderr, "end of pcap record\n");
@@ -975,7 +976,8 @@ static void pgen_pcap_run()
             break;
         }
 
-        pkt_buf.offset = pkt_hdr.incl_len;
+        memcpy(pkt_buf.buffer, buffer, pkt_hdr->incl_len);
+        pkt_buf.offset = pkt_hdr->incl_len;
         pkt_buffer_set_tx_len_default(&pkt_buf);
         netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 
