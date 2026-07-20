@@ -14,12 +14,22 @@ void packet_callback(void *ctx, netos_pcapng_frame_t *frame)
     fprintf(stderr, "\n");
 }
 
+void dns_callback(void *ctx, netos_pcapng_dns_lookup_data_t *dns)
+{
+    fprintf(stderr, "dns->is_ipv4 : %d\n", dns->is_ipv4);
+    fprintf(stderr, "dns->ipaddr: %s\n", dns->ipaddr_str);
+}
+
 int main(int argc, char **argv)
 {
+    netos_pcapng_parse_callbacks_t callbacks = {
+        .parse_cb = packet_callback,
+        .dns_cb = dns_callback,
+    };
     char *filename = argv[1];
     netos_pcapng_ctx_t *pcapng;
 
-    pcapng = netos_pcapng_ctx_parse(NETOS_PCAPNG_OP_READ, filename, NULL, packet_callback);
+    pcapng = netos_pcapng_ctx_parse(NETOS_PCAPNG_OP_READ, filename, NULL, &callbacks);
     if (!pcapng) {
         printf("failed to parse pcapng\n");
         return -1;

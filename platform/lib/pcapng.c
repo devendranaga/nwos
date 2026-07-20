@@ -146,10 +146,6 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
                     }
                 } break;
                 case NETOS_SHB_OPT_COMMENT: {
-                    if (ctx->rec.comment) {
-                        free(ctx->rec.comment);
-                    }
-
                     ctx->rec.comment = calloc(1, sizeof(char) * (opt_len + 1));
                     if (!ctx->rec.comment) {
                         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
@@ -157,6 +153,7 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.comment, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.comment[opt_len] = '\0';
+                    free(ctx->rec.comment);
                 } break;
                 case NETOS_SHB_OPT_HW: {
                     ctx->rec.hw = calloc(1, sizeof(char) * (opt_len + 1));
@@ -166,6 +163,7 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.hw, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.hw[opt_len] = '\0';
+                    free(ctx->rec.hw);
                 } break;
                 case NETOS_SHB_OPT_OS: {
                     ctx->rec.os = calloc(1, sizeof(char) * (opt_len + 1));
@@ -175,6 +173,7 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.os, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.os[opt_len] = '\0';
+                    free(ctx->rec.os);
                 } break;
                 case NETOS_SHB_OPT_APP: {
                     ctx->rec.app = calloc(1, sizeof(char) * (opt_len + 1));
@@ -184,6 +183,7 @@ static netos_status_t netos_pcapng_parse_shb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(ctx->rec.app, ctx->mapped_memory + ctx->offset, opt_len);
                     ctx->rec.app[opt_len] = '\0';
+                    free(ctx->rec.app);
                 } break;
                 default:
                     fprintf(stderr, "Invalid opt_type %04x opt_len %d\n", opt_type, opt_len);
@@ -240,9 +240,6 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
                     }
                 } break;
                 case NETOS_IDB_OPT_IFNAME: {
-                    if (idb_opt->ifname) {
-                        free(idb_opt->ifname);
-                    }
                     idb_opt->ifname = calloc(1, sizeof(char) * (opt_len + 1));
                     if (!idb_opt->ifname) {
                         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
@@ -250,6 +247,7 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->ifname, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->ifname[opt_len] = '\0';
+                    free(idb_opt->ifname);
                 } break;
                 case NETOS_IDB_OPT_IFDESC: {
                     idb_opt->ifdesc = calloc(1, sizeof(char) * (opt_len + 1));
@@ -259,6 +257,7 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->ifdesc, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->ifdesc[opt_len] = '\0';
+                    free(idb_opt->ifdesc);
                 } break;
                 case NETOS_IDB_OPT_TSRESOL: {
                     idb_opt->ts_resol = *(uint8_t *)(ctx->mapped_memory + ctx->offset);
@@ -271,6 +270,7 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->iffilter, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->iffilter[opt_len] = '\0';
+                    free(idb_opt->iffilter);
                 } break;
                 case NETOS_IDB_OPT_OS: {
                     idb_opt->os = calloc(1, sizeof(char) * (opt_len + 1));
@@ -280,6 +280,7 @@ static netos_status_t netos_pcapng_parse_idb(netos_pcapng_ctx_t *ctx,
 
                     memcpy(idb_opt->os, ctx->mapped_memory + ctx->offset, opt_len);
                     idb_opt->os[opt_len] = '\0';
+                    free(idb_opt->os);
                 } break;
                 case NETOS_IDB_OPT_FCS_LEN: {
                     idb_opt->fcs_len = *(uint8_t *)(ctx->mapped_memory + ctx->offset);
@@ -363,7 +364,7 @@ static netos_status_t netos_pcapng_parse_epb(netos_pcapng_ctx_t *ctx,
         *no_options = true;
     }
 
-    ctx->parse_cb(ctx->user_ctx, &frame);
+    ctx->parse_cb_data->parse_cb(ctx->user_ctx, &frame);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -407,33 +408,58 @@ static netos_status_t netos_pcapng_parse_nrb(netos_pcapng_ctx_t *ctx,
 
         switch (ctx->rec.nrb.rec_type) {
             case NETOS_NRB_REC_IPV4: {
-                uint32_t ipaddr;
-                char *ipaddr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len));
-                if (!ipaddr_str) {
+                netos_pcapng_dns_lookup_data_t dns;
+
+                dns.is_ipv4 = true;
+                dns.bytes.ipaddr = netos_pcapng_get_u32(ctx);
+                dns.bytes.ipaddr = NETOS_NTOHL(dns.bytes.ipaddr);
+                dns.ipaddr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len + 1));
+                if (!dns.ipaddr_str) {
                     return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
                 }
+                dns.ipaddr_str[ctx->rec.nrb.rec_len - 4] = '\0';
 
-                ipaddr = netos_pcapng_get_u32(ctx);
-                ipaddr = NETOS_NTOHL(ipaddr);
-                memcpy(ipaddr_str, ctx->mapped_memory + ctx->offset, ctx->rec.nrb.rec_len - 4);
+                ctx->parse_cb_data->dns_cb(ctx->user_ctx, &dns);
 
-                ipaddr_str[ctx->rec.nrb.rec_len - 4] = '\0';
+                free(dns.ipaddr_str);
 
                 ctx->offset += netos_pcapng_get_len_pad(ctx->rec.nrb.rec_len - 4);
             } break;
             case NETOS_NRB_REC_IPV6: {
-                //uint8_t *ip6addr;
-                char *ip6addr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len));
-                if (!ip6addr_str) {
+                netos_pcapng_dns_lookup_data_t dns;
+
+                dns.is_ipv4 = false;
+
+                dns.bytes.ip6addr[15] = *(uint8_t *)(ctx->mapped_memory + ctx->offset);
+                dns.bytes.ip6addr[14] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 1);
+                dns.bytes.ip6addr[13] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 2);
+                dns.bytes.ip6addr[12] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 3);
+                dns.bytes.ip6addr[11] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 4);
+                dns.bytes.ip6addr[10] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 5);
+                dns.bytes.ip6addr[9] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 6);
+                dns.bytes.ip6addr[8] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 7);
+                dns.bytes.ip6addr[7] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 8);
+                dns.bytes.ip6addr[6] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 9);
+                dns.bytes.ip6addr[5] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 10);
+                dns.bytes.ip6addr[4] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 11);
+                dns.bytes.ip6addr[3] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 12);
+                dns.bytes.ip6addr[2] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 13);
+                dns.bytes.ip6addr[1] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 14);
+                dns.bytes.ip6addr[0] = *(uint8_t *)(ctx->mapped_memory + ctx->offset + 15);
+
+                ctx->offset += 16;
+
+                dns.ipaddr_str = calloc(1, sizeof(char) * (ctx->rec.nrb.rec_len - 16));
+                if (!dns.ipaddr_str) {
                     return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
                 }
 
-                //ip6addr = (uint8_t *)(ctx->mapped_memory + ctx->offset);
-                ctx->offset += 16;
+                memcpy(dns.ipaddr_str, ctx->mapped_memory + ctx->offset, ctx->rec.nrb.rec_len - 16);
+                dns.ipaddr_str[ctx->rec.nrb.rec_len - 16] = '\0';
 
-                memcpy(ip6addr_str, ctx->mapped_memory + ctx->offset, ctx->rec.nrb.rec_len - 16);
+                ctx->parse_cb_data->dns_cb(ctx->user_ctx, &dns);
 
-                ip6addr_str[ctx->rec.nrb.rec_len - 16] = '\0';
+                free(dns.ipaddr_str);
 
                 ctx->offset += netos_pcapng_get_len_pad(ctx->rec.nrb.rec_len - 16);
             } break;
@@ -470,7 +496,7 @@ static netos_status_t netos_pcapng_parse_spb(netos_pcapng_ctx_t *ctx,
         .pkt            = spb.packet_data,
     };
 
-    ctx->parse_cb(ctx->user_ctx, &frame);
+    ctx->parse_cb_data->parse_cb(ctx->user_ctx, &frame);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -535,7 +561,7 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
 netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
                                            const char *filename,
                                            void *user_ctx,
-                                           netos_pcapng_parse_cb parse_cb)
+                                           netos_pcapng_parse_callbacks_t *parse_cb)
 {
     netos_pcapng_ctx_t *ctx;
     struct stat st;
@@ -552,8 +578,7 @@ netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
         return NULL;
     }
 
-    ctx->user_ctx = user_ctx;
-    ctx->parse_cb = parse_cb;
+    ctx->parse_cb_data = parse_cb;
 
     if (op == NETOS_PCAPNG_OP_READ) {
         ctx->fd = open(filename, O_RDONLY);
@@ -605,6 +630,9 @@ err:
         }
         if (ctx->fd > 0) {
             close(ctx->fd);
+        }
+        if (ctx->mapped_memory) {
+            munmap(ctx->mapped_memory, st.st_size);
         }
         free(ctx);
     }
