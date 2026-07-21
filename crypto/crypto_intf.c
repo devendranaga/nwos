@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "crypto_ctx.h"
@@ -60,5 +61,40 @@ void netos_crypto_deinit_gmac(netos_crypto_ctx_t *ctx, void *gmac_ctx)
     const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
 
     return crypto_intf->deinit_gmac(gmac_ctx);
+}
+
+void *netos_crypto_init_gcm(netos_crypto_ctx_t *ctx)
+{
+    const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
+
+    return crypto_intf->init_gcm();
+}
+
+netos_status_t netos_crypto_set_gcm_key(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_key_t *key)
+{
+    const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
+
+    return crypto_intf->set_gcm_key(gcm_ctx, key);
+}
+
+netos_status_t netos_crypto_encrypt_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_aes_gcm_params_t *params)
+{
+    const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
+
+    return crypto_intf->encrypt_gcm(gcm_ctx, params);
+}
+
+netos_status_t netos_crypto_decrypt_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_aes_gcm_params_t *params)
+{
+    const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
+
+    return crypto_intf->decrypt_gcm(gcm_ctx, params);
+}
+
+void netos_crypto_deinit_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx)
+{
+    const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;
+
+    return crypto_intf->deinit_gcm(gcm_ctx);
 }
 

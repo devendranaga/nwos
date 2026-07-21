@@ -227,6 +227,10 @@ static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
 
     if (!strcmp(tokens[1].name, "on")) {
         pgen.macsec_hdr.tci_an.e = 1;
+        if (pgen.gcm_ctx) {
+            netos_crypto_deinit_gmac(pgen.crypto_ctx, pgen.gcm_ctx);
+        }
+        pgen.gcm_ctx = netos_crypto_init_gcm(pgen.crypto_ctx);
     } else if (!strcmp(tokens[1].name, "off")) {
         pgen.macsec_hdr.tci_an.e = 0;
     } else {
@@ -926,29 +930,51 @@ static void pgen_macsec_run()
         pgen.macsec_hdr.sl = pgen.len;
     }
 
-    uint16_t aad_off_start = pkt_buf.offset;
-
     netos_macsec_encode(&pgen.macsec_hdr, &pkt_buf);
-    memcpy(data_buf, &pkt_buf.buffer[aad_off_start], pgen.macsec_hdr.hdr_len);
 
     if ((pgen.macsec_hdr.tci_an.e == 0) &&
         (pgen.macsec_hdr.tci_an.c == 1)) {
+        uint16_t aad_off_start = pkt_buf.offset;
+        memcpy(data_buf, &pkt_buf.buffer[aad_off_start], pgen.macsec_hdr.hdr_len);
         netos_crypto_aes_gmac_params_t gmac_params = {
-            .aad = data_buf,
-            .aad_len = pgen.macsec_hdr.hdr_len + pgen.len,
-            .iv = iv,
-            .tag = tag,
+            .aad        = data_buf,
+            .aad_len    = pgen.macsec_hdr.hdr_len + pgen.len,
+            .iv         = iv,
+            .tag        = tag,
         };
         ret = netos_crypto_generate_gmac(pgen.crypto_ctx,
                                          pgen.gcm_ctx,
                                          &gmac_params);
         if (ret != NETOS_STATUS_SUCCESS) {
-            printf("failed to crypto GMAC\n");
+            printf("failed to perform crypto GMAC\n");
             return;
         }
+        pkt_buffer_encode_bytes(&pkt_buf, &data_buf[pgen.macsec_hdr.hdr_len], pgen.len);
+    } else if (pgen.macsec_hdr.tci_an.e &&
+               pgen.macsec_hdr.tci_an.c) {
+        uint32_t aad_len = pgen.macsec_hdr.hdr_len - 2 + NETOS_ETH_HDR_LEN;
+        uint8_t *in_data_ptr = data_buf;
+        uint8_t *out_data_ptr = &pkt_buf.buffer[aad_len];
+        netos_crypto_aes_gcm_params_t gcm_params = {
+            .aad            = &pkt_buf.buffer[0],
+            .aad_len        = aad_len,
+            .in_msg         = in_data_ptr,
+            .in_msg_len     = pgen.len,
+            .out_msg        = out_data_ptr,
+            .out_msg_len    = pgen.len,
+            .iv             = iv,
+            .tag            = tag,
+        };
+        ret = netos_crypto_encrypt_gcm(pgen.crypto_ctx,
+                                       pgen.gcm_ctx,
+                                       &gcm_params);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            printf("failed to perform encrypt GCM\n");
+            return;
+        }
+        pkt_buf.offset += pgen.len;
     }
 
-    pkt_buffer_encode_bytes(&pkt_buf, &data_buf[pgen.macsec_hdr.hdr_len], pgen.len);
     pkt_buffer_encode_bytes(&pkt_buf, tag, 16);
 
     pkt_buffer_set_tx_len_default(&pkt_buf);

@@ -2,10 +2,10 @@
 #define NETOS_RING_H
 
 typedef struct {
-    void **items;
-    uint32_t wr_index;
-    uint32_t rd_index;
-    uint32_t size;
+    void        **items;
+    uint32_t    wr_index;
+    uint32_t    rd_index;
+    uint32_t    size;
 } netos_ring_t;
 
 #define NETOS_RING_EMPTY(__ring) ((__ring).rd_index == (__ring).wr_index)

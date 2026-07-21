@@ -161,3 +161,7 @@ add_custom_target(pcapng_rust ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pcapng/Cargo.toml
     COMMENT "Building Rust pcapng library")
 
+add_custom_target(protocols_rust ALL
+    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/protocols/Cargo.toml
+    COMMENT "Build Rust Network Protocols library")
+

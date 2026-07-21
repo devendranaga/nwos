@@ -53,6 +53,9 @@ netos_pcap_context_t *netos_pcap_read_file(const char *filename)
 
 err:
     if (ctx) {
+        if (ctx->mapped_memory != MAP_FAILED) {
+            munmap(ctx->mapped_memory, ctx->file_size);
+        }
         if (ctx->fd >= 0) {
             close(ctx->fd);
         }
@@ -83,6 +86,9 @@ netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
 void netos_pcap_close_file(netos_pcap_context_t *ctx)
 {
     if (ctx) {
+        if (ctx->mapped_memory != MAP_FAILED) {
+            munmap(ctx->mapped_memory, ctx->file_size);
+        }
         if (ctx->fd >= 0) {
             close(ctx->fd);
         }

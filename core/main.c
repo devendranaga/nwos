@@ -120,11 +120,15 @@ static void *netos_intf_parse_callback(void *cbdata)
 
         pkt_buffer_t *pkt;
 
+        // if ring is empty wait for the signal from the rx thread
         ring_empty = NETOS_RING_EMPTY(parse_thr->parse_ring);
 
         if (!ring_empty) {
             // retrieve the rx from the head of the queue
             pkt = netos_ring_remove(&parse_thr->parse_ring);
+
+            // once the pkt is removed from the ring, there is no need to
+            // held the lock to perform parsing on the pkt
             pthread_mutex_unlock(&parse_thr->parse_q_lock);
             if (!pkt) {
                 continue;
@@ -140,6 +144,7 @@ static void *netos_intf_parse_callback(void *cbdata)
             NETOS_PERF_EVENT_END(pkt->perf_evt);
 
         } else {
+            // wait until atleast one item is in ring
             pthread_cond_wait(&parse_thr->parse_q_cond, &parse_thr->parse_q_lock);
             pthread_mutex_unlock(&parse_thr->parse_q_lock);
         }

@@ -61,6 +61,16 @@ netos_crypto_verify_gmac(netos_crypto_ctx_t *ctx,
 
 void netos_crypto_deinit_gmac(netos_crypto_ctx_t *ctx, void *gmac_ctx);
 
+void *netos_crypto_init_gcm(netos_crypto_ctx_t *ctx);
+
+netos_status_t netos_crypto_set_gcm_key(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_key_t *key);
+
+netos_status_t netos_crypto_encrypt_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_aes_gcm_params_t *params);
+
+netos_status_t netos_crypto_decrypt_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx, netos_crypto_aes_gcm_params_t *params);
+
+void netos_crypto_deinit_gcm(netos_crypto_ctx_t *ctx, void *gcm_ctx);
+
 #if defined(__cplusplus)
 }
 #endif
