@@ -91,11 +91,6 @@ SET(NETOS_SRC
 set(TOOL_PGEN_SRC
     ./tools/pgen/pgen.c)
 
-set(TOOL_PKTDUMP_SRC
-    ./tools/pktdump/pktdump.c
-    ./tools/pktdump/pktdump_ui.c
-    ./tools/pktdump/pktdump_decoder.c)
-
 set(TEST_PCAPNG
     ./tests/test_pcapng.c)
 
@@ -112,8 +107,7 @@ include_directories(
                 ./switching/
                 ./crypto/
                 /usr/include/libxml2/
-                ./tools/pgen/
-                ./tools/pktdump/)
+                ./tools/pgen/)
 
 add_library(netos STATIC ${LIB_SRC})
 
@@ -144,9 +138,6 @@ add_library(netos_crypto STATIC ${CRYPTO_SRC})
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
 target_link_libraries(netos_pgen PRIVATE pthread netos netos_crypto ${CRYPTO_LINKER_FLAGS})
 
-add_executable(netos_pktdump ${TOOL_PKTDUMP_SRC})
-target_link_libraries(netos_pktdump PRIVATE ncurses pthread netos netos_crypto ${CRYPTO_LINKER_FLAGS})
-
 add_executable(netosd ${NETOS_SRC})
 
 add_executable(netos_pcapng_test ${TEST_PCAPNG})
@@ -165,4 +156,12 @@ add_custom_target(pcapng_rust ALL
 add_custom_target(protocols_rust ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/protocols/Cargo.toml
     COMMENT "Build Rust Network Protocols library")
+
+add_custom_target(pktdump_rust ALL
+    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pktdump/Cargo.toml
+    COMMENT "Build Rust Packet dump tool")
+
+add_custom_target(linux_abs ALL
+    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
+    COMMENT "Build rust Linux abstraction")
 

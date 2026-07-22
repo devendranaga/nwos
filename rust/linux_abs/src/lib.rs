@@ -1,11 +1,5 @@
-pub mod eth;
-pub mod arp;
-pub mod ipv4;
-pub mod ipv6;
-pub mod icmp;
-pub mod udp;
-pub mod tcp;
-pub mod pkt_buffer;
+
+pub mod raw_socket;
 
 #[cfg(test)]
 mod tests {
