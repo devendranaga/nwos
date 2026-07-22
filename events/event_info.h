@@ -118,6 +118,41 @@ typedef struct netos_event_info {
     (__evt_info)->s.sec         = 0;\
     (__evt_info)->s.nsec        = 0;\
     (__evt_info)->s.frame_len   = 0;\
+    (__evt_info)->s.ip.v6.src_addr[0] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[1] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[2] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[3] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[4] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[5] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[6] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[7] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[8] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[9] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[10] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[11] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[12] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[13] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[14] = 0;\
+    (__evt_info)->s.ip.v6.src_addr[15] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[0] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[1] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[2] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[3] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[4] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[5] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[6] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[7] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[8] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[9] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[10] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[11] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[12] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[13] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[14] = 0;\
+    (__evt_info)->s.ip.v6.dst_addr[15] = 0;\
+    (__evt_info)->s.protocol = 0;\
+    (__evt_info)->s.l4.ports.src_port = 0;\
+    (__evt_info)->s.l4.ports.dst_port = 0;\
 } while (0)
 
 /**
@@ -128,10 +163,8 @@ typedef struct netos_event_info {
  */
 #define NETOS_STRING_COPY(__dst, __src) do {\
     uint32_t __i = 0;\
-    while ((__src) && (*(__src) != '\0')) {\
-        (__dst)[__i] = *(__src);\
-        __i ++;\
-        __src ++;\
+    for (__i = 0; __src[__i] != '\0'; __i ++) {\
+        __dst[__i] = __src[__i];\
     }\
 } while (0)
 
@@ -156,6 +189,11 @@ typedef struct netos_event_info {
     (__evt_info)->s.nsec        = __nsec;\
     NETOS_STRING_COPY((__evt_info)->s.ifname, __ifname);\
     (__evt_info)->s.frame_len   = __frame_len;\
+} while (0)
+
+#define NETOS_EVENT_INFO_SET_IPV4_FIELDS(__evt_info, __src_addr, __dst_addr) do {\
+    (__evt_info)->s.ip.v4.src_addr = __src_addr;\
+    (__evt_info)->s.ip.v4.dst_addr = __dst_addr;\
 } while (0)
 
 /**

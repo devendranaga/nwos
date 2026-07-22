@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include "ethertypes.h"
 #include "arp.h"
 #include "ipv4.h"
 #include "netos_log.h"
@@ -79,8 +80,9 @@ static void *netos_intf_rx_callback(void *cbdata)
     return NULL;
 }
 
-static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
+static void netos_update_rx_event(const netos_parser_thread_t *parse_thr, pkt_buffer_t *pkt_buf)
 {
+    const netos_packet_parser_t *parse_data = &parse_thr->protocol_ctx.parsed_data;
     netos_event_info_t *evt_info;
 
     if ((pkt_buf->event_type == NETOS_EVENT_TYPE_INVAL) ||
@@ -95,12 +97,18 @@ static void netos_update_rx_event(const char *ifname, pkt_buffer_t *pkt_buf)
     }
 
     NETOS_EVENT_INFO_CREATE(evt_info,
-                            ifname,
+                            parse_thr->ifname,
                             pkt_buf->rx_ts.tv_sec,
                             pkt_buf->rx_ts.tv_nsec,
                             pkt_buf->event_type,
                             pkt_buf->event_desc,
                             pkt_buf->rx_len);
+    // update the ip fields because ipv4 exist
+    if (NETOS_IS_IPV4_FRAME(parse_data)) {
+        NETOS_EVENT_INFO_SET_IPV4_FIELDS(evt_info,
+                                         parse_data->l3.ipv4_hdr.src_ipaddr,
+                                         parse_data->l3.ipv4_hdr.dst_ipaddr);
+    }
 
     netos_event_mgr_add_event(evt_info);
 }
@@ -137,7 +145,7 @@ static void *netos_intf_parse_callback(void *cbdata)
             // parse the frame
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
-                netos_update_rx_event(parse_thr->ifname, pkt);
+                netos_update_rx_event(parse_thr, pkt);
                 netos_buffer_pool_put_buffer(parse_thr->rx_pool, pkt);
                 parse_thr->if_stats.in_rx_invalid ++;
             }
