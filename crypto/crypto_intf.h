@@ -25,21 +25,24 @@ typedef struct {
  * @brief - Defines GMAC params.
  */
 typedef struct {
-    uint8_t     *aad; //input
-    uint32_t    aad_len; //input
-    uint8_t     *iv; //input
-    uint8_t     *tag; //output
+    uint8_t     *aad; // input
+    uint32_t    aad_len; // input
+    uint8_t     *iv; // input
+    uint8_t     *tag; // output
 } netos_crypto_aes_gmac_params_t;
 
+/**
+ * @brief - Defines GCM params.
+ */
 typedef struct {
-    uint8_t     *aad;
-    uint32_t    aad_len;
-    uint8_t     *in_msg;
-    uint32_t    in_msg_len;
-    uint8_t     *out_msg;
-    uint32_t    out_msg_len;
-    uint8_t     *iv;
-    uint8_t     *tag;
+    uint8_t     *aad; // input
+    uint32_t    aad_len; // input
+    uint8_t     *in_msg; // input
+    uint32_t    in_msg_len; // input
+    uint8_t     *out_msg; // output
+    uint32_t    out_msg_len; // output
+    uint8_t     *iv; // input
+    uint8_t     *tag; // output
 } netos_crypto_aes_gcm_params_t;
 
 /**

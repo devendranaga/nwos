@@ -369,6 +369,7 @@ impl pcapng_parser {
                                     &self.pkt_buffer[self.offset
                                                      ..self.offset + 8]);
                     },
+                    // untested
                     SHB_IDB_OPT_IF_SPEED => {
                         self.ifspeed = self.get_u64();
                     },

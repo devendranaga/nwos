@@ -30,6 +30,11 @@ netos_status_t netos_icmp_tx(void *ctx,
 
 void netos_icmp_deinit(void *ctx)
 {
+    netos_icmp_ctx_t *icmp_ctx;
 
+    icmp_ctx = ctx;
+    if (icmp_ctx) {
+        free(icmp_ctx);
+    }
 }
 

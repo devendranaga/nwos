@@ -27,6 +27,7 @@ static netos_status_t netos_egress_alg_sp_init(netos_egress_controller_t *egress
 err:
     if (egress_ctrl->sp) {
         free(egress_ctrl->sp);
+        egress_ctrl->sp = NULL;
     }
 
     return NETOS_STATUS_EGRESS_SP_INIT_FAILED;
@@ -34,10 +35,8 @@ err:
 
 static void netos_egress_alg_sp_deinit(netos_egress_controller_t *egress_ctrl)
 {
-    if (egress_ctrl->sp) {
-        netos_egress_sp_deinit(egress_ctrl->sp);
-        free(egress_ctrl->sp);
-    }
+    netos_egress_sp_deinit(egress_ctrl->sp);
+    free(egress_ctrl->sp);
     egress_ctrl->sp = NULL;
 }
 
@@ -61,6 +60,7 @@ err:
     if (egress_ctrl->rr) {
         netos_egress_rr_deinit(egress_ctrl->rr);
         free(egress_ctrl->rr);
+        egress_ctrl->rr = NULL;
     }
 
     return NETOS_STATUS_EGRESS_RR_INIT_FAILED;
@@ -68,10 +68,8 @@ err:
 
 static void netos_egress_alg_rr_deinit(netos_egress_controller_t *egress_ctrl)
 {
-    if (egress_ctrl->rr) {
-        netos_egress_rr_deinit(egress_ctrl->rr);
-        free(egress_ctrl->rr);
-    }
+    netos_egress_rr_deinit(egress_ctrl->rr);
+    free(egress_ctrl->rr);
     egress_ctrl->rr = NULL;
 }
 
@@ -96,6 +94,7 @@ err:
     if (egress_ctrl->pfifo) {
         netos_egress_pfifo_deinit(egress_ctrl->pfifo);
         free(egress_ctrl->pfifo);
+        egress_ctrl->pfifo = NULL;
     }
 
     return NETOS_STATUS_EGRESS_PFIFO_INIT_FAILED;
@@ -103,10 +102,8 @@ err:
 
 static void netos_egress_alg_pfifo_deinit(netos_egress_controller_t *egress_ctrl)
 {
-    if (egress_ctrl->pfifo) {
-        netos_egress_pfifo_deinit(egress_ctrl->pfifo);
-        free(egress_ctrl->pfifo);
-    }
+    netos_egress_pfifo_deinit(egress_ctrl->pfifo);
+    free(egress_ctrl->pfifo);
     egress_ctrl->pfifo = NULL;
 }
 

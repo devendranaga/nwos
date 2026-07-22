@@ -54,6 +54,15 @@ netos_crypto_generate_gmac(netos_crypto_ctx_t *ctx,
                            void *gmac_ctx,
                            netos_crypto_aes_gmac_params_t *params);
 
+/**
+ * @brief - Verify the GMAC.
+ *
+ * @param [in] ctx - crypto context.
+ * @param [in] gmac_ctx - GMAC context.
+ * @param [in] params - GMAC params.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t
 netos_crypto_verify_gmac(netos_crypto_ctx_t *ctx,
                          void *gmac_ctx,

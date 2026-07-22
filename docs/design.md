@@ -1,7 +1,10 @@
 # Design notes
 
-**Notes**
-1. First notes on IP handling - 18/06/2026.
+## Crypto layer
+
+Crypto layer is a function pointer table that is set by underlying cryptography implementation. Any cryptography implementation can hook and return a valid pointer of type `crypto_intf_t`.
+
+The callers will get this pointer in the crypto context structure. The user will get an abstract APIs that wrap this callback pointers for more easier API calls.
 
 ## Parser to protocol handler handoff
 

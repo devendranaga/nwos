@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <interface_list>
-        <interface>wlp4s0</interface>
+        <interface>dummy0</interface>
         <!-- set mac and ip during the startup if found. -->
         <mac_address>00:01:02:22:24:44</mac_address>
         <ip_address>192.168.1.1</ip_address>
     </interface_list>
     <rx_buffer_pool_size>1024</rx_buffer_pool_size>
+    <vlan_table>
+        <vlan_entry>
+            <interface>dummy0</interface>
+            <in_vid>10</in_vid>
+            <out_vid>11</out_vid>
+        </vlan_entry>
+    </vlan_table>
     <protocols>
         <macsec>
             <n_secy>128</n_secy>

@@ -72,6 +72,27 @@ typedef struct netos_event_info {
         uint64_t                sec;
         uint64_t                nsec;
         uint32_t                frame_len;
+        union {
+            struct {
+                uint32_t        src_addr;
+                uint32_t        dst_addr;
+            } v4;
+            struct {
+                uint8_t         src_addr[16];
+                uint8_t         dst_addr[16];
+            } v6;
+        } ip;
+        uint8_t                 protocol;
+        union {
+            struct {
+                uint16_t        src_port;
+                uint16_t        dst_port;
+            } ports;
+            struct {
+                uint8_t         type;
+                uint8_t         code;
+            } icmp;
+        } l4;
     } s;
 
     struct netos_event_info *next;

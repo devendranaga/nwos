@@ -93,6 +93,10 @@ netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *rr)
 
 void netos_egress_rr_deinit(netos_egress_rr_mgr_t *rr)
 {
+    if (!rr) {
+        return;
+    }
+
     pthread_mutex_lock(&rr->rr_lock);
     rr->terminate_signal = true;
     pthread_cond_signal(&rr->rr_cond);

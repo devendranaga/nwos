@@ -52,7 +52,7 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] correct handling of ref count in rx and egress
 - [ ] MACsec implementation
 - [ ] Cryptography wrapper callback interface
-- [ ] MbedTLS, wolfSSL GCM
+- [ ] MbedTLS GCM
 - [ ] IPsec implementation
 - [ ] Event capture and storage tests
 - [ ] Address translation must be done right before the parser and straight to egress.
@@ -92,7 +92,6 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] 6in4 tunnel frame parsing
 - [ ] 6in4 tunnel frame generation
 - [ ] IPv6 frame generation
-- [ ] Tooling: MACsec encrypt implementation
 - [ ] Tooling: MACsec auto PN increment for every packet that is sent
 - [ ] Tooling: document the command usages
 - [ ] Tooling: when test finishes, reset the PN
@@ -179,6 +178,8 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [x] Tooling: MACsec key setting via pgen
 - [x] pfifo queueing discipline
 - [x] Take pkt buffer numbers from xml config
+- [x] WolfSSL Encryption
+- [x] Tooling: MACsec encrypt implementation
 
 
 ## Configuration

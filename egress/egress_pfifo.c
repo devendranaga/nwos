@@ -7,7 +7,7 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
     uint32_t i;
 
     pthread_mutex_lock(&pfifo->pfifo_lock);
-    pfifo->pkts_in_queue= false;
+    pfifo->pkts_in_queue = false;
     pfifo->thread_started = true;
     pthread_cond_signal(&pfifo->pfifo_cond);
     pthread_mutex_unlock(&pfifo->pfifo_lock);
@@ -95,6 +95,10 @@ void netos_egress_pfifo_enque(void *ctx,
 
 void netos_egress_pfifo_deinit(netos_egress_pfifo_mgr_t *pfifo)
 {
+    if (!pfifo) {
+        return;
+    }
+
     pthread_mutex_lock(&pfifo->pfifo_lock);
     pfifo->terminate_signal = true;
     pthread_cond_signal(&pfifo->pfifo_cond);

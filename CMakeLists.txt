@@ -37,7 +37,8 @@ SET(PROTOCOL_SRC
     ./protocols/ipv4.c)
 
 SET(SWITCHING_SRC
-    ./switching/atu.c)
+    ./switching/atu.c
+    ./switching/vlan_conv.c)
 
 SET(PLATFORM_SRC
     ./platform/lib/raw_socket.c
