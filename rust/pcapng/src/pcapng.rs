@@ -82,6 +82,12 @@ impl enhanced_pkt_block {
     }
 }
 
+impl Default for enhanced_pkt_block {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct simple_pkt_block {
     pub original_len    : u32,
     pub packet_data     : Vec<u8>,
@@ -183,7 +189,8 @@ impl pcapng_parser {
                         self.pkt_buffer[self.offset] as u16;
         }
         self.offset += 2;
-        return u16_val;
+
+        u16_val
     }
 
     fn get_u32(&mut self) -> u32 {
@@ -201,7 +208,8 @@ impl pcapng_parser {
                         self.pkt_buffer[self.offset] as u32;
         }
         self.offset += 4;
-        return u32_val;
+
+        u32_val
     }
 
     fn get_str(&mut self, len : usize) -> String {
@@ -209,7 +217,7 @@ impl pcapng_parser {
                                         ..self.offset + len].to_vec()).unwrap();
         self.offset += len;
 
-        return str_val;
+        str_val
     }
 
     fn get_u64(&mut self) -> u64 {
@@ -224,7 +232,8 @@ impl pcapng_parser {
             u64_val = u64::from_le_bytes(u64_bytes);
         }
         self.offset += 8;
-        return u64_val;
+
+        u64_val
     }
 
     fn parse_options(&mut self) -> i32 {
@@ -533,7 +542,7 @@ impl pcapng_parser {
                 let mut res = libc::read(self.handle,
                                          self.pkt_buffer.as_ptr()
                                             as *mut libc::c_void,
-                                         8 as usize);
+                                         8);
                 if res == 0 {
                     return 0;
                 } else if res != 8 {
@@ -629,8 +638,8 @@ impl pcapng_parser {
                  filename : String,
                  read_epb_callback : fn(epb : &mut enhanced_pkt_block),
                  read_spb_callback : fn(spb : &mut simple_pkt_block)) -> i32 {
-        let path = String::from(filename);
-        let path_libc = CString::new(path).expect("CString::new failed");
+
+        let path_libc = CString::new(filename).expect("CString::new failed");
 
         unsafe {
             self.handle = libc::open(path_libc.as_ptr(), libc::O_RDONLY);
@@ -683,7 +692,7 @@ impl pcapng_parser {
                 self.offset = 0;
                 let res = libc::read(self.handle,
                                      self.pkt_buffer.as_ptr() as *mut libc::c_void,
-                                     4 as usize);
+                                     4);
                 if res != 4 {
                     println!("invalid read size\n");
                     return -1;
@@ -696,8 +705,8 @@ impl pcapng_parser {
             } // value 1 means options are not there and length is already parsed out.
 
             // parse remaining blocks
-            return self.parse_blocks(read_epb_callback,
-                                     read_spb_callback).try_into().unwrap();
+            self.parse_blocks(read_epb_callback,
+                              read_spb_callback) as i32
         }
     }
 
