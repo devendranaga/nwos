@@ -11,4 +11,4 @@ jobs:
         sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev
     - name: Compile
       run: |
-        cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
+        mkdir build; cd build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
