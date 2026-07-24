@@ -53,15 +53,27 @@ typedef struct netos_egress_control {
     netos_egress_pfifo_t pfifo;
 } netos_egress_control_t;
 
+typedef struct netos_vlan_entry {
+    char        *ifname;
+    uint16_t    ingress_vid;
+    uint16_t    egress_vid;
+    struct netos_vlan_entry *next;
+} netos_vlan_entry_t;
+
+typedef struct netos_vlan_table_config {
+    netos_vlan_entry_t *entries;
+} netos_vlan_table_config_t;
+
 /**
  * @brief - Defines network config.
  */
 typedef struct network_config {
-    network_if_config_t     if_config[NETOS_IFLIST_MAX];
-    uint32_t                n_if_config;
-    uint32_t                rx_pkt_buffer_pool_len;
-    netos_protocol_config_t protocol_config;
-    netos_egress_control_t  egress_ctrl;
+    network_if_config_t         if_config[NETOS_IFLIST_MAX];
+    uint32_t                    n_if_config;
+    uint32_t                    rx_pkt_buffer_pool_len;
+    netos_protocol_config_t     protocol_config;
+    netos_egress_control_t      egress_ctrl;
+    netos_vlan_table_config_t   vlan_table_config;
 } network_config_t;
 
 /**

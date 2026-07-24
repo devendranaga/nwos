@@ -141,6 +141,12 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Signal handling
 - [ ] Tooling: Multiple interface transmit on pgen
 - [ ] ATU implementation
+- [ ] ICMPv6: implement Multicast listener report v2 parsing
+- [ ] ICMPv6: implement Router solicitations and Router advertisements
+- [ ] TCP: Parse options
+- [ ] Syslog: Parse Syslog protocol
+- [ ] LACP: Parse LAG
+- [ ] NTP: Parse NTP
 
 ## Done
 

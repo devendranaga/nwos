@@ -29,15 +29,20 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
 
         for (i = 0; pkt_buf && (i < pfifo->n_pkts); i ++) {
             if (pkt_buf && pkt_buf->out_intf) {
+                pkt_buffer_t *next = pkt_buf->next;
+
                 netos_raw_socket_tx(pkt_buf->out_intf,
                                     pkt_buf->buffer,
                                     pkt_buf->tx_len);
 
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
 
-                pkt_buf = pkt_buf->next;
+                pkt_buf = next;
             }
         }
+
+        pfifo->queue.pkt_buf = NULL;
+
         pthread_mutex_unlock(&pfifo->pfifo_lock);
     }
 
@@ -88,6 +93,7 @@ void netos_egress_pfifo_enque(void *ctx,
             pfifo->queue.pkt_buf_last = pkt_buf;
         }
         pfifo->pkts_in_queue = true;
+        pfifo->in_pkts ++;
     }
     pthread_cond_signal(&pfifo->pfifo_cond);
     pthread_mutex_unlock(&pfifo->pfifo_lock);

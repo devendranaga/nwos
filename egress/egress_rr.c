@@ -48,6 +48,10 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
 
                     // perform transmit of the packet
                     rr_item->pkt_buf = pkt_buf->next;
+                    if (pkt_buf->out_intf) {
+                        netos_raw_socket_tx(pkt_buf->out_intf, pkt_buf->buffer, pkt_buf->tx_len);
+                    }
+
                     netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
                     if (rr_item->pkt_buf) {
                         count ++;

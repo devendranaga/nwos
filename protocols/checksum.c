@@ -57,6 +57,8 @@ uint16_t netos_l4_checksum(netos_checksum_t *chksum)
     checksum32 += ((chksum->len & 0xFFFF0000) >> 16) + (chksum->len & 0x0000FFFF);
     checksum32 += chksum->protocol;
 
+    // assuming that the checksum calculated is always until the rx buffer which is
+    // 1500+ but never be as big as the allocated buffer size which is 4096.
     for (i = 0; i <= chksum->len + pad; i += 2) {
         if (i < chksum->len - 1) {
             checksum32 += (chksum->buffer[i] << 8) | (chksum->buffer[i + 1]);

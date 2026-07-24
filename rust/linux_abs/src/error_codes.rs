@@ -1,0 +1,7 @@
+#![allow(non_camel_case_types)]
+
+pub enum netos_error_codes {
+    Netos_Error_No_Error,
+    Netos_Error_Invalid_Ifname,
+}
+

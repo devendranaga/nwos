@@ -23,7 +23,7 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
 
     NETOS_ETH_DEFAULTS(eth_h,
                        pkt_parser->eh.src,
-                       pkt_parser->eh.dst,
+                       pkt_buf->in_intf->mac,
                        NETOS_ETHERTYPE_ARP);
 
     NETOS_ARP_REPLY_DEFAULTS((&arp_h),
@@ -115,6 +115,7 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 
             uint32_t *sender_protocol_addr = calloc(1, sizeof(uint32_t));
             if (!sender_protocol_addr) {
+                free(entry);
                 ret = NETOS_STATUS_MEMORY_ALLOC_FAILURE;
                 goto unlock;
             }

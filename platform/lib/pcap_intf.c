@@ -69,6 +69,8 @@ netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
                                           netos_pcap_packet_header_t **pkt_hdr,
                                           uint8_t **buf)
 {
+    // current offset + the packet header is beyond the given file size.
+    // i.e. EOF.
     if ((ctx->offset + sizeof(netos_pcap_packet_header_t)) >= ctx->file_size) {
         return NETOS_STATUS_PCAP_EOF;
     }
@@ -76,6 +78,7 @@ netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
     *pkt_hdr = (netos_pcap_packet_header_t *)(ctx->mapped_memory + ctx->offset);
     ctx->offset += sizeof(netos_pcap_packet_header_t);
 
+    // typecast the buffer to the mapped memory ..this pointer is read-only!
     *buf = (uint8_t *)(ctx->mapped_memory + ctx->offset);
 
     ctx->offset += (*pkt_hdr)->incl_len;

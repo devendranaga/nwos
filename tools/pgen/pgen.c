@@ -19,7 +19,7 @@
 static struct pgen pgen;
 
 struct pgen_token {
-    char name[40];
+    char name[1024];
 };
 
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);

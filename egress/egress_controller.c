@@ -159,7 +159,7 @@ void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
                         pkt_buffer_t *pkt_buf)
 {
     // invalid egress algorithm
-    if ((alg < NETOS_EGRESS_ALG_SP) || (alg > NETOS_EGRESS_ALG_RR)) {
+    if ((alg < NETOS_EGRESS_ALG_SP) || (alg > NETOS_EGRESS_ALG_PFIFO)) {
         egress_ctrl->mib.drops_inval_alg ++;
         return;
     }
