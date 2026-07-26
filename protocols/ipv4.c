@@ -61,3 +61,9 @@ netos_status_t netos_ipv4_initialize(network_config_t *config)
     return NETOS_STATUS_SUCCESS;
 }
 
+netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
+                                     netos_packet_parser_t *pkt_parser)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+

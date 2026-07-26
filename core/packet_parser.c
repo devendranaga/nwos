@@ -1,6 +1,7 @@
 #include "pkt_buffer.h"
 #include "protocols.h"
 #include "arp.h"
+#include "ipv4.h"
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
 #include "ethertypes.h"
@@ -178,6 +179,8 @@ check_ethertype:
             return ret;
         }
         parsed_data->protocol = parsed_data->l3.ipv4_hdr.protocol;
+
+        ret = netos_ipv4_rx_process(pkt_buf, parsed_data);
 
     } else if (ethertype == NETOS_ETHERTYPE_IPV6) {
         ret = netos_ipv6_decode(&parsed_data->l3.ipv6_hdr, pkt_buf);
