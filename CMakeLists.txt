@@ -32,9 +32,7 @@ SET(PROTOCOL_SRC
     ./protocols/udp_parse.c
     ./protocols/checksum.c
     ./protocols/icmp_parse.c
-    ./protocols/icmp.c
     ./protocols/icmp6_parse.c
-    ./protocols/ipv4.c
     ./protocols/mka_parse.c
     ./protocols/mka.c)
 
@@ -85,6 +83,9 @@ SET(NETOS_SRC
     ./core/packet_parser.c
     ./core/netos_config.c
     ./protocols/arp.c
+    ./protocols/macsec.c
+    ./protocols/icmp.c
+    ./protocols/ipv4.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c
