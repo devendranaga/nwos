@@ -1,5 +1,21 @@
 # Design notes
 
+## Configuration
+
+The configuration is an xml file. The configuration is parsed as follows;
+
+1. Look at the XML branch.
+2. If there's callback attached to it, call it.
+3. In the callback, check if its a branch or leaf nodes.
+4. If its a branch, repeat the step 2.
+5. If its a leaf node, parse it and set it to the variable.
+6. Repeat until the parser reaches the end of file.
+
+This way the configuration parsing become extensible with just adding new functions instead of writing parsing code again and again.
+
+The parsing objects are u16, u32, u8 *[mac], u32 ip address, u8 [ip6 address], string. The APIs are written to these and
+the leaf_callbacks will call these functions to reduce repeated parsing as well.
+
 ## Crypto layer
 
 Crypto layer is a function pointer table that is set by underlying cryptography implementation. Any cryptography implementation can hook and return a valid pointer of type `crypto_intf_t`.

@@ -6,7 +6,7 @@
 
 // PCAP Magic header
 #define NETOS_PCAP_MAGIC_NUMBER_BE 0xA1B2C3D4
-#define NETOS_PCAP_MAGIC_NUMBER_LE 0xD4C4B2A1
+#define NETOS_PCAP_MAGIC_NUMBER_LE 0xD4C3B2A1
 
 /**
  * @brief - PCAP global header.
