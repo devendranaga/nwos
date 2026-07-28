@@ -2,8 +2,8 @@
 
 pub struct netos_pkt_buffer {
     pub buffer : [u8; 4096],
-    offset : usize,
-    rx_len : usize,
+    pub offset : usize,
+    pub rx_len : usize,
 }
 
 impl netos_pkt_buffer {
