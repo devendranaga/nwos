@@ -27,7 +27,7 @@ impl std::fmt::Display for ipv4_hdr {
         writeln!(f, "IPv4: ")?;
         writeln!(f, "\t version: {}", self.version)?;
         writeln!(f, "\t header_len: {}", self.header_len)?;
-        writeln!(f, "\t dscp: {}", self.dscp)?;
+        writeln!(f, "\t dscp: 0x{:02x}", self.dscp)?;
         writeln!(f, "\t ecn: {}", self.ecn)?;
         writeln!(f, "\t total_len: {}", self.total_len)?;
         writeln!(f, "\t id: {}", self.id)?;
@@ -66,7 +66,7 @@ impl ipv4_hdr {
 
     pub fn decode(&mut self, pkt_buf : &mut pkt_buffer::netos_pkt_buffer) -> i32 {
         self.version = (pkt_buf.buffer[pkt_buf.offset] & 0xF0) >> 4;
-        self.header_len = (pkt_buf.buffer[pkt_buf.offset] & 0x0F) * 5;
+        self.header_len = (pkt_buf.buffer[pkt_buf.offset] & 0x0F) * 4;
         pkt_buf.offset += 1;
 
         self.dscp = (pkt_buf.buffer[pkt_buf.offset] & 0xFC) >> 2;
