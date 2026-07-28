@@ -1,9 +1,10 @@
 #![allow(non_camel_case_types)]
 
-#[path = "pkt_buffer.rs"]
-pub mod pkt_buffer;
+use crate::pkt_buffer;
 
 use std::fmt;
+
+pub const NETOS_ETHERTYPE_IPV4 : u16 = 0x0800;
 
 ///
 /// Implements an ethernet header

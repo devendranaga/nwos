@@ -1,7 +1,7 @@
 #![allow(non_camel_case_types)]
 
 pub struct netos_pkt_buffer {
-    pub buffer : [u8; 4096],
+    pub buffer : [u8; 4096 * 16],
     pub offset : usize,
     pub rx_len : usize,
 }
@@ -9,7 +9,7 @@ pub struct netos_pkt_buffer {
 impl netos_pkt_buffer {
     pub fn new() -> Self {
         Self {
-            buffer : [0; 4096],
+            buffer : [0; 4096 * 16],
             offset : 0,
             rx_len : 0,
         }

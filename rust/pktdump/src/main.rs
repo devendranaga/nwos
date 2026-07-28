@@ -4,6 +4,7 @@ use clap::{Arg, ArgAction, Command};
 use pcapng::pcap;
 use protocols::pkt_buffer::netos_pkt_buffer;
 use protocols::eth;
+use protocols::ipv4;
 
 fn netos_pktdump_parse_frame(pkt : &mut pcap::netos_pcap_packet_header) {
     let mut pkt_buf = netos_pkt_buffer::new();
@@ -23,6 +24,17 @@ fn netos_pktdump_parse_frame(pkt : &mut pcap::netos_pcap_packet_header) {
         return;
     }
     println!("{}", eth_hdr);
+
+    if eth_hdr.ethertype == eth::NETOS_ETHERTYPE_IPV4 {
+        let mut ipv4_hdr = ipv4::ipv4_hdr::new();
+
+        ret = ipv4_hdr.decode(&mut pkt_buf);
+        if ret != 0 {
+            return;
+        }
+
+        println!("{}", ipv4_hdr);
+    }
 }
 
 fn netos_pktdump_read_callback(pkt : &mut pcap::netos_pcap_packet_header) {
@@ -32,6 +44,9 @@ fn netos_pktdump_read_callback(pkt : &mut pcap::netos_pcap_packet_header) {
 fn netos_pktdump_pcapfile_parse(filename : &String) {
     let mut pcap_parser = pcap::netos_pcap_parser::new();
     let ret = pcap_parser.read(filename.to_string(), netos_pktdump_read_callback);
+    if ret != 0 {
+        println!("invalid pcap file format in {}", filename);
+    }
 }
 
 fn main() {
