@@ -92,6 +92,13 @@ static inline void pkt_buffer_reset(pkt_buffer_t *pkt_buf)
     pkt_buf->out_intf   = NULL;
 }
 
+static inline void pkt_buffer_reset_lengths(pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->offset = 0;
+    pkt_buf->rx_len = 0;
+    pkt_buf->tx_len = 0;
+}
+
 static inline uint16_t pkt_buffer_remaining_rx_len(pkt_buffer_t *pkt_buf)
 {
     if (pkt_buf->rx_len >= pkt_buf->offset) {

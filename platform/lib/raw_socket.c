@@ -121,6 +121,8 @@ int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t dat
 {
     struct sockaddr_ll lladdr;
 
+    memset(&lladdr, 0, sizeof(lladdr));
+
     lladdr.sll_ifindex = raw->ifindex;
     lladdr.sll_halen = ETH_ALEN;
     lladdr.sll_addr[0] = 0x00;

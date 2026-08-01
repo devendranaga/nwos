@@ -64,6 +64,23 @@ typedef struct netos_vlan_table_config {
     netos_vlan_entry_t *entries;
 } netos_vlan_table_config_t;
 
+typedef struct netos_macsec_secy_entry_config {
+    char        *ifname;
+    uint32_t    cipher_suite;
+    uint8_t     tx_sci[8];
+    uint8_t     tx_an;
+    uint8_t     rx_sci[8];
+    uint8_t     rx_an;
+    char        *macsec_key;
+
+    struct netos_macsec_secy_entry_config *next;
+} netos_macsec_secy_entry_config_t;
+
+typedef struct netos_macsec_secy_config {
+    uint8_t                             n_secy;
+    netos_macsec_secy_entry_config_t    *secy_list;
+} netos_macsec_secy_config_t;
+
 /**
  * @brief - Defines network config.
  */
@@ -74,6 +91,7 @@ typedef struct network_config {
     netos_protocol_config_t     protocol_config;
     netos_egress_control_t      egress_ctrl;
     netos_vlan_table_config_t   vlan_table_config;
+    netos_macsec_secy_config_t  secy_config;
 } network_config_t;
 
 /**

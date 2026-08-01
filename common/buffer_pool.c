@@ -61,6 +61,7 @@ pkt_buffer_t *netos_buffer_pool_get_buffer(netos_buffer_pool_t *pool)
 
     if (pool->free_buffers) {
         ptr = pool->free_buffers;
+        ptr->next = NULL;
         pkt_buffer_ref_count_up(ptr);
         pool->free_buffers = pool->free_buffers->next;
     }

@@ -201,6 +201,23 @@ netos_config_parse_icmp_config(network_config_t *config,
     return ret;
 }
 
+static netos_status_t
+netos_config_parse_macsec_config(network_config_t *config,
+                                 xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *iter;
+    netos_status_t ret = NETOS_STATUS_SUCCESS;
+
+    return ret;
+
+    for (iter = node->children; iter; iter = iter->next) {
+        if (iter->type == XML_ELEMENT_NODE) {
+        }
+    }
+
+    return ret;
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(network_config_t *config,
@@ -208,7 +225,8 @@ static const struct {
 } protocol_config_callbacks[] = {
     { "arp",    netos_config_parse_arp_config },
     { "ipv4",   netos_config_parse_ipv4_config },
-    { "icmp",   netos_config_parse_icmp_config }
+    { "icmp",   netos_config_parse_icmp_config },
+    { "macsec", netos_config_parse_macsec_config }
 };
 
 static netos_status_t
@@ -370,9 +388,6 @@ netos_status_t netos_config_parse(network_config_t *config, const char *config_p
 end:
     if (root) {
         xmlFree(root);
-    }
-    if (doc) {
-        xmlFreeDoc(doc);
     }
 
     return NETOS_STATUS_CONFIG_INVAL_XML;

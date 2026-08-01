@@ -150,7 +150,6 @@ impl netos_pcap_parser {
                 let mut ret = libc::read(self.fd, buf.as_ptr() as *mut libc::c_void, 16);
                 if ret != 16 {
                     if ret == 0 {
-                        println!("end of file reached");
                         return 0;
                     }
 
@@ -175,7 +174,6 @@ impl netos_pcap_parser {
                 }
                 ret = libc::read(self.fd, buf.as_ptr() as *mut libc::c_void, pcap_hdr.incl_len as usize);
                 if ret == 0 {
-                    println!("end of file reached");
                     return 0;
                 }
                 if ret != pcap_hdr.incl_len as isize {

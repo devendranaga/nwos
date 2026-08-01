@@ -57,8 +57,6 @@ static void *netos_intf_rx_callback(void *cbdata)
         rx_buf->event_type = NETOS_EVENT_TYPE_INVAL;
         rx_buf->event_desc = NETOS_EVENT_DESC_INVAL;
 
-        rx_buf->in_intf = intf->raw;
-
         ret = netos_raw_socket_rx(intf->raw, rx_buf->buffer, sizeof(rx_buf->buffer));
         if (ret <= 0) {
             // receive failed, give back the buffer to the pool
@@ -66,6 +64,7 @@ static void *netos_intf_rx_callback(void *cbdata)
             continue;
         }
 
+        rx_buf->in_intf = intf->raw;
         clock_gettime(CLOCK_REALTIME, &rx_buf->rx_ts);
         rx_buf->rx_len = ret;
         intf->parser_thr->if_stats.in_rx_bytes += ret;

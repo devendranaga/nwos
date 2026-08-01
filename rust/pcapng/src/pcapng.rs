@@ -150,6 +150,14 @@ pub struct pcapng_parser {
     stats           : intf_stats_block,
 }
 
+impl Drop for pcapng_parser {
+    fn drop(&mut self) {
+        if self.handle >= 0 {
+            unsafe { libc::close(self.handle); }
+        }
+    }
+}
+
 impl pcapng_parser {
 
     /// Initialize the pcapng interface

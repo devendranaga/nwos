@@ -125,7 +125,7 @@ netos_status_t netos_ioctl_get_ipaddr(int fd, const char *ifname, uint32_t *ipad
     }
 
     struct sockaddr_in *ifaddr = (struct sockaddr_in *)(&ifr.ifr_addr);
-    *ipaddr = ifaddr->sin_addr.s_addr;
+    *ipaddr = ntohl(ifaddr->sin_addr.s_addr);
 
     return NETOS_STATUS_SUCCESS;
 }

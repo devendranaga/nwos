@@ -32,15 +32,16 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
                              pkt_parser->arp_hdr.sender_hwaddr,
                              pkt_parser->arp_hdr.sender_protocol_addr);
 
-    pkt_buffer_reset(pkt_buf);
+    pkt_buf->offset = 0;
+    pkt_buf->rx_len = 0;
+    pkt_buf->tx_len = 0;
+
     pkt_buffer_set_egress_intf_self(pkt_buf);
 
     netos_eth_encode(&eth_h, pkt_buf);
     netos_arp_encode(&arp_h, pkt_buf);
 
     pkt_buffer_set_tx_len_default(pkt_buf);
-
-    pkt_buf->out_intf = pkt_buf->in_intf;
 
     netos_egress_enque(pkt_buf->out_intf->egress_ctrl,
                        NETOS_EGRESS_ALG_SP,

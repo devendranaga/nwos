@@ -23,7 +23,6 @@ fn netos_pktdump_parse_frame(pkt : &mut pcap::netos_pcap_packet_header) {
     if ret != 0 {
         return;
     }
-    println!("{}", eth_hdr);
 
     if eth_hdr.ethertype == eth::NETOS_ETHERTYPE_IPV4 {
         let mut ipv4_hdr = ipv4::ipv4_hdr::new();
@@ -32,8 +31,6 @@ fn netos_pktdump_parse_frame(pkt : &mut pcap::netos_pcap_packet_header) {
         if ret != 0 {
             return;
         }
-
-        println!("{}", ipv4_hdr);
     }
 }
 

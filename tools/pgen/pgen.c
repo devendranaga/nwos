@@ -842,6 +842,11 @@ static void pgen_arp_run()
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
+    if (pgen.vlan_enable) {
+        pgen.vlan_hdr.ethertype = NETOS_ETHERTYPE_ARP;
+    } else {
+        pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_ARP;
+    }
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
 
     if (pgen.vlan_enable) {

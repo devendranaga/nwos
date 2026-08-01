@@ -9,6 +9,7 @@
 #include "ring.h"
 #include "interface_stats.h"
 #include "arp.h"
+#include "macsec.h"
 
 typedef struct netos_protocol_context {
     netos_packet_parser_t       parsed_data;

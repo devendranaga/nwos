@@ -147,6 +147,9 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 - [ ] Syslog: Parse Syslog protocol
 - [ ] LACP: Parse LAG
 - [ ] NTP: Parse NTP
+- [ ] pfifo_fast: with 3 queues mapped from vlan priorities 7-0.
+- [ ] SFQ: stochastic fair queueing without re-hashing.
+- [ ] Tool ctl: to control or view the insides of the netos
 
 ## Done
 

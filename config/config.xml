@@ -17,7 +17,15 @@
     <protocols>
         <macsec>
             <n_secy>128</n_secy>
-            <keydb_file>./config/macsec_keys.db</keydb_file>
+            <secy>
+                <ifname>dummy0</ifname>
+                <cipher_suite>aes_gcm_128</cipher_suite>
+                <tx_sci>00:11:22:00:11:22:33:44</tx_sci>
+                <tx_an>0</tx_an>
+                <rx_sci>00:12:22:00:12:22:00:11</rx_sci>
+                <rx_an>0</rx_an>
+                <sak>macsec.bin</sak>
+            </secy>
         </macsec>
         <arp>
             <arp_cache_size>32</arp_cache_size>

@@ -7,6 +7,7 @@
 #include "raw_socket.h"
 #include "egress_sp.h"
 #include "buffer_pool.h"
+#include "netos_log.h"
 
 void *netos_egress_sp_tx_queue_thread(void *ctx)
 {
@@ -73,7 +74,6 @@ netos_status_t netos_egress_sp_init(netos_egress_sp_mgr_t *sp)
     // create sp tx thread for the 8 queues
     ret = netos_pthread_create_detached(&sp->sp_tid, 1, netos_egress_sp_tx_queue_thread, sp);
     if (ret != NETOS_STATUS_SUCCESS) {
-        printf("%s %u\n", __func__, __LINE__);
         return ret;
     }
 
