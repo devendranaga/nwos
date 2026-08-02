@@ -19,7 +19,7 @@ mod tests {
         if fd < 0 {
             panic!("cannot open raw socket");
         }
-        let val = net_ioctl::set_promisc(&ifname, fd);
+        let val = net_ioctl::modify_promisc(&ifname, fd, true);
         match val {
             Some(netos_error_codes::Netos_Error_No_Error) => {
                 println!("set promisc ok");

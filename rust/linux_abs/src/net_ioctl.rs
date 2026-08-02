@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 #![allow(dead_code)]
+#![allow(unused_variables)]
 
 use crate::error_codes;
 
@@ -10,7 +11,7 @@ pub struct net_ioctl {
 }
 
 impl net_ioctl {
-    pub fn set_promisc(ifname : &String, fd : i32) -> Option<netos_error_codes> {
+    pub fn modify_promisc(ifname : &String, fd : i32, set : bool) -> Option<netos_error_codes> {
         unsafe {
             let mut ifr : libc::ifreq = std::mem::zeroed();
             let name_bytes = ifname.as_bytes();
@@ -33,7 +34,13 @@ impl net_ioctl {
             }
 
             let flags = ifr.ifr_ifru.ifru_flags as libc::c_int;
-            let promisc = flags | libc::IFF_PROMISC;
+            let mut promisc = flags;
+
+            if set {
+                promisc |= libc::IFF_PROMISC;
+            } else {
+                promisc &= !libc::IFF_PROMISC;
+            }
 
             ifr.ifr_ifru = libc::__c_anonymous_ifr_ifru {
                 ifru_flags: promisc as libc::c_short,

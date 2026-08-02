@@ -40,10 +40,10 @@ impl netos_pkt_buffer {
     }
 
     pub fn decode_4_bytes(&mut self) -> u32 {
-        let u32_val = (((self.buffer[self.offset] as u32) << 24) |
-                       ((self.buffer[self.offset + 1] as u32) << 16) |
-                       ((self.buffer[self.offset + 2] as u32) << 8) |
-                       ((self.buffer[self.offset + 3] as u32)));
+        let u32_val = ((self.buffer[self.offset] as u32) << 24) |
+                      ((self.buffer[self.offset + 1] as u32) << 16) |
+                      ((self.buffer[self.offset + 2] as u32) << 8) |
+                      ((self.buffer[self.offset + 3] as u32));
         self.offset += 4;
 
         u32_val
