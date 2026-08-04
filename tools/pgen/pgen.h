@@ -40,5 +40,9 @@ struct pgen {
     void                        *gcm_ctx;
 };
 
+struct pgen_token {
+    char name[1024];
+};
+
 #endif
 

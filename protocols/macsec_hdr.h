@@ -11,6 +11,7 @@ extern "C" {
 #define NETOS_MACSEC_ICV_LEN        16
 #define NETOS_MACSEC_MIN_HDR_LEN    8
 #define NETOS_MACSEC_MAX_HDR_LEN    16
+#define NETOS_MACSEC_AN_LEN         4
 
 typedef struct {
     uint8_t v;

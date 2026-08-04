@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #include "netos_status.h"
 #include "common.h"
 #include "pkt_buffer.h"
@@ -17,10 +19,6 @@
 #include "pgen_cmd_strings.h"
 
 static struct pgen pgen;
-
-struct pgen_token {
-    char name[1024];
-};
 
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);
 
@@ -92,17 +90,43 @@ static void pgen_set_defaults()
     const uint32_t dst_ipaddr   = 0xc0a80001; // 192.168.0.1
     const uint8_t sci[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
-    NETOS_ETH_DEFAULTS(pgen.eth_hdr, dst, src, ethertype);
+    NETOS_ETH_DEFAULTS(pgen.eth_hdr,
+                       dst,
+                       src,
+                       ethertype);
 
-    NETOS_VLAN_DEFAULTS(pgen.vlan_hdr, 1, 1, 0, NETOS_ETHERTYPE_IPV4);
+    NETOS_VLAN_DEFAULTS(pgen.vlan_hdr,
+                        1,
+                        1,
+                        0,
+                        NETOS_ETHERTYPE_IPV4);
 
-    NETOS_ARP_REQ_DEFAULTS((&pgen.arp_hdr), src, src_ipaddr, dst, dst_ipaddr);
+    NETOS_ARP_REQ_DEFAULTS((&pgen.arp_hdr),
+                           src,
+                           src_ipaddr,
+                           dst,
+                           dst_ipaddr);
 
-    NETOS_IPV4_DEFAULTS(pgen.ipv4_hdr, 0, 0x1234, NETOS_PROTOCOL_TCP, src_ipaddr, dst_ipaddr);
+    NETOS_IPV4_DEFAULTS(pgen.ipv4_hdr,
+                        0,
+                        0x1234,
+                        NETOS_PROTOCOL_TCP,
+                        src_ipaddr,
+                        dst_ipaddr);
 
-    NETOS_ICMP_ECHO_REQ_DEFAULTS(pgen.icmp_hdr, 0x1234, 0x1234);
+    NETOS_ICMP_ECHO_REQ_DEFAULTS(pgen.icmp_hdr,
+                                 0x1234,
+                                 0x1234);
 
-    NETOS_MACSEC_DEFAULTS(pgen.macsec_hdr, 0, sci, 1, 0, 0, 1, 1, 0);
+    NETOS_MACSEC_DEFAULTS(pgen.macsec_hdr,
+                          0,
+                          sci,
+                          1,
+                          0,
+                          0,
+                          1,
+                          1,
+                          0);
 
     // default transmit params
     pgen.ifname         = NULL;
@@ -215,12 +239,15 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
 static inline void set_macsec_encrypt_help()
 {
     NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.encrypt <on/off> - turn MACsec encryption on or off\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.encrypt <on/off> "
+                                "- turn MACsec encryption on or off\n");
 }
 
 static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_encrypt_help();
         return;
     }
@@ -242,12 +269,15 @@ static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
 static inline void set_macsec_changed_help()
 {
     NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.changed <on/off> - turn MACsec authentication on or off\n");
+    NETOS_PRINT_STD_GREEN_COLOR("macsec.changed <on/off> "
+                                "- turn MACsec authentication on or off\n");
 }
 
 static void set_macsec_changed(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_changed_help();
         return;
     }
@@ -270,7 +300,9 @@ static inline void set_macsec_es_help()
 
 static void set_macsec_es(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_es_help();
         return;
     }
@@ -293,7 +325,9 @@ static inline void set_macsec_sc_help()
 
 static void set_macsec_sc(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_sc_help();
         return;
     }
@@ -318,7 +352,9 @@ static void set_macsec_pn(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_pn_help();
         return;
     }
@@ -340,7 +376,9 @@ static void set_macsec_version(struct pgen_token *tokens, uint32_t n_tokens)
     netos_status_t ret;
     uint32_t val;
 
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_version_help();
         return;
     }
@@ -355,8 +393,9 @@ static void set_macsec_version(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_sci_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "macsec.sci <8 bytes> - Set the SCI value\n"
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR(
+                    "macsec.sci <8 bytes> - Set the SCI value\n"
                     "macsec.sci 00:11:22:33:44:55:66:11\n");
 }
 
@@ -365,7 +404,9 @@ static void set_macsec_sci(struct pgen_token *tokens, uint32_t n_tokens)
     uint32_t sci[NETOS_MACSEC_SCI_LEN] = {0};
     int ret;
 
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_sci_help();
         return;
     }
@@ -392,8 +433,8 @@ static void set_macsec_sci(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_an_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "macsec.an <0/1/2/3>\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.an <0/1/2/3>\n");
 }
 
 static void set_macsec_an(struct pgen_token *tokens, uint32_t n_tokens)
@@ -401,14 +442,22 @@ static void set_macsec_an(struct pgen_token *tokens, uint32_t n_tokens)
     netos_status_t ret;
     uint32_t val;
 
-    if ((n_tokens == 1) || (!strcmp(tokens[1].name, "help")) || (!strcmp(tokens[1].name, "?"))) {
+    if ((n_tokens == 1) ||
+        (!strcmp(tokens[1].name, "help")) ||
+        (!strcmp(tokens[1].name, "?"))) {
         set_macsec_an_help();
         return;
     }
 
     ret = netos_get_u32_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "Invalid MACsec an value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("Invalid MACsec an value <%s>\n", tokens[1].name);
+        return;
+    }
+
+    if (val > NETOS_MACSEC_AN_LEN) {
+        NETOS_PRINT_STD_ERROR_COLOR("Invalid AN value %d\n", val);
+        set_macsec_an_help();
         return;
     }
 
@@ -421,6 +470,12 @@ static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
     pgen_run_callback_list[3].enable    = true;
 }
 
+static inline void set_icmp_type_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("icmp.type <0-255>\n");
+}
+
 static void set_icmp_type(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
@@ -428,11 +483,24 @@ static void set_icmp_type(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &type);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ICMP type <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP type <%s>\n", tokens[1].name);
+        set_icmp_type_help();
+        return;
+    }
+
+    if (type > 255) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP type %d\n", type);
+        set_icmp_type_help();
         return;
     }
 
     pgen.icmp_hdr.type = type;
+}
+
+static inline void set_icmp_code_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("icmp.code <0-255>\n");
 }
 
 static void set_icmp_code(struct pgen_token *tokens, uint32_t n_tokens)
@@ -442,7 +510,14 @@ static void set_icmp_code(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &code);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ICMP code <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP code <%s>\n", tokens[1].name);
+        set_icmp_code_help();
+        return;
+    }
+
+    if (code > 255) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP code %d\n", code);
+        set_icmp_code_help();
         return;
     }
 
@@ -455,7 +530,7 @@ static void set_icmp_checksum(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.checksum);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ICMP checksum value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP checksum value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -658,8 +733,9 @@ static void set_arp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_arp_sha_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "arp.sha <mac-address> - sets the sender hw addess\n"
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR(
+                    "arp.sha <mac-address> - sets the sender hw addess\n"
                     "Example: arp.sha 01:01:02:03:04:05\n");
 }
 
@@ -667,12 +743,15 @@ static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
         set_arp_sha_help();
         return;
     }
 
-    ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.sender_hwaddr);
+    ret = netos_get_mac_addr_from_str(tokens[1].name,
+                                      pgen.arp_hdr.sender_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.sha value <%s>\n", tokens[1].name);
         set_arp_sha_help();
@@ -682,8 +761,9 @@ static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_arp_spa_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "arp.spa <ipv4-address> - sets the sender protocol address\n"
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR(
+                    "arp.spa <ipv4-address> - sets the sender protocol address\n"
                     "Example: arp.spa 192.168.0.1\n");
 }
 
@@ -691,12 +771,15 @@ static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
         set_arp_spa_help();
         return;
     }
 
-    ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.sender_protocol_addr);
+    ret = netos_get_ipv4addr_from_str(tokens[1].name,
+                                      &pgen.arp_hdr.sender_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.spa value <%s>\n", tokens[1].name);
         set_arp_spa_help();
@@ -708,8 +791,9 @@ static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
 
 static void set_arp_tha_help()
 {
-    fprintf(stderr, "\tHelp:\n");
-    fprintf(stderr, "arp.tha <mac-address in xx:xx:xx:xx:xx:xx> format\n"
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR(
+                    "arp.tha <mac-address in xx:xx:xx:xx:xx:xx> format\n"
                     "sets the ARP target hardware address\n"
                     "Example: arp.tha 00:11:00:00:00:22\n");
 }
@@ -718,29 +802,55 @@ static void set_arp_tha(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
         set_arp_tha_help();
         return;
     }
 
-    ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.target_hwaddr);
+    ret = netos_get_mac_addr_from_str(tokens[1].name,
+                                      pgen.arp_hdr.target_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.tha value <%s>\n", tokens[1].name);
         return;
     }
 }
 
+static inline void set_arp_tpa_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR(
+                    "arp.tpa <ipv4-address> - sets the sender protocol address\n"
+                    "Example: arp.tpa 192.168.0.1\n");
+}
+
 static void set_arp_tpa(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.arp_hdr.target_protocol_addr);
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
+        set_arp_tpa_help();
+        return;
+    }
+
+    ret = netos_get_ipv4addr_from_str(tokens[1].name,
+                                      &pgen.arp_hdr.target_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.tpa value <%s>\n", tokens[1].name);
+        set_arp_tpa_help();
         return;
     }
 
     pgen.arp_hdr.target_protocol_addr = ntohl(pgen.arp_hdr.target_protocol_addr);
+}
+
+static inline void set_arp_op_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("arp.op <op-val> 1 - Request, 2 - Reply\n");
 }
 
 static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
@@ -748,9 +858,21 @@ static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
     netos_status_t ret;
     uint32_t op;
 
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
+        set_arp_op_help();
+        return;
+    }
+
     ret = netos_get_u32_from_str(tokens[1].name, &op);
     if (ret != NETOS_STATUS_SUCCESS) {
         fprintf(stderr, "invalid arp.op value <%s>\n", tokens[1].name);
+        return;
+    }
+    if ((op < 1) || (op > 2)) {
+        fprintf(stderr, "invalid arp.op value <%s>\n", tokens[1].name);
+        set_arp_op_help();
         return;
     }
 
@@ -1287,19 +1409,21 @@ int main(int argc, char **argv)
     pgen_set_defaults();
 
     while (1) {
-        char buf[1024];
+        char *buf = readline("pgen> ");
 
-        fprintf(stderr, "pgen> ");
-        if (fgets(buf, sizeof(buf), stdin) == NULL) {
-            continue;
+        if (!buf) {
+            break;
         }
 
-        uint32_t len = strlen(buf) - 1;
+        uint32_t len = strlen(buf);
         buf[len] = '\0';
 
         if (len < 1) {
+            free(buf);
             continue;
         }
+
+        add_history(buf);
 
         struct pgen_token tokens[10];
         uint32_t n_tokens;
@@ -1314,6 +1438,7 @@ int main(int argc, char **argv)
             // user has pressed help
             if (!strcmp(tokens[0].name, "help")) {
                 pgen_help(tokens, n_tokens);
+                free(buf);
                 continue;
             }
 
@@ -1340,6 +1465,7 @@ int main(int argc, char **argv)
         } else {
             NETOS_PRINT_STD_ERROR_COLOR("Incorrect token sequence\n");
         }
+        free(buf);
     }
     return 0;
 }

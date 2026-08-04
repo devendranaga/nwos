@@ -43,6 +43,16 @@ typedef enum netos_log_level {
 } while (0)
 
 /**
+ * @brief - print in magenta.
+ *
+ * @param [in] fmt - format.
+ */
+#define NETOS_PRINT_STD_MAGENTA_COLOR(__fmt, ...) do{\
+    fprintf(stderr, \
+            NETOS_ANSI_COLOR_MAGENTA __fmt NETOS_ANSI_COLOR_RESET, ##__VA_ARGS__);\
+} while (0)
+
+/**
  * @brief - print info message.
  *
  * @param [in] fmt - format string.

@@ -139,7 +139,7 @@ endif()
 add_library(netos_crypto STATIC ${CRYPTO_SRC})
 
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
-target_link_libraries(netos_pgen PRIVATE pthread netos netos_crypto ${CRYPTO_LINKER_FLAGS})
+target_link_libraries(netos_pgen PRIVATE pthread readline netos netos_crypto ${CRYPTO_LINKER_FLAGS})
 
 add_executable(netosd ${NETOS_SRC})
 
