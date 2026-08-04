@@ -85,7 +85,6 @@ sudo setcap cap_net_admin,cap_net_raw+ep ./netos_pgen
 - [ ] CMAC PRF
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
-- [ ] Tooling: implement the up arrow and down arrow detection and history buffer
 - [ ] Expand the Events matching to suricata
 - [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
@@ -207,6 +206,7 @@ sudo setcap cap_net_admin,cap_net_raw+ep ./netos_pgen
 - [x] Take pkt buffer numbers from xml config
 - [x] WolfSSL Encryption
 - [x] Tooling: MACsec encrypt implementation
+- [x] Tooling: implement the up arrow and down arrow detection and history buffer
 
 
 ## Configuration
