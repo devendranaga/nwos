@@ -13,11 +13,19 @@ extern "C" {
 #define NETOS_UDP_HDR_LEN 8
 
 typedef struct netos_udp_hdr {
-    uint16_t src_port;
-    uint16_t dst_port;
-    uint16_t length;
-    uint16_t checksum;
+    uint16_t    src_port;
+    uint16_t    dst_port;
+    uint16_t    length;
+    uint16_t    checksum;
+    bool        gen_checksum;
 } netos_udp_hdr_t;
+
+#define NETOS_UDP_DEFAULTS(__udp_hdr, __src_port, __dst_port, __length, __checksum) do {\
+    (__udp_hdr).src_port    = __src_port;\
+    (__udp_hdr).dst_port    = __dst_port;\
+    (__udp_hdr).length      = __length;\
+    (__udp_hdr).checksum    = __checksum;\
+} while (0)
 
 /**
  * @brief - Decode UDP header.

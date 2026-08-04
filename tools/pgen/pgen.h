@@ -24,12 +24,14 @@ struct pgen {
     netos_ipv4_hdr_t            ipv4_hdr;
     netos_icmp_hdr_t            icmp_hdr;
     netos_macsec_hdr_t          macsec_hdr;
+    netos_udp_hdr_t             udp_hdr;
     bool                        eth_enable;
     bool                        vlan_enable;
     bool                        arp_enable;
     bool                        ipv4_enable;
     bool                        icmp_enable;
     bool                        macsec_enable;
+    bool                        udp_enable;
     uint64_t                    ipg_ns;
     uint32_t                    n_frames;
     char                        *ifname;

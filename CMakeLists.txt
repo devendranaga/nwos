@@ -162,9 +162,18 @@ add_custom_target(protocols_rust ALL
 
 add_custom_target(pktdump_rust ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pktdump/Cargo.toml
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_SOURCE_DIR}/rust/pktdump/target/debug/pktdump
+    ${CMAKE_BINARY_DIR}/
     COMMENT "Build Rust Packet dump tool")
 
 add_custom_target(linux_abs ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
     COMMENT "Build rust Linux abstraction")
+
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+    ${CMAKE_SOURCE_DIR}/rust/pcapng/target
+    ${CMAKE_SOURCE_DIR}/rust/protocols/target
+    ${CMAKE_SOURCE_DIR}/rust/pktdump/target
+    ${CMAKE_SOURCE_DIR}/rust/linux_abs/target)
 

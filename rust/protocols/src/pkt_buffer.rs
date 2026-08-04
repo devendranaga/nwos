@@ -27,9 +27,22 @@ impl netos_pkt_buffer {
         u16_val
     }
 
+    pub fn encode_byte(&mut self, val : u8) {
+        self.buffer[self.offset] = val;
+        self.offset += 1;
+    }
+
+    pub fn decode_byte(&mut self) -> u8 {
+        let u8_val = self.buffer[self.offset];
+        self.offset += 1;
+
+        u8_val
+    }
+
     pub fn encode_2_bytes(&mut self, val : u16) {
         self.buffer[self.offset]        = ((val & 0xFF00) >> 8) as u8;
         self.buffer[self.offset + 1]    = (val & 0x00FF) as u8;
+        self.offset += 2;
     }
 
     pub fn encode_4_bytes(&mut self, val : u32) {
@@ -37,6 +50,7 @@ impl netos_pkt_buffer {
         self.buffer[self.offset + 1]    = ((val & 0x00FF0000) >> 16) as u8;
         self.buffer[self.offset + 2]    = ((val & 0x0000FF00) >> 8) as u8;
         self.buffer[self.offset + 3]    = (val & 0x000000FF) as u8;
+        self.offset += 4;
     }
 
     pub fn decode_4_bytes(&mut self) -> u32 {
@@ -55,7 +69,6 @@ impl netos_pkt_buffer {
         mac_ptr[3] = self.buffer[self.offset] + 3;
         mac_ptr[4] = self.buffer[self.offset] + 4;
         mac_ptr[5] = self.buffer[self.offset] + 5;
-
         self.offset += 6;
     }
 

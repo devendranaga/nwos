@@ -128,6 +128,12 @@ static void pgen_set_defaults()
                           1,
                           0);
 
+    NETOS_UDP_DEFAULTS(pgen.udp_hdr,
+                       0,
+                       0,
+                       0,
+                       0);
+
     // default transmit params
     pgen.ifname         = NULL;
     pgen.raw            = NULL;
@@ -137,6 +143,7 @@ static void pgen_set_defaults()
     pgen.eth_enable     = false;
     pgen.arp_enable     = false;
     pgen.ipv4_enable    = false;
+    pgen.udp_enable     = false;
     pgen.pcap_ctx       = NULL;
     pgen.crypto_ctx     = netos_crypto_ctx_initialize();
     if (!pgen.crypto_ctx) {
@@ -1159,6 +1166,33 @@ static void pgen_pcap_run()
 
     fprintf(stderr, "Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
 }
+
+#if 0
+static void pgen_udp_run()
+{
+    uint8_t data_buf[1024] = {0};
+    pkt_buffer_t pkt_buf;
+
+    pkt_buffer_initialize(&pkt_buf);
+    netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+
+    if (pgen.ipv4_hdr.hdr_chksum == 0) {
+        pgen.ipv4_hdr.gen_checksum = true;
+    } else {
+        pgen.ipv4_hdr.gen_checksum = false;
+    }
+    netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+        pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
+    }
+
+    netos_udp_encode(&pgen.udp_hdr, &pkt_buf);
+
+    pkt_buffer_set_tx_len_default(&pkt_buf);
+    netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+}
+#endif
 
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {

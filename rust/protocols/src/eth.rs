@@ -4,14 +4,15 @@ use crate::pkt_buffer;
 
 use std::fmt;
 
-pub const NETOS_ETHERTYPE_IPV4 : u16 = 0x0800;
+pub const NETOS_ETHERTYPE_IPV4  : u16 = 0x0800;
+pub const NETOS_ETHERTYPE_ARP   : u16 = 0x0806;
 
 ///
 /// Implements an ethernet header
 pub struct eth_hdr {
-    pub dst : [u8; 6],
-    pub src : [u8; 6],
-    pub ethertype : u16,
+    pub dst         : [u8; 6],
+    pub src         : [u8; 6],
+    pub ethertype   : u16,
 }
 
 impl std::fmt::Display for eth_hdr {
@@ -32,9 +33,9 @@ impl eth_hdr {
     /// clears the ethernet header fields
     pub fn new() -> Self {
         Self {
-            dst : [0; 6],
-            src : [0; 6],
-            ethertype : 0,
+            dst         : [0; 6],
+            src         : [0; 6],
+            ethertype   : 0,
         }
     }
 
