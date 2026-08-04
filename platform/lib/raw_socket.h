@@ -54,5 +54,9 @@ int netos_raw_socket_rx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t dat
  */
 int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
+int netos_raw_socket_rx_ethertype(netos_raw_socket_ctx_t *raw,
+                                  uint8_t *data,
+                                  uint32_t data_len,
+                                  uint16_t ethertype);
 #endif
 

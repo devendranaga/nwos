@@ -92,7 +92,8 @@ SET(NETOS_SRC
     ./egress/egress_pfifo.c)
 
 set(TOOL_PGEN_SRC
-    ./tools/pgen/pgen.c)
+    ./tools/pgen/pgen.c
+    ./tools/pgen/pgen_arp_ops.c)
 
 set(TEST_PCAPNG
     ./tests/test_pcapng.c)

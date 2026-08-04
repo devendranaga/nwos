@@ -62,6 +62,7 @@
 #define LEN_CMD             "len"
 #define IFNAME_CMD          "ifname"
 #define RUN_CMD             "run"
+#define LISTEN_CMD          "listen"
 #define EXIT_CMD            "exit"
 #define QUIT_CMD            "quit"
 #define HELP_CMD            "help"
@@ -111,6 +112,7 @@
 #define LEN_STR             "Set the packet length"
 #define IFNAME_STR          "Set the interface name"
 #define RUN_STR             "Run the packet generator"
+#define LISTEN_STR          "Listen on the interface"
 #define EXIT_STR            "Exit the packet generator"
 #define QUIT_STR            EXIT_STR
 #define HELP_STR            "Show help"

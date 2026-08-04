@@ -14,6 +14,7 @@
 #include "ethertypes.h"
 #include "protocols.h"
 #include "netos_log.h"
+#include "pgen_arp_ops.h"
 #include "pgen.h"
 #include "pgen_const.h"
 #include "pgen_cmd_strings.h"
@@ -28,6 +29,8 @@ static void pgen_ipv4_run();
 static void pgen_icmp_run();
 static void pgen_macsec_run();
 static void pgen_pcap_run();
+static void *pgen_arp_fill();
+static void pgen_arp_free(void *config);
 
 /**
  * @brief - Defines a set of registered run callbacks.
@@ -39,42 +42,63 @@ static struct {
     const char  *desc;
     bool        enable;
     void        (*callback)();
+    void        *(*fill_callback)();
+    void        (*free_callback)(void *);
+    void        (*listen_callback)(netos_raw_socket_ctx_t *raw, void *);
 } pgen_run_callback_list[] = {
     {
         "eth",
         "Ethernet based frame generations",
         false,
-        pgen_eth_run
+        pgen_eth_run,
+        NULL,
+        NULL,
+        NULL,
     },
     {
         "arp",
         "ARP based frame generations",
         false,
-        pgen_arp_run
+        pgen_arp_run,
+        pgen_arp_fill,
+        pgen_arp_free,
+        pgen_arp_listen,
     },
     {
         "ipv4",
         "IPv4 based frame generations",
         false,
-        pgen_ipv4_run
+        pgen_ipv4_run,
+        NULL,
+        NULL,
+        NULL,
     },
     {
         "icmp",
         "ICMP based frame generations",
         false,
-        pgen_icmp_run
+        pgen_icmp_run,
+        NULL,
+        NULL,
+        NULL,
     },
     {
         "macsec",
         "MACsec based frame generations",
         false,
-        pgen_macsec_run
+        pgen_macsec_run,
+        NULL,
+        NULL,
+        NULL,
     },
     {
         "pcap",
         "Replay pcap",
         false,
-        pgen_pcap_run
+        pgen_pcap_run,
+        NULL,
+        NULL,
+        NULL,
     }
 };
 
@@ -1244,6 +1268,65 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void pgen_listen(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    if (!pgen.ifname) {
+        fprintf(stderr, "Interface name is not present. "
+                        "Interface should be provided via ifname\n");
+        return;
+    }
+
+    pgen.raw = netos_raw_socket_init(pgen.ifname);
+    if (!pgen.raw) {
+        fprintf(stderr, "Failed to create a raw socket.. "
+                        "is the interface available and up?\n");
+        return;
+    }
+
+    uint32_t i;
+
+    void (*callback_ptr)(netos_raw_socket_ctx_t *, void *) = NULL;
+    void *(*fill_callback)() = NULL;
+    void (*free_callback)(void *) = NULL;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_run_callback_list); i ++) {
+        if (pgen_run_callback_list[i].enable) {
+            callback_ptr = pgen_run_callback_list[i].listen_callback;
+            fill_callback = pgen_run_callback_list[i].fill_callback;
+            free_callback = pgen_run_callback_list[i].free_callback;
+            break;
+        }
+    }
+
+    if (!callback_ptr || !fill_callback || !free_callback) {
+        fprintf(stderr, "No protocol listen enabled!\n");
+        return;
+    }
+
+    void *config = fill_callback();
+    if (config) {
+        callback_ptr(pgen.raw, config);
+        free_callback(config);
+    }
+}
+
+static void *pgen_arp_fill()
+{
+    netos_pgen_arp_config_t *arp_config;
+
+    arp_config = calloc(1, sizeof(netos_pgen_arp_config_t));
+    if (!arp_config) {
+        return NULL;
+    }
+
+    return arp_config;
+}
+
+static void pgen_arp_free(void *config)
+{
+    free(config);
+}
+
 static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
 {
     fprintf(stderr, "exiting the pgen..\n");
@@ -1265,6 +1348,7 @@ static const struct pgen_sub_command pgen_sub_command_common[] = {
     { LEN_CMD,              LEN_STR,                set_packet_len },
     { IFNAME_CMD,           IFNAME_STR,             set_ifname },
     { RUN_CMD,              RUN_STR,                pgen_run },
+    { LISTEN_CMD,           LISTEN_STR,             pgen_listen },
     { EXIT_CMD,             EXIT_STR,               pgen_exit },
     { QUIT_CMD,             QUIT_STR,               pgen_exit },
     { HELP_CMD,             HELP_STR,               pgen_help },

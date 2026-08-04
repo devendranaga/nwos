@@ -117,6 +117,35 @@ int netos_raw_socket_rx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t dat
     return ret;
 }
 
+int netos_raw_socket_rx_ethertype(netos_raw_socket_ctx_t *raw,
+                                  uint8_t *data,
+                                  uint32_t data_len,
+                                  uint16_t ethertype)
+{
+    struct sockaddr_ll lladdr;
+    const uint32_t ethertype_offset = 12;
+    socklen_t len = sizeof(lladdr);
+    int ret;
+
+    ret = recvfrom(raw->fd,
+                   data,
+                   data_len,
+                   0,
+                   (struct sockaddr *)&lladdr,
+                   &len);
+    if (ret < 0) {
+        return -1;
+    }
+
+    uint16_t ethertype_rx = (data[ethertype_offset] << 8) |
+                            (data[ethertype_offset + 1]);
+    if (ethertype_rx == ethertype) {
+        return ret;
+    }
+
+    return 0;
+}
+
 int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len)
 {
     struct sockaddr_ll lladdr;

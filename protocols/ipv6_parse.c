@@ -35,6 +35,18 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+netos_status_t netos_ipv6_encode(netos_ipv6_hdr_t *ipv6_hdr,
+                                 pkt_buffer_t *pkt_buf)
+{
+    pkt_buf->buffer[pkt_buf->offset] = (ipv6_hdr->version << 4);
+    pkt_buf->buffer[pkt_buf->offset] |= (ipv6_hdr->dscp & 0xF0) >> 4;
+    pkt_buf->offset ++;
+
+    pkt_buf->buffer[pkt_buf->offset] = (ipv6_hdr->dscp & 0x0C) << 2;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 void netos_ipv6_print(netos_ipv6_hdr_t *ipv6_hdr)
 {
     netos_log_debug("IPv6: {\n");
