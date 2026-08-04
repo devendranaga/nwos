@@ -706,9 +706,22 @@ static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
     pgen.arp_hdr.sender_protocol_addr = ntohl(pgen.arp_hdr.sender_protocol_addr);
 }
 
+static void set_arp_tha_help()
+{
+    fprintf(stderr, "\tHelp:\n");
+    fprintf(stderr, "arp.tha <mac-address in xx:xx:xx:xx:xx:xx> format\n"
+                    "sets the ARP target hardware address\n"
+                    "Example: arp.tha 00:11:00:00:00:22\n");
+}
+
 static void set_arp_tha(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
+
+    if ((n_tokens == 1) || !strcmp(tokens[1].name, "help") || !strcmp(tokens[1].name, "?")) {
+        set_arp_tha_help();
+        return;
+    }
 
     ret = netos_get_mac_addr_from_str(tokens[1].name, pgen.arp_hdr.target_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
@@ -1044,8 +1057,7 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 
     void (*callback_ptr)() = NULL;
 
-    for (i = 0; i < sizeof(pgen_run_callback_list) /
-                    sizeof(pgen_run_callback_list[0]); i ++) {
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_run_callback_list); i ++) {
         if (pgen_run_callback_list[i].enable) {
             callback_ptr = pgen_run_callback_list[i].callback;
             break;
@@ -1085,27 +1097,51 @@ static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
 /**
  * Defines a list of pgen callbacks for function implementations.
  */
-static const struct {
-    const char  *str;
-    const char  *desc;
+struct pgen_sub_command {
+    const char *cmd_name;
+    const char *cmd_desc;
     void        (*callback)(struct pgen_token *tokens, uint32_t n_tokens);
-} pgen_setup_callbacks[] = {
+};
+
+static const struct pgen_sub_command pgen_sub_command_common[] = {
+    { IPG_CMD,              IPG_STR,                set_ipg },
+    { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },
+    { LEN_CMD,              LEN_STR,                set_packet_len },
+    { IFNAME_CMD,           IFNAME_STR,             set_ifname },
+    { RUN_CMD,              RUN_STR,                pgen_run },
+    { EXIT_CMD,             EXIT_STR,               pgen_exit },
+    { QUIT_CMD,             QUIT_STR,               pgen_exit },
+    { HELP_CMD,             HELP_STR,               pgen_help },
+};
+
+static const struct pgen_sub_command pgen_sub_command_pcap[] = {
+    { PCAP_ENABLE_CMD,      PCAP_ENABLE_STR,        set_pcap_enable },
+    { PCAP_OPEN_CMD,        PCAP_OPEN_STR,          set_pcap_open },
+};
+
+static const struct pgen_sub_command pgen_sub_command_eth[] = {
     { ETH_ENABLE_CMD,       ETH_ENABLE_STR,         set_eth_enable },
-    { ARP_ENABLE_CMD,       ARP_ENABLE_STR,         set_arp_enable },
     { ETH_DA_CMD,           ETH_DA_STR,             set_eth_da },
     { ETH_SA_CMD,           ETH_SA_STR,             set_eth_sa },
     { ETH_ETHERTYPE_CMD,    ETH_ETHERTYPE_STR,      set_eth_ethertype },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
-    { VLAN_ID_CMD,          VLAN_ID_STR,            set_vlan_id },
-    { VLAN_PRIORITY_CMD,    VLAN_PRIORITY_STR,      set_vlan_priority },
-    { VLAN_NEXT_ETHER_CMD,  VLAN_NEXT_ETHER_STR,    set_vlan_next_ethertype },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+};
+
+static const struct pgen_sub_command pgen_sub_command_arp[] = {
+    { ARP_ENABLE_CMD,       ARP_ENABLE_STR,         set_arp_enable },
     { ARP_OP_CMD,           ARP_OP_STR,             set_arp_op },
     { ARP_SHA_CMD,          ARP_SHA_STR,            set_arp_sha },
     { ARP_SPA_CMD,          ARP_SPA_STR,            set_arp_spa },
     { ARP_THA_CMD,          ARP_THA_STR,            set_arp_tha },
     { ARP_TPA_CMD,          ARP_TPA_STR,            set_arp_tpa },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+};
+
+static const struct pgen_sub_command pgen_sub_command_vlan[] = {
+    { VLAN_ID_CMD,          VLAN_ID_STR,            set_vlan_id },
+    { VLAN_PRIORITY_CMD,    VLAN_PRIORITY_STR,      set_vlan_priority },
+    { VLAN_NEXT_ETHER_CMD,  VLAN_NEXT_ETHER_STR,    set_vlan_next_ethertype },
+};
+
+static const struct pgen_sub_command pgen_sub_command_ipv4[] = {
     { IPV4_ENABLE_CMD,      IPV4_ENABLE_STR,        set_ipv4_enable },
     { IPV4_VERSION_CMD,     IPV4_VERSION_STR,       set_ipv4_version },
     { IPV4_SRC_IP_CMD,      IPV4_SRC_IP_STR,        set_ipv4_src_ip },
@@ -1115,14 +1151,18 @@ static const struct {
     { IPV4_MF_CMD,          IPV4_MF_STR,            set_ipv4_more_fragments },
     { IPV4_DF_CMD,          IPV4_DF_STR,            set_ipv4_dont_fragment },
     { IPV4_CHKSUM_CMD,      IPV4_CHKSUM_STR,        set_ipv4_chksum },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+};
+
+static const struct pgen_sub_command pgen_sub_command_icmp[] = {
     { ICMP_ENABLE_CMD,      ICMP_ENABLE_STR,        set_icmp_enable },
     { ICMP_TYPE_CMD,        ICMP_TYPE_STR,          set_icmp_type },
     { ICMP_CODE_CMD,        ICMP_CODE_STR,          set_icmp_code },
     { ICMP_CHECKSUM_CMD,    ICMP_CHECKSUM_STR,      set_icmp_checksum },
     { ICMP_ID_CMD,          ICMP_ID_STR,            set_icmp_id },
     { ICMP_SEQ_CMD,         ICMP_SEQ_STR,           set_icmp_seq },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
+};
+
+static const struct pgen_sub_command pgen_sub_command_macsec[] = {
     { MACSEC_ENABLE_CMD,    MACSEC_ENABLE_STR,      set_macsec_enable },
     { MACSEC_KEY_CMD,       MACSEC_KEY_STR,         set_macsec_key },
     { MACSEC_ENCRYPT_CMD,   MACSEC_ENCRYPT_STR,     set_macsec_encrypt },
@@ -1133,19 +1173,22 @@ static const struct {
     { MACSEC_V_CMD,         MACSEC_V_STR,           set_macsec_version },
     { MACSEC_AN_CMD,        MACSEC_AN_STR,          set_macsec_an },
     { MACSEC_SCI_CMD,       MACSEC_SCI_STR,         set_macsec_sci },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
-    { PCAP_ENABLE_CMD,      PCAP_ENABLE_STR,        set_pcap_enable },
-    { PCAP_OPEN_CMD,        PCAP_OPEN_STR,          set_pcap_open },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL},
-    { IPG_CMD,              IPG_STR,                set_ipg },
-    { N_FRAMES_CMD,         N_FRAMES_STR,           set_n_frames },
-    { LEN_CMD,              LEN_STR,                set_packet_len },
-    { IFNAME_CMD,           IFNAME_STR,             set_ifname },
-    { RUN_CMD,              RUN_STR,                pgen_run },
-    { EXIT_CMD,             EXIT_STR,               pgen_exit },
-    { QUIT_CMD,             QUIT_STR,               pgen_exit },
-    { HELP_CMD,             HELP_STR,               pgen_help },
-    { SEPARATOR_CMD,        SEPARATOR_STR,          NULL}
+};
+
+static const struct {
+    const char *name;
+    const char *desc;
+    const struct pgen_sub_command *sub_cmd;
+    uint32_t sub_cmd_len;
+} pgen_command_list[] = {
+    { ETH_CMD,    ETH_CMD_DESC,    pgen_sub_command_eth,    NETOS_SIZEOF_ARRAY(pgen_sub_command_eth) },
+    { MACSEC_CMD, MACSEC_CMD_DESC, pgen_sub_command_macsec, NETOS_SIZEOF_ARRAY(pgen_sub_command_macsec) },
+    { ARP_CMD,    ARP_CMD_DESC,    pgen_sub_command_arp,    NETOS_SIZEOF_ARRAY(pgen_sub_command_arp) },
+    { VLAN_CMD,   VLAN_CMD_DESC,   pgen_sub_command_vlan,   NETOS_SIZEOF_ARRAY(pgen_sub_command_vlan) },
+    { IPV4_CMD,   IPV4_CMD_DESC,   pgen_sub_command_ipv4,   NETOS_SIZEOF_ARRAY(pgen_sub_command_ipv4) },
+    { ICMP_CMD,   ICMP_CMD_DESC,   pgen_sub_command_icmp,   NETOS_SIZEOF_ARRAY(pgen_sub_command_icmp) },
+    { PCAP_CMD,   PCAP_CMD_DESC,   pgen_sub_command_pcap,   NETOS_SIZEOF_ARRAY(pgen_sub_command_pcap) },
+    { COMMON_CMD, COMMON_CMD_DESC, pgen_sub_command_common, NETOS_SIZEOF_ARRAY(pgen_sub_command_common) },
 };
 
 static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
@@ -1153,17 +1196,37 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens)
     uint32_t i;
 
     NETOS_PRINT_STD_GREEN_COLOR("----------------------------------------------------------\n");
-    for (i = 0; i < sizeof(pgen_setup_callbacks) /
-                    sizeof(pgen_setup_callbacks[0]); i ++) {
-        NETOS_PRINT_STD_GREEN_COLOR("%-30s %s\n", pgen_setup_callbacks[i].str,
-                                    pgen_setup_callbacks[i].desc);
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_command_list); i ++) {
+        NETOS_PRINT_STD_GREEN_COLOR("%-30s %s\n",
+                                    pgen_command_list[i].name,
+                                    pgen_command_list[i].desc);
     }
     NETOS_PRINT_STD_GREEN_COLOR("----------------------------------------------------------\n");
 }
 
-static uint32_t pgen_tokenize(char *buf, uint32_t len, struct pgen_token *tokens)
+static void pgen_sub_command_help(uint32_t cmd_idx)
 {
-    char tmp[100];
+    uint32_t i;
+
+    for (i = 0; i < pgen_command_list[cmd_idx].sub_cmd_len; i ++) {
+        const struct pgen_sub_command *sub_cmd = pgen_command_list[cmd_idx].sub_cmd;
+
+        NETOS_PRINT_STD_GREEN_COLOR("%-30s %s\n", sub_cmd[i].cmd_name, sub_cmd[i].cmd_desc);
+    }
+}
+
+/**
+ * @brief - tokenize the input string split with ' '
+ *
+ * @param [in] buf - input buffer.
+ * @param [in] len - input buffer length.
+ * @param [inout] tokens - list of split tokens.
+ *
+ * @return returns number of tokens parsed in the buffer.
+ */
+static uint32_t pgen_tokenize(const char *buf, uint32_t len, struct pgen_token *tokens)
+{
+    char tmp[128];
     uint32_t i = 0;
     uint32_t j = 0;
     uint32_t token_idx = 0;
@@ -1176,6 +1239,11 @@ static uint32_t pgen_tokenize(char *buf, uint32_t len, struct pgen_token *tokens
             j = 0;
             i ++;
         } else {
+            if (j >= sizeof(tmp)) {
+                NETOS_PRINT_STD_ERROR_COLOR("Token size exceeds buffer size %ld failed parsing the token\n",
+                                            sizeof(tmp));
+                return 0; // no tokens to run
+            }
             tmp[j] = buf[i];
             j ++;
             i ++;
@@ -1187,6 +1255,31 @@ static uint32_t pgen_tokenize(char *buf, uint32_t len, struct pgen_token *tokens
     token_idx ++;
 
     return token_idx;
+}
+
+/**
+ * @brief - Scan all the callbacks and find the matching callback for the input command and execute it.
+ *
+ * @param [in] cmd_idx - command id.
+ * @param [in] tokens - list of input tokens.
+ * @param [in] n_tokens - number of tokens.
+ *
+ * @return returns true if command is found and the callback is run, false if not.
+ */
+static bool pgen_process_sub_commands(uint32_t cmd_idx, struct pgen_token *tokens, uint32_t n_tokens)
+{
+    uint32_t j;
+
+    const struct pgen_sub_command *sub_cmd = pgen_command_list[cmd_idx].sub_cmd;
+
+    for (j = 0; j < pgen_command_list[cmd_idx].sub_cmd_len; j ++) {
+        if (!strcmp(sub_cmd[j].cmd_name, tokens[0].name)) {
+            sub_cmd[j].callback(tokens, n_tokens);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 int main(int argc, char **argv)
@@ -1211,24 +1304,41 @@ int main(int argc, char **argv)
         struct pgen_token tokens[10];
         uint32_t n_tokens;
 
+        memset(tokens, 0, sizeof(tokens));
         n_tokens = pgen_tokenize(buf, len, tokens);
         if (n_tokens != 0) {
             uint32_t i;
             bool valid_cmd = false;
+            bool display_help = false;
 
-            for (i = 0; i < sizeof(pgen_setup_callbacks) /
-                            sizeof(pgen_setup_callbacks[0]); i ++) {
-                if (!strcmp(pgen_setup_callbacks[i].str, tokens[0].name) &&
-                    (pgen_setup_callbacks[i].callback != NULL)) {
-                    valid_cmd = true;
-                    pgen_setup_callbacks[i].callback(tokens, n_tokens);
+            // user has pressed help
+            if (!strcmp(tokens[0].name, "help")) {
+                pgen_help(tokens, n_tokens);
+                continue;
+            }
+
+            // if any commands are matching just the name then display this
+            for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_command_list); i ++) {
+                if (!strcmp(pgen_command_list[i].name, tokens[0].name)) {
+                    pgen_sub_command_help(i);
+                    display_help = true;
                     break;
                 }
             }
 
-            if (!valid_cmd) {
+            // scan for possible commands and run the setter / run callback
+            for (i = 0; (i < NETOS_SIZEOF_ARRAY(pgen_command_list) && !display_help); i ++) {
+                valid_cmd = pgen_process_sub_commands(i, tokens, n_tokens);
+                if (valid_cmd) {
+                    break;
+                }
+            }
+
+            if (!valid_cmd && !display_help) {
                 fprintf(stderr, "Invalid command <%s>\n", buf);
             }
+        } else {
+            NETOS_PRINT_STD_ERROR_COLOR("Incorrect token sequence\n");
         }
     }
     return 0;

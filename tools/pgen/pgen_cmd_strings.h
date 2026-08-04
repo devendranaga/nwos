@@ -1,6 +1,22 @@
 #ifndef PGEN_CMD_STRINGS_H
 #define PGEN_CMD_STRINGS_H
 
+#define ETH_CMD             "eth"
+#define ETH_CMD_DESC        "Ethernet Frame Generation"
+#define MACSEC_CMD          "macsec"
+#define MACSEC_CMD_DESC     "MACsec Frame Generation"
+#define ARP_CMD             "arp"
+#define ARP_CMD_DESC        "ARP Frame Generation"
+#define VLAN_CMD            "vlan"
+#define VLAN_CMD_DESC       "VLAN Frame Generation"
+#define IPV4_CMD            "ipv4"
+#define IPV4_CMD_DESC       "IPv4 Frame Generation"
+#define ICMP_CMD            "icmp"
+#define ICMP_CMD_DESC       "ICMP Frame Generation"
+#define PCAP_CMD            "pcap"
+#define PCAP_CMD_DESC       "PCAP related sub commands"
+#define COMMON_CMD          "common"
+#define COMMON_CMD_DESC     "Common sub commands"
 #define ETH_ENABLE_CMD      "eth.enable"
 #define ARP_ENABLE_CMD      "arp.enable"
 #define ETH_DA_CMD          "eth.da"

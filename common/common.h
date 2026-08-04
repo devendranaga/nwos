@@ -1,6 +1,8 @@
 #ifndef NETOS_COMMON_H
 #define NETOS_COMMON_H
 
+#define NETOS_SIZEOF_ARRAY(__a) ((sizeof(__a)) / (sizeof(__a[0])))
+
 /**
  * @brief - Get Mac address from the input string.
  *
