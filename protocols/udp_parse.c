@@ -3,7 +3,7 @@
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
                                 pkt_buffer_t *pkt_buf)
 {
-    if ((pkt_buf->offset + NETOS_UDP_HDR_LEN) > pkt_buf->rx_len) {
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_UDP_HDR_LEN)) {
         return NETOS_STATUS_UDP_MALFORMED_PKT;
     }
 

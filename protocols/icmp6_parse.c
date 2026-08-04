@@ -68,6 +68,10 @@ netos_status_t netos_icmp6_decode(netos_icmp6_hdr_t *icmp6_hdr,
     netos_status_t ret = NETOS_STATUS_ICMP6_MALFORMED_PKT;
     uint32_t i;
 
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP6_HDR_LEN_DEFAULT)) {
+        return ret;
+    }
+
     pkt_buffer_decode_byte(pkt_buf, &icmp6_hdr->type);
     pkt_buffer_decode_byte(pkt_buf, &icmp6_hdr->code);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->checksum);

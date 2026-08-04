@@ -46,6 +46,24 @@ cmake .. -DCOMPILER_CLANG=on -DDEBUG=on
 cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 ```
 
+## Setting up
+
+**1. Running netosd**
+
+```bash
+sudo setcap cap_net_admin,cap_net_raw+ep ./netosd
+./netosd -f config/config.xml
+```
+
+**2. Running netos_pgen**
+
+```bash
+sudo setcap cap_net_admin,cap_net_raw+ep ./netos_pgen
+./netos_pgen
+```
+
+
+
 ## TODOs
 
 - [ ] WRR egress scheduling

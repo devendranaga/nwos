@@ -8,6 +8,10 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
 {
     uint16_t val;
 
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_IPV6_HDR_LEN_DEFAULT)) {
+        return NETOS_STATUS_IPV6_MALFORMED_PKT;
+    }
+
     ipv6_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
     ipv6_hdr->dscp = ((pkt_buf->buffer[pkt_buf->offset] & 0x0F) << 2) |
                      ((pkt_buf->buffer[pkt_buf->offset + 1] & 0xC0) >> 6);
