@@ -8,7 +8,7 @@ jobs:
     - name: Install System Packages
       run: |
         sudo apt update
-        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev
+        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev
     - name: Compile
       run: |
         mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on; make -j;
