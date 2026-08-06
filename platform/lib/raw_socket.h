@@ -54,6 +54,16 @@ int netos_raw_socket_rx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t dat
  */
 int netos_raw_socket_tx(netos_raw_socket_ctx_t *raw, uint8_t *data, uint32_t data_len);
 
+/**
+ * @brief - Receive frame with specific ethertype.
+ *
+ * @param [in] raw - raw socket context.
+ * @param [inout] data - rx buffer.
+ * @param [in] data_len - rx buffer length.
+ * @param [in] ethertype - Ethertype to match in the rx frame.
+ *
+ * @return rx length on success, 0 if no frame matched, -1 on error.
+ */
 int netos_raw_socket_rx_ethertype(netos_raw_socket_ctx_t *raw,
                                   uint8_t *data,
                                   uint32_t data_len,

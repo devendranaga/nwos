@@ -1,7 +1,16 @@
 #ifndef NETOS_COMMON_H
 #define NETOS_COMMON_H
 
+#include <string.h>
+
 #define NETOS_SIZEOF_ARRAY(__a) ((sizeof(__a)) / (sizeof(__a[0])))
+
+static inline bool netos_is_broadcast_mac(const uint8_t *mac)
+{
+    const uint8_t bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+    return memcmp(mac, bmac, sizeof(bmac)) == 0;
+}
 
 /**
  * @brief - Get Mac address from the input string.
