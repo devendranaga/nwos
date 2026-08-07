@@ -140,7 +140,7 @@ endif()
 add_library(netos_crypto STATIC ${CRYPTO_SRC})
 
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
-target_link_libraries(netos_pgen PRIVATE pthread readline netos netos_crypto ${CRYPTO_LINKER_FLAGS})
+target_link_libraries(netos_pgen PRIVATE netos netos_crypto ${CRYPTO_LINKER_FLAGS} readline tinfo ncurses pthread)
 
 add_executable(netosd ${NETOS_SRC})
 
@@ -151,7 +151,11 @@ if(COMPILER_ARM)
     target_link_directories(netosd PRIVATE /usr/lib/aarch64-linux-gnu/)
 endif()
 
-target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
+if(STATIC_BUILD)
+    target_link_libraries(netosd PRIVATE netos xml2 icui18n icuuc icudata z lzma m pthread stdc++ dl)
+else()
+    target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
+endif()
 
 add_custom_target(pcapng_rust ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pcapng/Cargo.toml
