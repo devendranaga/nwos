@@ -83,5 +83,6 @@ Would create 10 interfaces on Linux.
 
 ## Build status
 
-[![C cmake CI](https://github.com/devendranaga/nwos/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=master)](https://github.com/devendranaga/nwos/actions/workflows/cmake-multi-platform.yml)
+[![gcc build](https://github.com/devendranaga/nwos/actions/workflows/gcc-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/gcc-build.yml)
+[![clang build](https://github.com/devendranaga/nwos/actions/workflows/clang-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/clang-build.yml)
 
