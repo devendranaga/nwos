@@ -84,5 +84,12 @@ Would create 10 interfaces on Linux.
 ## Build status
 
 [![gcc build](https://github.com/devendranaga/nwos/actions/workflows/gcc-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/gcc-build.yml)
+
+[![gcc static build](https://github.com/devendranaga/nwos/actions/workflows/gcc-static-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/gcc-static-build.yml)
+
+
 [![clang build](https://github.com/devendranaga/nwos/actions/workflows/clang-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/clang-build.yml)
+
+
+[![clang static build](https://github.com/devendranaga/nwos/actions/workflows/clang-static-build.yml/badge.svg)](https://github.com/devendranaga/nwos/actions/workflows/clang-static-build.yml)
 
