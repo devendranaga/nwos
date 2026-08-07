@@ -30,19 +30,33 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->src_ipaddr, NETOS_IPV6_ADDR_LEN);
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->dst_ipaddr, NETOS_IPV6_ADDR_LEN);
 
-    netos_ipv6_print(ipv6_hdr);
-
     return NETOS_STATUS_SUCCESS;
 }
 
 netos_status_t netos_ipv6_encode(netos_ipv6_hdr_t *ipv6_hdr,
                                  pkt_buffer_t *pkt_buf)
 {
+    uint8_t tc;
+
     pkt_buf->buffer[pkt_buf->offset] = (ipv6_hdr->version << 4);
-    pkt_buf->buffer[pkt_buf->offset] |= (ipv6_hdr->dscp & 0xF0) >> 4;
+
+    tc = ((ipv6_hdr->dscp & 0xFC) << 2) | ipv6_hdr->ecn;
+    pkt_buf->buffer[pkt_buf->offset] |= ((tc & 0xF0) >> 4);
     pkt_buf->offset ++;
 
-    pkt_buf->buffer[pkt_buf->offset] = (ipv6_hdr->dscp & 0x0C) << 2;
+    pkt_buf->buffer[pkt_buf->offset] = ((tc & 0x0F) << 4);
+    pkt_buf->buffer[pkt_buf->offset] |= ((ipv6_hdr->flow_lable & 0x0F0000) >> 16);
+    pkt_buf->offset ++;
+
+    pkt_buf->buffer[pkt_buf->offset] = ((ipv6_hdr->flow_lable & 0x00FF00) >> 8);
+    pkt_buf->buffer[pkt_buf->offset + 1] = (ipv6_hdr->flow_lable & 0x0000FF);
+    pkt_buf->offset += 2;
+
+    pkt_buffer_encode_2_bytes(pkt_buf, ipv6_hdr->payload_len);
+    pkt_buffer_encode_byte(pkt_buf, ipv6_hdr->nh);
+    pkt_buffer_encode_byte(pkt_buf, ipv6_hdr->hop_limit);
+    pkt_buffer_encode_bytes(pkt_buf, ipv6_hdr->src_ipaddr, NETOS_IPV6_ADDR_LEN);
+    pkt_buffer_encode_bytes(pkt_buf, ipv6_hdr->dst_ipaddr, NETOS_IPV6_ADDR_LEN);
 
     return NETOS_STATUS_SUCCESS;
 }

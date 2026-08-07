@@ -44,6 +44,17 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
                                  pkt_buffer_t *pkt_buf);
 
 /**
+ * @brief - Encode IPv6 frame.
+ *
+ * @param [inout] ipv6_hdr - IPv6 header.
+ * @param [inout] pkt_buf - packet buffer.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error on failure.
+ */
+netos_status_t netos_ipv6_encode(netos_ipv6_hdr_t *ipv6_hdr,
+                                 pkt_buffer_t *pkt_buf);
+
+/**
  * @brief - Print the IPv6 header.
  *
  * @param [in] ipv6_hdr - IPv6 header.
