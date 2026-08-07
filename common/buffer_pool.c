@@ -4,6 +4,7 @@
 #include "netos_status.h"
 #include "buffer_pool.h"
 #include "mmap_intf.h"
+#include "netos_log.h"
 
 netos_buffer_pool_t *netos_buffer_pool_alloc(uint32_t n_pkt_buffers)
 {
@@ -35,12 +36,8 @@ netos_buffer_pool_t *netos_buffer_pool_alloc(uint32_t n_pkt_buffers)
         ptr->next = NULL;
         ptr->buffer_pool_ctx = pool;
 
-        if (!pool->free_buffers) {
-            pool->free_buffers = ptr;
-        } else {
-            ptr->next = pool->free_buffers;
-            pool->free_buffers = ptr;
-        }
+        ptr->next = pool->free_buffers;
+        pool->free_buffers = ptr;
     }
 
     return pool;
@@ -61,9 +58,8 @@ pkt_buffer_t *netos_buffer_pool_get_buffer(netos_buffer_pool_t *pool)
 
     if (pool->free_buffers) {
         ptr = pool->free_buffers;
-        ptr->next = NULL;
-        pkt_buffer_ref_count_up(ptr);
         pool->free_buffers = pool->free_buffers->next;
+        ptr->next = NULL;
     }
 
     pthread_mutex_unlock(&pool->lock);
@@ -74,18 +70,19 @@ pkt_buffer_t *netos_buffer_pool_get_buffer(netos_buffer_pool_t *pool)
 void netos_buffer_pool_put_buffer(netos_buffer_pool_t *pool, pkt_buffer_t *pkt_buf)
 {
     // give back the pkt_buf to the buffer pool.
-    pkt_buffer_ref_count_down(pkt_buf);
+    pthread_mutex_lock(&pkt_buf->lock);
+    pkt_buf->ref_count --;
+    if (pkt_buf->ref_count > 0) {
+        pthread_mutex_unlock(&pkt_buf->lock);
+        return;
+    }
+    pthread_mutex_unlock(&pkt_buf->lock);
     pkt_buffer_reset(pkt_buf);
-    pkt_buf->next = NULL;
 
     pthread_mutex_lock(&pool->lock);
 
-    if (!pool->free_buffers) {
-        pool->free_buffers = pkt_buf;
-    } else {
-        pkt_buf->next = pool->free_buffers;
-        pool->free_buffers = pkt_buf;
-    }
+    pkt_buf->next = pool->free_buffers;
+    pool->free_buffers = pkt_buf;
 
     pthread_mutex_unlock(&pool->lock);
 }

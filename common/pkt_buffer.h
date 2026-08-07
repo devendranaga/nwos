@@ -127,6 +127,8 @@ void pkt_buffer_initialize(pkt_buffer_t *pkt_buf);
 
 void pkt_buffer_ref_count_up(pkt_buffer_t *pkt_buf);
 
+void pkt_buffer_ref_count_up_n(pkt_buffer_t *pkt_buf, uint32_t n);
+
 void pkt_buffer_ref_count_down(pkt_buffer_t *pkt_buf);
 
 bool pkt_buffer_rx_frame_in_range(pkt_buffer_t *pkt_buf, uint32_t hdr_len);

@@ -70,10 +70,10 @@ void netos_arp_print(netos_arp_hdr_t *arp_hdr)
     netos_log_debug("\t hw_addr_len: %d\n", arp_hdr->hw_addr_len);
     netos_log_debug("\t protocol_len: %d\n", arp_hdr->protocol_len);
     netos_log_debug("\t op: %d\n", arp_hdr->op);
-    netos_log_debug("\t sender_hw_addr: "NETOS_MACADDR_STR"\n",
+    netos_log_debug("\t sender_hw_addr: " NETOS_MACADDR_STR "\n",
                                         NETOS_MACADDR_BUF(arp_hdr->sender_hwaddr));
     netos_log_debug("\t sender_protocol_addr:  %x\n", arp_hdr->sender_protocol_addr);
-    netos_log_debug("\t target_hw_addr: "NETOS_MACADDR_STR"\n",
+    netos_log_debug("\t target_hw_addr: " NETOS_MACADDR_STR "\n",
                                         NETOS_MACADDR_BUF(arp_hdr->target_hwaddr));
     netos_log_debug("\t target_protocol_addr: %x\n", arp_hdr->target_protocol_addr);
 }

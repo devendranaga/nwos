@@ -24,10 +24,19 @@ void pkt_buffer_ref_count_up(pkt_buffer_t *pkt_buf)
     pthread_mutex_unlock(&pkt_buf->lock);
 }
 
+void pkt_buffer_ref_count_up_n(pkt_buffer_t *pkt_buf, uint32_t count)
+{
+    pthread_mutex_lock(&pkt_buf->lock);
+    pkt_buf->ref_count += 2;
+    pthread_mutex_unlock(&pkt_buf->lock);
+}
+
 void pkt_buffer_ref_count_down(pkt_buffer_t *pkt_buf)
 {
     pthread_mutex_lock(&pkt_buf->lock);
-    pkt_buf->ref_count --;
+    if (pkt_buf->ref_count > 0) {
+        pkt_buf->ref_count --;
+    }
     pthread_mutex_unlock(&pkt_buf->lock);
 }
 

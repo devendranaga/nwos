@@ -179,9 +179,12 @@ typedef struct netos_event_info {
  * @param [in] __evt_desc - event description.
  * @param [in] __frame_len - frame length.
  */
-#define NETOS_EVENT_INFO_CREATE(__evt_info, __ifname,\
-                                __sec, __nsec,\
-                                __evt_type, __evt_desc,\
+#define NETOS_EVENT_INFO_CREATE(__evt_info,\
+                                __ifname,\
+                                __sec,\
+                                __nsec,\
+                                __evt_type,\
+                                __evt_desc,\
                                 __frame_len) do {\
     (__evt_info)->s.type        = __evt_type;\
     (__evt_info)->s.desc        = __evt_desc;\
@@ -191,9 +194,20 @@ typedef struct netos_event_info {
     (__evt_info)->s.frame_len   = __frame_len;\
 } while (0)
 
-#define NETOS_EVENT_INFO_SET_IPV4_FIELDS(__evt_info, __src_addr, __dst_addr) do {\
+#define NETOS_EVENT_INFO_SET_IPV4_FIELDS(__evt_info,\
+                                         __src_addr,\
+                                         __dst_addr) do {\
     (__evt_info)->s.ip.v4.src_addr = __src_addr;\
     (__evt_info)->s.ip.v4.dst_addr = __dst_addr;\
+} while (0)
+
+#define NETOS_EVENT_INFO_SET_PORTS(__evt_info,\
+                                   __protocol,\
+                                   __src_port,\
+                                   __dst_port) do {\
+    (__evt_info)->s.protocol = __protocol;\
+    (__evt_info)->s.l4.ports.src_port = __src_port;\
+    (__evt_info)->s.l4.ports.dst_port = __dst_port;\
 } while (0)
 
 /**

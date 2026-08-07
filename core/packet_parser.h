@@ -12,6 +12,7 @@
 #include "tcp_hdr.h"
 #include "icmp_hdr.h"
 #include "icmp6_hdr.h"
+#include "protocols.h"
 
 #define NETOS_MAX_VLAN_TUNNELS 12
 
@@ -29,7 +30,8 @@ typedef struct netos_packet_parser {
 
 #define NETOS_IS_IPV4_FRAME(__pkt_parser) ((__pkt_parser)->ethertype == NETOS_ETHERTYPE_IPV4)
 #define NETOS_IS_IPV6_FRAME(__pkt_parser) ((__pkt_parser)->ethertype == NETOS_ETHERTYPE_IPV6)
-
+#define NETOS_IS_TCP_PROTOCOL(__pkt_parser) ((__pkt_parser)->protocol == NETOS_PROTOCOL_TCP)
+#define NETOS_IS_UDP_PROTOCOL(__pkt_parser) ((__pkt_parser)->protocol == NETOS_PROTOCOL_UDP)
     union {
         netos_ipv4_hdr_t    ipv4_hdr;
         netos_ipv6_hdr_t    ipv6_hdr;

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "netos_status.h"
 #include "ring.h"
+#include "netos_log.h"
 
 netos_status_t netos_ring_init(netos_ring_t *ring, uint32_t size)
 {
@@ -21,6 +22,7 @@ netos_status_t netos_ring_init(netos_ring_t *ring, uint32_t size)
 netos_status_t netos_ring_add(netos_ring_t *ring, void *item)
 {
     if (((ring->wr_index + 1) % ring->size) == ring->rd_index) {
+        netos_log_info("failed to add to the ring");
         return NETOS_STATUS_RING_BUFFER_FULL;
     }
 

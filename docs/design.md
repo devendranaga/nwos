@@ -1,4 +1,5 @@
 # Design notes
+
 ## Configuration
 
 **config design**

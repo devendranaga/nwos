@@ -109,6 +109,18 @@ static void netos_update_rx_event(const netos_parser_thread_t *parse_thr, pkt_bu
                                          parse_data->l3.ipv4_hdr.dst_ipaddr);
     }
 
+    if (NETOS_IS_TCP_PROTOCOL(parse_data)) {
+        NETOS_EVENT_INFO_SET_PORTS(evt_info,
+                                   parse_data->protocol,
+                                   parse_data->l4.tcp_hdr.src_port,
+                                   parse_data->l4.tcp_hdr.dst_port);
+    } else if (NETOS_IS_UDP_PROTOCOL(parse_data)) {
+        NETOS_EVENT_INFO_SET_PORTS(evt_info,
+                                   parse_data->protocol,
+                                   parse_data->l4.udp_hdr.src_port,
+                                   parse_data->l4.udp_hdr.dst_port);
+    }
+
     netos_event_mgr_add_event(evt_info);
 }
 
@@ -145,10 +157,10 @@ static void *netos_intf_parse_callback(void *cbdata)
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
                 netos_update_rx_event(parse_thr, pkt);
-                netos_buffer_pool_put_buffer(parse_thr->rx_pool, pkt);
                 parse_thr->if_stats.in_rx_invalid ++;
             }
             NETOS_PERF_EVENT_END(pkt->perf_evt);
+            netos_buffer_pool_put_buffer(parse_thr->rx_pool, pkt);
 
         } else {
             // wait until atleast one item is in ring
