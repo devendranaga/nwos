@@ -1,0 +1,14 @@
+name: gcc build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install System Packages
+      run: |
+        sudo apt update
+        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev
+    - name: Compile
+      run: |
+        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; make -j;
