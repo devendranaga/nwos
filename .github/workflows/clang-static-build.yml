@@ -1,4 +1,4 @@
-name: clang build
+name: clang static build
 on: [push, pull_request]
 jobs:
   build:
