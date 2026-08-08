@@ -1,6 +1,8 @@
 #ifndef NETOS_EVENT_INFO_H
 #define NETOS_EVENT_INFO_H
 
+#include <stdbool.h>
+
 /**
  * @brief - Defines Event Type.
  */
@@ -56,11 +58,6 @@ typedef enum {
     NETOS_EVENT_DESC_INVAL                              = 0xFAFAFAFA,
 } netos_event_desc_t;
 
-typedef struct __attribute__ ((__packed__)) {
-    uint32_t version;
-    uint32_t magic;
-} netos_event_hdr_t;
-
 /**
  * @brief - Defines event info.
  */
@@ -72,6 +69,7 @@ typedef struct netos_event_info {
         uint64_t                sec;
         uint64_t                nsec;
         uint32_t                frame_len;
+        uint16_t                ethertype;
         union {
             struct {
                 uint32_t        src_addr;
@@ -100,6 +98,9 @@ typedef struct netos_event_info {
 
 /**
  * @brief - Initializes the event type and description.
+ *
+ * @param [in] __evt_type - Event Type.
+ * @param [in] __evt_desc - Event Description.
  */
 #define NETOS_EVENT_INIT(__evt_type, __evt_desc) do {\
     __evt_type = NETOS_EVENT_TYPE_INVAL;\
@@ -118,6 +119,7 @@ typedef struct netos_event_info {
     (__evt_info)->s.sec         = 0;\
     (__evt_info)->s.nsec        = 0;\
     (__evt_info)->s.frame_len   = 0;\
+    (__evt_info)->s.ethertype   = 0x0;\
     memset((__evt_info)->s.ip.v6.src_addr, 0, 16);\
     memset((__evt_info)->s.ip.v6.dst_addr, 0, 16);\
     (__evt_info)->s.protocol = 0;\
@@ -164,13 +166,29 @@ typedef struct netos_event_info {
     (__evt_info)->s.frame_len   = __frame_len;\
 } while (0)
 
+/**
+ * @brief - Set the IPv4 fields.
+ *
+ * @param [out] __evt_info - Event Info.
+ * @param [in] __src_addr - source ip address.
+ * @param [in] __dst_addr - destination ip address.
+ */
 #define NETOS_EVENT_INFO_SET_IPV4_FIELDS(__evt_info,\
                                          __src_addr,\
                                          __dst_addr) do {\
+    (__evt_info)->s.ethertype = 0x0800u;\
     (__evt_info)->s.ip.v4.src_addr = __src_addr;\
     (__evt_info)->s.ip.v4.dst_addr = __dst_addr;\
 } while (0)
 
+/**
+ * @brief - Set the L4 protocol.
+ *
+ * @param [out] __evt_info - Event Info.
+ * @param [in] __protocol - L4 protocol.
+ * @param [in] __src_port - source port.
+ * @param [in] __dst_port - destination port.
+ */
 #define NETOS_EVENT_INFO_SET_PORTS(__evt_info,\
                                    __protocol,\
                                    __src_port,\

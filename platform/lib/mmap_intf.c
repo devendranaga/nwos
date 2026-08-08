@@ -55,7 +55,7 @@ netos_mmap_file_io_t *netos_mmap_open_file(const char *filename, uint32_t file_s
 
     fileio->memory = mmap(NULL, file_size,
                           PROT_READ | PROT_WRITE,
-                          MAP_PRIVATE | MAP_ANONYMOUS,
+                          MAP_SHARED,
                           fileio->fd, 0);
     if (fileio->memory == MAP_FAILED) {
         goto err;
@@ -126,6 +126,7 @@ void netos_mmap_close_file(netos_mmap_file_io_t *fileio, uint32_t written_bytes)
     if (fileio) {
         msync(fileio->memory, written_bytes, MS_SYNC);
         munmap(fileio->memory, written_bytes);
+        close(fileio->fd);
         free(fileio);
     }
 }

@@ -6,14 +6,11 @@
 - [ ] Cryptography wrapper callback interface
 - [ ] MbedTLS GCM
 - [ ] IPsec implementation
-- [ ] Event capture and storage tests
 - [ ] Address translation must be done right before the parser and straight to egress.
 - [ ] DRR egress scheduling
 - [ ] static ARP cache allocation strategy
 - [ ] select cpus statically based on the number of CPUs in the system
-- [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [ ] Handling Ctrl + C
-- [ ] Define event storage format, the same format is used for upload of events
 - [ ] Define event storage encryption
 - [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
 - [ ] CMAC PRF
@@ -141,5 +138,9 @@
 - [x] WolfSSL Encryption
 - [x] Tooling: MACsec encrypt implementation
 - [x] Tooling: implement the up arrow and down arrow detection and history buffer
+- [x] Define event storage format, the same format is used for upload of events
+- [x] Event capture and storage tests
+- [x] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
+- [x] Event manager to write logs to a file
 
 
