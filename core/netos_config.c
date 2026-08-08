@@ -33,6 +33,20 @@ static netos_status_t netos_config_parse_interface_config(network_config_t *conf
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_config_get_string(char **str_ptr,
+                                              xmlDocPtr doc, xmlNode *node)
+{
+    xmlChar *val = xmlNodeListGetString(doc, node->children, 1);
+
+    if (!val) {
+        return NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    *str_ptr = strdup((char *)val);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_config_get_u32(uint32_t *u32_ptr,
                                            xmlDocPtr doc, xmlNode *node)
 {
@@ -330,12 +344,28 @@ static netos_status_t netos_config_parse_event_tx_timer_val(network_config_t *co
                                 doc, node);
 }
 
+static netos_status_t netos_config_parse_store_events(network_config_t *config,
+                                                      xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_bool(&config->event_config.store_events,
+                                 doc, node);
+}
+
+static netos_status_t netos_config_parse_event_storage_file(network_config_t *config,
+                                                            xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_string(&config->event_config.storage_file,
+                                   doc, node);
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(network_config_t *config,
                                    xmlDocPtr doc, xmlNode *node);
 } event_config_callbacks[] = {
-    { "event_transmit_timer_intvl_sec",    netos_config_parse_event_tx_timer_val },
+    { "event_transmit_timer_intvl_sec",     netos_config_parse_event_tx_timer_val },
+    { "store_events",                       netos_config_parse_store_events },
+    { "event_storage_file",                 netos_config_parse_event_storage_file },
 };
 
 static netos_status_t
@@ -445,6 +475,8 @@ void netos_config_print(const network_config_t *config)
     fprintf(stderr, "    rx_buffer_pool_size: %d\n", config->rx_pkt_buffer_pool_len);
     fprintf(stderr, "    events: {\n");
     fprintf(stderr, "        event_transmit_timer_intvl_sec: %d\n", config->event_config.tx_timer_intvl_sec);
+    fprintf(stderr, "        store_events: %d\n", config->event_config.store_events);
+    fprintf(stderr, "        storage_file: %s\n", config->event_config.storage_file);
     fprintf(stderr, "    }\n");
     fprintf(stderr, "    protocols: {\n");
     fprintf(stderr, "        arp: {\n");

@@ -82,7 +82,9 @@ typedef struct netos_macsec_secy_config {
 } netos_macsec_secy_config_t;
 
 typedef struct netos_event_config {
-    uint32_t tx_timer_intvl_sec;
+    uint32_t    tx_timer_intvl_sec;
+    bool        store_events;
+    char        *storage_file;
 } netos_event_config_t;
 
 /**

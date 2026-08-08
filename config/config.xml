@@ -16,6 +16,8 @@
     </vlan_table>
     <events>
         <event_transmit_timer_intvl_sec>2</event_transmit_timer_intvl_sec>
+        <store_events>true</store_events>
+        <event_storage_file>netos_events.bin</event_storage_file>
     </events>
     <protocols>
         <macsec>
