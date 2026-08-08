@@ -1,0 +1,145 @@
+# TODOs
+
+- [ ] WRR egress scheduling
+- [ ] correct handling of ref count in rx and egress
+- [ ] MACsec implementation
+- [ ] Cryptography wrapper callback interface
+- [ ] MbedTLS GCM
+- [ ] IPsec implementation
+- [ ] Event capture and storage tests
+- [ ] Address translation must be done right before the parser and straight to egress.
+- [ ] DRR egress scheduling
+- [ ] static ARP cache allocation strategy
+- [ ] select cpus statically based on the number of CPUs in the system
+- [ ] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
+- [ ] Handling Ctrl + C
+- [ ] Define event storage format, the same format is used for upload of events
+- [ ] Define event storage encryption
+- [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
+- [ ] CMAC PRF
+- [ ] Store the received packets in a PCAP
+- [ ] Tooling: ARP spoofing
+- [ ] Expand the Events matching to suricata
+- [ ] Skip the IPv4 options if we cannot parse them
+- [ ] Tools: Multilevel VLAN generation.
+- [ ] Tools: Missing error handling in pgen.
+- [ ] GRE: decode GRE protocol.
+- [ ] Tooling to display ARP cache.
+- [ ] Tooling to support adding the static ARP entries.
+- [ ] IPv6 frame options parsing
+- [ ] LLDP frame parsing
+- [ ] ICMP6 frame serialization
+- [ ] Tooling: ICMP6 frame generation
+- [ ] Tooling: ICMP seq_no increment for every packet
+- [ ] Tooling: more descriptive help for each command
+- [ ] Tooling: ICMP6 Neighbor solicitations and advertisements generation
+- [ ] LLDP frame parsing
+- [ ] LLDP frame generation
+- [ ] NDP implementation
+- [ ] MKA frame parsing
+- [ ] MKA frame generation
+- [ ] recvmsg using the scatter gather approach
+- [ ] recvfrom using the PACKET_MMAP with tpacketv3
+- [ ] 6in4 tunnel frame parsing
+- [ ] 6in4 tunnel frame generation
+- [ ] IPv6 frame generation
+- [ ] Tooling: MACsec auto PN increment for every packet that is sent
+- [ ] Tooling: document the command usages
+- [ ] Tooling: when test finishes, reset the PN
+- [ ] Tooling: IPv4 over MACsec
+- [ ] bfifo queueing discipline
+- [ ] Tooling: IPv6 frame generation
+- [ ] Tooling: UDP over IPV4
+- [ ] Tooling: UDP over IPv6
+- [ ] Tooling: TCP over IPV4
+- [ ] Tooling: TCP over IPv6
+- [ ] UDP generation over IPv4
+- [ ] UDP generation over IPv6
+- [ ] TCP generation over IPv4
+- [ ] TCP generation over IPv6
+- [ ] stateful NAT implementation
+- [ ] stateful NAT64 implementation
+- [ ] IPv4 options parsing
+- [ ] DHCP frame parsing
+- [ ] DHCP frame serialization
+- [ ] DHCPv6 frame parsing
+- [ ] DHCPv6 frame serialization
+- [ ] DNS frame parsing
+- [ ] DNS frame serializataion
+- [ ] EAPOL-MKA frame parsing
+- [ ] EAPOL-MKA frame serialization
+- [ ] MKA key generation
+- [ ] Cipher: CMAC routine interface
+- [ ] Cipher: WolfSSL CMAC interface
+- [ ] 8021br frame parsing
+- [ ] 8021br frame serialization
+- [ ] Mirror mode operation
+- [ ] Linux RNG interface to /dev/random
+- [ ] IP forwarding support using NAT / NAT64
+- [ ] IP fragmentation and reassembly support
+- [ ] TCP statemachine
+- [ ] UDP Demux and Mux
+- [ ] TCP Demux and Mux
+- [ ] ICMP echo reply generation for a echo request frame
+- [ ] ARP request generation from the IP query to ARP
+- [ ] recvmsg and sendmsg support
+- [ ] PKT_MMAP or PF_RING support to receive and transmit frames
+- [ ] global MIBs for all protocols
+- [ ] Tooling: CLI tool for statistics
+- [ ] Enable PCAP write mode
+- [ ] Event manager to write logs to a network or to a file
+- [ ] Gtest support
+- [ ] Signal handling
+- [ ] Tooling: Multiple interface transmit on pgen
+- [ ] ATU implementation
+- [ ] ICMPv6: implement Multicast listener report v2 parsing
+- [ ] ICMPv6: implement Router solicitations and Router advertisements
+- [ ] TCP: Parse options
+- [ ] Syslog: Parse Syslog protocol
+- [ ] LACP: Parse LAG
+- [ ] NTP: Parse NTP
+- [ ] pfifo_fast: with 3 queues mapped from vlan priorities 7-0.
+- [ ] SFQ: stochastic fair queueing without re-hashing.
+- [ ] Tool ctl: to control or view the insides of the netos
+
+## Done
+
+- [x] selectable scheduler from a tx path (via egress algorithm type)
+- [x] Dynamic hash table
+- [x] ARP rx processing
+- [x] Fix RR egress scheduling (all frames are not egressing if multiple queues exist)
+- [x] Tooling: pgen for ethernet frames (speed, ipg, repeat, number of frames)
+- [x] Static queues using ring buffer
+- [x] Fix leak of packet buffers (never freed)
+- [x] IPv4 checksum validation
+- [x] gcd framework
+- [x] See if we really need ref count on `pkt_buffer`
+- [x] See if `_Atomic` can be usde on `pkt_buffer`.
+- [x] Tooling: Generate ARP frames
+- [x] ARP cache invalidation
+- [x] ICMP frame parsing
+- [x] ICMP checksum validation
+- [x] Tooling: Generate VLAN frames
+- [x] ICMP serialize for echo request and reply.
+- [x] IPv4 serialize and checksum generation
+- [x] TCP frame parsing
+- [x] TCP checksum validation
+- [x] UDP checksum validation
+- [x] IPv6 frame parsing
+- [x] ICMP6 frame parsing
+- [x] ICMP6 checksum validation
+- [x] Tooling: MACsec farme generation
+- [x] WolfSSL GMAC interface
+- [x] CPU affinity per thread
+- [x] Count number of CPUs and tie each thread to a CPU
+- [x] Tooling: packet replay from a file in pgen
+- [x] Tooling: packet capturing tooling
+- [x] Tooling: MACsec: setting any TCI bits via command line
+- [x] Tooling: MACsec key setting via pgen
+- [x] pfifo queueing discipline
+- [x] Take pkt buffer numbers from xml config
+- [x] WolfSSL Encryption
+- [x] Tooling: MACsec encrypt implementation
+- [x] Tooling: implement the up arrow and down arrow detection and history buffer
+
+
