@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define NETOS_SIZEOF_ARRAY(__a) ((sizeof(__a)) / (sizeof(__a[0])))
+#define NETOS_FOR_EACH_LIST(__item, __type, __head) for(__type *__item = __head; __item; __item = __item->next)
 
 static inline bool netos_is_broadcast_mac(const uint8_t *mac)
 {

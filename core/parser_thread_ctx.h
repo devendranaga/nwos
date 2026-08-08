@@ -7,7 +7,6 @@
 #include "raw_socket.h"
 #include "packet_parser.h"
 #include "ring.h"
-#include "interface_stats.h"
 #include "arp.h"
 #include "macsec.h"
 
@@ -24,7 +23,6 @@ typedef struct netos_parser_thread {
     // receive buffer pool
     netos_buffer_pool_t         *rx_pool;
     netos_ring_t                parse_ring;
-    netos_interface_stats_t     if_stats;
     netos_protocol_context_t    protocol_ctx;
 } netos_parser_thread_t;
 

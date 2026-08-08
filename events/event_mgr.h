@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include "gcd.h"
+#include "netos_config.h"
 #include "event_buffer.h"
 
 /**
@@ -11,14 +12,14 @@
 typedef struct netos_event_mgr {
     netos_event_buffer_t    *evt_buf;
     netos_event_info_t      *evt_list_head;
-    netos_event_info_t      *evt_list_tail;
     netos_gcd_ctx_t         *gcd_ctx;
     pthread_t               tid;
     pthread_mutex_t         evt_lock;
     pthread_cond_t          evt_cond;
 } netos_event_mgr_t;
 
-netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx);
+netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx,
+                                    network_config_t *config);
 
 void netos_event_mgr_add_event(netos_event_info_t *evt_info);
 

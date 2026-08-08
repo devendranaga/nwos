@@ -22,18 +22,15 @@ netos_event_buffer_t *netos_event_buffer_init(uint32_t n_events)
         goto err;
     }
 
+    pool->free_buffers = NULL;
+
     for (uint32_t i = 0; i < n_events; i ++) {
         netos_event_info_t *evt;
 
         evt = (pool->mapped_mem + (i * sizeof(netos_event_info_t)));
-        evt->next = NULL;
 
-        if (!pool->free_buffers) {
-            pool->free_buffers = evt;
-        } else {
-            evt->next = pool->free_buffers;
-            pool->free_buffers = evt;
-        }
+        evt->next = pool->free_buffers;
+        pool->free_buffers = evt;
     }
 
     return pool;
@@ -64,12 +61,11 @@ netos_event_info_t *netos_event_buffer_get(netos_event_buffer_t *pool)
 
 void netos_event_buffer_put(netos_event_buffer_t *pool, netos_event_info_t *evt)
 {
-    evt->next = NULL;
-
     pthread_mutex_lock(&pool->evt_lock);
 
     if (!pool->free_buffers) {
         pool->free_buffers = evt;
+        evt->next = NULL;
     } else {
         evt->next = pool->free_buffers;
         pool->free_buffers = evt;

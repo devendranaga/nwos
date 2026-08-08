@@ -47,7 +47,20 @@ typedef struct netos_packet_parser {
     } l4;
 } netos_packet_parser_t;
 
+/**
+ * @brief - Parse frame.
+ *
+ * @param [inout] pkt_buf - packet buffer.
+ * @param [inout] parsed_data - parsed data.
+ *
+ * #return returns NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
                                  netos_packet_parser_t *parsed_data);
+
+static inline void netos_parsed_frame_init(netos_packet_parser_t *parsed_data)
+{
+    memset(parsed_data, 0, sizeof(netos_packet_parser_t));
+}
 
 #endif

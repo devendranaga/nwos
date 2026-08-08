@@ -31,9 +31,14 @@ typedef struct {
 } netos_gcd_socket_ctx_t;
 
 typedef struct {
+    int                     fd;
+} netos_gcd_signal_ctx_t;
+
+typedef struct {
     int                     epoll_fd;
     netos_gcd_timer_ctx_t   timer_ctx;
     netos_gcd_socket_ctx_t  socket_ctx;
+    netos_gcd_signal_ctx_t  signal_ctx;
 } netos_gcd_ctx_t;
 
 netos_gcd_ctx_t *netos_gcd_ctx_init();

@@ -81,6 +81,10 @@ typedef struct netos_macsec_secy_config {
     netos_macsec_secy_entry_config_t    *secy_list;
 } netos_macsec_secy_config_t;
 
+typedef struct netos_event_config {
+    uint32_t tx_timer_intvl_sec;
+} netos_event_config_t;
+
 /**
  * @brief - Defines network config.
  */
@@ -92,6 +96,7 @@ typedef struct network_config {
     netos_egress_control_t      egress_ctrl;
     netos_vlan_table_config_t   vlan_table_config;
     netos_macsec_secy_config_t  secy_config;
+    netos_event_config_t        event_config;
 } network_config_t;
 
 /**

@@ -14,6 +14,9 @@
             <out_vid>11</out_vid>
         </vlan_entry>
     </vlan_table>
+    <events>
+        <event_transmit_timer_intvl_sec>2</event_transmit_timer_intvl_sec>
+    </events>
     <protocols>
         <macsec>
             <n_secy>128</n_secy>

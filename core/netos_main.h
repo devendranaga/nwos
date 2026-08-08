@@ -11,7 +11,6 @@
 #include "parser_thread_ctx.h"
 #include "packet_parser.h"
 #include "egress_controller.h"
-#include "interface_stats.h"
 #include "queue.h"
 #include "gcd.h"
 

@@ -7,6 +7,7 @@
 
 #include "netos_status.h"
 #include "netos_config.h"
+#include "common.h"
 
 static netos_status_t netos_config_parse_interface_config(network_config_t *config,
                                                           xmlDocPtr doc, xmlNode *node)
@@ -322,6 +323,43 @@ netos_config_parse_egress_config(network_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_config_parse_event_tx_timer_val(network_config_t *config,
+                                                            xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_u32(&config->event_config.tx_timer_intvl_sec,
+                                doc, node);
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(network_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} event_config_callbacks[] = {
+    { "event_transmit_timer_intvl_sec",    netos_config_parse_event_tx_timer_val },
+};
+
+static netos_status_t
+netos_config_parse_event_config(network_config_t *config,
+                                xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
+    netos_status_t ret;
+
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (uint32_t i = 0; i < NETOS_SIZEOF_ARRAY(event_config_callbacks); i ++) {
+            if ((node_ptr->type == XML_ELEMENT_NODE) &&
+                (strcmp((const char *)node_ptr->name, event_config_callbacks[i].name) == 0)) {
+                ret = event_config_callbacks[i].callback_fn(config, doc, node_ptr);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+            }
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(network_config_t *config,
@@ -331,6 +369,7 @@ static const struct {
     { "rx_buffer_pool_size",    netos_config_parse_rx_buffer_pool_size },
     { "protocols",              netos_config_parse_protocol_config },
     { "egress_control",         netos_config_parse_egress_config },
+    { "events",                 netos_config_parse_event_config },
 };
 
 static netos_status_t
@@ -404,6 +443,9 @@ void netos_config_print(const network_config_t *config)
     }
     fprintf(stderr, "    }\n");
     fprintf(stderr, "    rx_buffer_pool_size: %d\n", config->rx_pkt_buffer_pool_len);
+    fprintf(stderr, "    events: {\n");
+    fprintf(stderr, "        event_transmit_timer_intvl_sec: %d\n", config->event_config.tx_timer_intvl_sec);
+    fprintf(stderr, "    }\n");
     fprintf(stderr, "    protocols: {\n");
     fprintf(stderr, "        arp: {\n");
     fprintf(stderr, "            arp_cache_size: %d\n",

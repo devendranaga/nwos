@@ -6,6 +6,7 @@
 #include <time.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
+#include <sys/signalfd.h>
 #include <errno.h>
 #include "netos_status.h"
 #include "gcd.h"

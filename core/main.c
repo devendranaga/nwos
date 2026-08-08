@@ -67,7 +67,6 @@ static void *netos_intf_rx_callback(void *cbdata)
         rx_buf->in_intf = intf->raw;
         clock_gettime(CLOCK_REALTIME, &rx_buf->rx_ts);
         rx_buf->rx_len = ret;
-        intf->parser_thr->if_stats.in_rx_bytes += ret;
 
         pthread_mutex_lock(&intf->parser_thr->parse_q_lock);
         pkt_buffer_ref_count_up(rx_buf);
@@ -157,7 +156,6 @@ static void *netos_intf_parse_callback(void *cbdata)
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
             if (ret != NETOS_STATUS_SUCCESS) {
                 netos_update_rx_event(parse_thr, pkt);
-                parse_thr->if_stats.in_rx_invalid ++;
             }
             NETOS_PERF_EVENT_END(pkt->perf_evt);
             netos_buffer_pool_put_buffer(parse_thr->rx_pool, pkt);
@@ -374,7 +372,7 @@ int main(int argc, char **argv)
     netos_log_info("Config parse ok\n");
 
     // initialize event manager
-    ret = netos_event_mgr_init(ctx->gcd_ctx);
+    ret = netos_event_mgr_init(ctx->gcd_ctx, &ctx->config);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Cannot initialize event manager\n");
         return ret;

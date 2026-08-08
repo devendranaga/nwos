@@ -113,6 +113,8 @@ netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
     uint16_t ethertype = 0;
     uint32_t i = 0;
 
+    netos_parsed_frame_init(parsed_data);
+
     parsed_data->has_l2_protocol = false;
 
     ret = netos_eth_decode(&parsed_data->eh, pkt_buf);

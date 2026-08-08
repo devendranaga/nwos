@@ -118,38 +118,8 @@ typedef struct netos_event_info {
     (__evt_info)->s.sec         = 0;\
     (__evt_info)->s.nsec        = 0;\
     (__evt_info)->s.frame_len   = 0;\
-    (__evt_info)->s.ip.v6.src_addr[0] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[1] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[2] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[3] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[4] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[5] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[6] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[7] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[8] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[9] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[10] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[11] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[12] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[13] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[14] = 0;\
-    (__evt_info)->s.ip.v6.src_addr[15] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[0] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[1] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[2] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[3] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[4] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[5] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[6] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[7] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[8] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[9] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[10] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[11] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[12] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[13] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[14] = 0;\
-    (__evt_info)->s.ip.v6.dst_addr[15] = 0;\
+    memset((__evt_info)->s.ip.v6.src_addr, 0, 16);\
+    memset((__evt_info)->s.ip.v6.dst_addr, 0, 16);\
     (__evt_info)->s.protocol = 0;\
     (__evt_info)->s.l4.ports.src_port = 0;\
     (__evt_info)->s.l4.ports.dst_port = 0;\
@@ -214,24 +184,13 @@ typedef struct netos_event_info {
  * @brief - Add an event.
  */
 #define NETOS_EVENT_INFO_ADD_EVENT(__evt_head, __evt_tail, __evt_info) do {\
+    __evt_info->next = NULL;\
     if (!__evt_head) {\
         __evt_head = __evt_info;\
         __evt_tail = __evt_info;\
     } else {\
         (__evt_tail)->next = __evt_info;\
         (__evt_tail) = __evt_info;\
-    }\
-} while (0)
-
-/**
- * @brief - Delete an event from head. Move the head to next element.
- */
-#define NETOS_EVENT_INFO_DEL_EVENT_HEAD(__evt_head) do {\
-    struct netos_event_info *item;\
-    item = (__evt_head);\
-    if (__evt_head) {\
-        (__evt_head) = (__evt_head)->next;\
-        free(item);\
     }\
 } while (0)
 
