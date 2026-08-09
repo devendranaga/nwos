@@ -13,10 +13,10 @@
 #include "netos_config.h"
 #include "netos_log.h"
 
-#define NETOS_EVENT_COUNT_MAX 100
-#define NETOS_EVENT_BUFFERS_MAX 1024
-#define NETOS_EVENT_FILE_SIZE_MAX 4 * 1024 * 1024
-#define NETOS_EVENT_FILE_NAME_MAX 256
+#define NETOS_EVENT_COUNT_MAX       100
+#define NETOS_EVENT_BUFFERS_MAX     1024
+#define NETOS_EVENT_FILE_SIZE_MAX   4 * 1024 * 1024
+#define NETOS_EVENT_FILE_NAME_MAX   256
 
 // find a way to make it within the global context instead of static global
 static netos_event_mgr_t evt_mgr;
@@ -48,8 +48,8 @@ static netos_status_t netos_event_mgr_create_file(const char *filename)
 
     netos_event_hdr_t *evt_hdr = evt_mgr.evt_log_ptr->memory;
 
-    evt_hdr->magic = 0x4E574F53;
-    evt_hdr->version = 1;
+    evt_hdr->magic = NETOS_EVENT_MSG_HDR_MAGIC;
+    evt_hdr->version = NETOS_EVENT_MSG_VERSION;
 
     evt_mgr.file_offset += sizeof(netos_event_hdr_t);
 
@@ -143,21 +143,27 @@ netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx,
         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
     }
 
+    netos_log_info("Initialize event buffer pool size %d\n", NETOS_EVENT_BUFFERS_MAX);
+
+    // initialize the event mgr list and the locks
     evt_mgr.evt_list_head = NULL;
     pthread_mutex_init(&evt_mgr.evt_lock, NULL);
     pthread_cond_init(&evt_mgr.evt_cond, NULL);
 
     evt_mgr.config = config;
 
+    // if the user asked us to write the events, lets create a file
     if (config->event_config.store_events) {
         netos_event_mgr_create_file(config->event_config.storage_file);
     }
 
+    // create the event manager process timer
     netos_gcd_timer_set_callback(gcd_ctx,
                                  config->event_config.tx_timer_intvl_sec,
                                  0,
                                  NULL,
                                  netos_event_mgr_process_timer);
+    netos_log_info("Set the event manager timer ok\n");
 
     return NETOS_STATUS_SUCCESS;
 }

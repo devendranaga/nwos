@@ -10,6 +10,7 @@
 #include "netos_log.h"
 #include "netos_config.h"
 #include "cpu_affinity.h"
+#include "statistics_ctx.h"
 #include "perf_intf.h"
 #include "netos_main.h"
 
@@ -63,6 +64,9 @@ static void *netos_intf_rx_callback(void *cbdata)
             netos_buffer_pool_put_buffer(intf->parser_thr->rx_pool, rx_buf);
             continue;
         }
+
+        // increment rx counter for thsi interface
+        netos_statistics_inc_rx(intf->raw->stats_ctx);
 
         rx_buf->in_intf = intf->raw;
         clock_gettime(CLOCK_REALTIME, &rx_buf->rx_ts);
@@ -193,6 +197,12 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     }
 
     netos_log_info("raw socket on [%s] create ok\n", intf_config->ifname);
+
+    intf->raw->stats_ctx = netos_statistics_add(intf_config->ifname);
+    if (!intf->raw->stats_ctx) {
+        netos_log_error("Failed to add statistics pointer for <%s>\n", intf_config->ifname);
+        goto err;
+    }
 
     netos_log_info("rx pool created ok\n");
 
@@ -382,6 +392,12 @@ int main(int argc, char **argv)
     ret = netos_initialize_protocols(&ctx->config, ctx->gcd_ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to initialize protocols\n");
+        return ret;
+    }
+
+    ret = netos_statistics_init();
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("failed to initialize statistics\n");
         return ret;
     }
 

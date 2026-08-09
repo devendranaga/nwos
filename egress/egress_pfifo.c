@@ -1,4 +1,5 @@
 #include "buffer_pool.h"
+#include "statistics_ctx.h"
 #include "egress_pfifo.h"
 
 static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
@@ -31,9 +32,12 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
             if (pkt_buf && pkt_buf->out_intf) {
                 pkt_buffer_t *next = pkt_buf->next;
 
-                netos_raw_socket_tx(pkt_buf->out_intf,
-                                    pkt_buf->buffer,
-                                    pkt_buf->tx_len);
+                if (pkt_buf->out_intf) {
+                    netos_raw_socket_tx(pkt_buf->out_intf,
+                                        pkt_buf->buffer,
+                                        pkt_buf->tx_len);
+                    netos_statistics_inc_pfifo_tx(pkt_buf->out_intf->stats_ctx);
+                }
 
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
 

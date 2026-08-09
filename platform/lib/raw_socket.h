@@ -8,12 +8,20 @@
  * @brief - Defines Raw socket context.
  */
 typedef struct {
+    // raw file descriptor of the underling interface
     int         fd;
+    // interface this fd belongs
     char        *ifname;
+    // mac address of the interface
     uint8_t     mac[NETOS_MACADDR_LEN];
+    // ip address of this interface
     uint32_t    ipaddr;
+    // interface index
     int         ifindex;
+    // egress controller pointer
     void        *egress_ctrl;
+    // statistics pointer
+    void        *stats_ctx;
 } netos_raw_socket_ctx_t;
 
 /**

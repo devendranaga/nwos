@@ -4,6 +4,7 @@
 #include "netos_status.h"
 #include "pthread_intf.h"
 #include "raw_socket.h"
+#include "statistics_ctx.h"
 #include "egress_rr.h"
 #include "buffer_pool.h"
 
@@ -50,6 +51,7 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
                     rr_item->pkt_buf = pkt_buf->next;
                     if (pkt_buf->out_intf) {
                         netos_raw_socket_tx(pkt_buf->out_intf, pkt_buf->buffer, pkt_buf->tx_len);
+                        netos_statistics_inc_rr_tx(pkt_buf->out_intf->stats_ctx);
                     }
 
                     netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);

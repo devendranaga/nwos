@@ -1,6 +1,9 @@
 #ifndef NETOS_EVENT_MSG_H
 #define NETOS_EVENT_MSG_H
 
+#define NETOS_EVENT_MSG_HDR_MAGIC   0x4E574F53
+#define NETOS_EVENT_MSG_VERSION     1
+
 typedef struct __attribute__ ((__packed__)) {
     uint16_t    src_port;
     uint16_t    dst_port;
@@ -36,6 +39,9 @@ typedef struct __attribute__ ((__packed__)) {
     uint8_t     data[0]; // points to ipv4_data_t or ipv6_data_t
 } netos_event_msg_t;
 
+/**
+ * @brief - Defines event header.
+ */
 typedef struct __attribute__ ((__packed__)) {
     uint32_t magic; // NWOS
     uint8_t version; // 1
