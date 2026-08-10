@@ -139,7 +139,13 @@ impl netos_pcap_parser {
                 return -1;
             }
 
-            pcap_gl_hdr.read(self.fd);
+            // drop if global header signature does not match
+            let ret = pcap_gl_hdr.read(self.fd);
+            if ret != 0 {
+                println!("invalid PCAP global header\n");
+                libc::close(self.fd);
+                return -1;
+            }
 
             loop {
                 let buf : [u8; 4096 * 16] = [0; 4096 * 16];
@@ -193,6 +199,7 @@ impl Drop for netos_pcap_parser {
     fn drop(&mut self) {
         if self.fd >= 0 {
             unsafe { libc::close(self.fd); }
+            self.fd = -1;
         }
     }
 }

@@ -154,6 +154,7 @@ impl Drop for pcapng_parser {
     fn drop(&mut self) {
         if self.handle >= 0 {
             unsafe { libc::close(self.handle); }
+            self.handle = -1;
         }
     }
 }
