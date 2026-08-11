@@ -28,7 +28,7 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
 
         pkt_buffer_t *pkt_buf = pfifo->queue.pkt_buf;
 
-        for (i = 0; pkt_buf && (i < pfifo->n_pkts); i ++) {
+        for (i = 0; pkt_buf && (i < pfifo->in_pkts); i ++) {
             if (pkt_buf && pkt_buf->out_intf) {
                 pkt_buffer_t *next = pkt_buf->next;
 
@@ -44,6 +44,8 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
                 pkt_buf = next;
             }
         }
+
+        pfifo->in_pkts = 0;
 
         pfifo->queue.pkt_buf = NULL;
 
