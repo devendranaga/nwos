@@ -44,7 +44,6 @@
 - [ ] Tooling: document the command usages
 - [ ] Tooling: when test finishes, reset the PN
 - [ ] Tooling: IPv4 over MACsec
-- [ ] bfifo queueing discipline
 - [ ] Tooling: IPv6 frame generation
 - [ ] Tooling: UDP over IPV4
 - [ ] Tooling: UDP over IPv6
@@ -142,5 +141,6 @@
 - [x] Event capture and storage tests
 - [x] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [x] Event manager to write logs to a file
+- [x] bfifo queueing discipline
 
 
