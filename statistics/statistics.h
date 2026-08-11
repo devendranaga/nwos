@@ -14,6 +14,7 @@ typedef struct netos_statistics_egress {
     _Atomic uint64_t n_sp_tx;
     _Atomic uint64_t n_rr_tx;
     _Atomic uint64_t n_pfifo_tx;
+    _Atomic uint64_t n_bfifo_tx;
 } netos_statistics_egress_t;
 
 typedef struct netos_statistics {

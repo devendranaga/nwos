@@ -26,5 +26,7 @@ void netos_statistics_inc_rr_tx(void *stat_ptr);
 
 void netos_statistics_inc_pfifo_tx(void *stat_ptr);
 
+void netos_statistics_inc_bfifo_tx(void *stat_ptr);
+
 #endif
 

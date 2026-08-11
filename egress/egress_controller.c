@@ -107,6 +107,40 @@ static void netos_egress_alg_pfifo_deinit(netos_egress_controller_t *egress_ctrl
     egress_ctrl->pfifo = NULL;
 }
 
+static netos_status_t netos_egress_alg_bfifo_init(netos_egress_controller_t *egress_ctrl)
+{
+    netos_status_t ret;
+
+    egress_ctrl->bfifo = calloc(1, sizeof(netos_egress_bfifo_mgr_t));
+    if (!egress_ctrl->bfifo) {
+        goto err;
+    }
+
+    ret = netos_egress_bfifo_init(egress_ctrl->bfifo,
+                                  egress_ctrl->config->egress_ctrl.bfifo.max_bytes);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+
+err:
+    if (egress_ctrl->bfifo) {
+        netos_egress_bfifo_deinit(egress_ctrl->bfifo);
+        free(egress_ctrl->bfifo);
+        egress_ctrl->bfifo = NULL;
+    }
+
+    return NETOS_STATUS_EGRESS_BFIFO_INIT_FAILED;
+}
+
+static void netos_egress_alg_bfifo_deinit(netos_egress_controller_t *egress_ctrl)
+{
+    netos_egress_bfifo_deinit(egress_ctrl->bfifo);
+    free(egress_ctrl->bfifo);
+    egress_ctrl->bfifo = NULL;
+}
+
 netos_egress_controller_t *
 netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
                              network_config_t *config)
@@ -136,18 +170,26 @@ netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
         goto err;
     }
 
+    ret = netos_egress_alg_bfifo_init(egress_ctrl);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
+
     return egress_ctrl;
 
 err:
     if (egress_ctrl) {
-        if (egress_ctrl->sp) {
-            netos_egress_alg_sp_deinit(egress_ctrl);
+        if (egress_ctrl->bfifo) {
+            netos_egress_alg_bfifo_deinit(egress_ctrl);
+        }
+        if (egress_ctrl->pfifo) {
+            netos_egress_alg_pfifo_deinit(egress_ctrl);
         }
         if (egress_ctrl->rr) {
             netos_egress_alg_rr_deinit(egress_ctrl);
         }
-        if (egress_ctrl->pfifo) {
-            netos_egress_alg_pfifo_deinit(egress_ctrl);
+        if (egress_ctrl->sp) {
+            netos_egress_alg_sp_deinit(egress_ctrl);
         }
     }
 
@@ -159,7 +201,7 @@ void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
                         pkt_buffer_t *pkt_buf)
 {
     // invalid egress algorithm
-    if ((alg < NETOS_EGRESS_ALG_SP) || (alg > NETOS_EGRESS_ALG_PFIFO)) {
+    if ((alg < NETOS_EGRESS_ALG_SP) || (alg > NETOS_EGRESS_ALG_BFIFO)) {
         egress_ctrl->mib.drops_inval_alg ++;
         return;
     }
@@ -179,6 +221,11 @@ void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
         case NETOS_EGRESS_ALG_PFIFO:
             if (egress_ctrl->pfifo) {
                 netos_egress_pfifo_enque(egress_ctrl->pfifo, pkt_buf);
+            }
+        break;
+        case NETOS_EGRESS_ALG_BFIFO:
+            if (egress_ctrl->bfifo) {
+                netos_egress_bfifo_enque(egress_ctrl->bfifo, pkt_buf);
             }
         break;
         default:

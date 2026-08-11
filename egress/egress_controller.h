@@ -6,11 +6,13 @@
 #include "egress_sp.h"
 #include "egress_rr.h"
 #include "egress_pfifo.h"
+#include "egress_bfifo.h"
 
 typedef enum {
     NETOS_EGRESS_ALG_SP = 0, // Strict priority 8 queues
     NETOS_EGRESS_ALG_RR,     // Round robin 8 queues
     NETOS_EGRESS_ALG_PFIFO,  // packet fifo single queue
+    NETOS_EGRESS_ALG_BFIFO,  // bytes fifo single queue
     NETOS_EGRESS_ALG_WRR,    // Weighted round robin <not implemented>
 } netos_egress_queueing_alg_t;
 
@@ -36,6 +38,7 @@ typedef struct netos_egress_controller {
     netos_egress_sp_mgr_t           *sp;
     netos_egress_rr_mgr_t           *rr;
     netos_egress_pfifo_mgr_t        *pfifo;
+    netos_egress_bfifo_mgr_t        *bfifo;
     netos_egress_controller_mib_t   mib;
 } netos_egress_controller_t;
 
