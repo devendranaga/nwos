@@ -10,10 +10,6 @@ typedef struct {
     uint8_t     *pkt;
 } netos_pcapng_frame_t;
 
-typedef enum {
-    NETOS_PCAPNG_OP_READ = 1,
-} netos_pcapng_op_t;
-
 typedef struct {
     char    *ifname;
     char    *ifdesc;
@@ -107,19 +103,19 @@ typedef struct {
     netos_pcapng_dns_lookup_cb  dns_cb;
 } netos_pcapng_parse_callbacks_t;
 
-typedef struct {
-    int                             fd;
-    void                            *mapped_memory;
-    void                            *user_ctx;
-    uint32_t                        offset;
-    netos_pcapng_file_record_t      rec;
-    netos_pcapng_parse_callbacks_t  *parse_cb_data;
-} netos_pcapng_ctx_t;
-
-netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
-                                           const char *filename,
-                                           void *ctx,
-                                           netos_pcapng_parse_callbacks_t *parse_cb);
+/**
+ * @brief - Parse a pcapng file.
+ *
+ * @param [in] op - pcap operation.
+ * @param [in] filename - pcap filename.
+ * @param [in] ctx - user's context.
+ * @param [in] parse_cb - callbacks that get called when a frame is parsed.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code on failure.
+ */
+netos_status_t netos_pcapng_ctx_parse(const char *filename,
+                                      void *ctx,
+                                      netos_pcapng_parse_callbacks_t *parse_cb);
 
 #endif
 

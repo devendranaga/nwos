@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include "netos_status.h"
 #include "pcapng_intf.h"
 
 void packet_callback(void *ctx, netos_pcapng_frame_t *frame)
@@ -27,11 +28,11 @@ int main(int argc, char **argv)
         .dns_cb = dns_callback,
     };
     char *filename = argv[1];
-    netos_pcapng_ctx_t *pcapng;
+    netos_status_t ret;
 
-    pcapng = netos_pcapng_ctx_parse(NETOS_PCAPNG_OP_READ, filename, NULL, &callbacks);
-    if (!pcapng) {
-        printf("failed to parse pcapng\n");
+    ret = netos_pcapng_ctx_parse(filename, NULL, &callbacks);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        printf("failed to parse pcapng error: %x\n", ret);
         return -1;
     }
 

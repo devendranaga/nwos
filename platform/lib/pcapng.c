@@ -40,7 +40,9 @@
 #define NETOS_NRB_REC_IPV4 1
 #define NETOS_NRB_REC_IPV6 2
 
-// defines an SHB block typecasted to the mapped memory
+/**
+ * @brief - Defines an SHB block typecasted to the mapped memory
+ */
 typedef struct __attribute__ ((__packed__)) {
     uint32_t block_type;
     uint32_t block_total_len;
@@ -49,6 +51,18 @@ typedef struct __attribute__ ((__packed__)) {
     uint16_t minor_version;
     uint64_t section_len;
 } netos_pcapng_shb_t;
+
+/**
+ * @brief - Defines pcapng context.
+ */
+typedef struct {
+    int                             fd;
+    void                            *mapped_memory;
+    void                            *user_ctx;
+    uint32_t                        offset;
+    netos_pcapng_file_record_t      rec;
+    netos_pcapng_parse_callbacks_t  *parse_cb_data;
+} netos_pcapng_ctx_t;
 
 // Simple compile-time endianness check
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -558,10 +572,9 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
     return NETOS_STATUS_SUCCESS;
 }
 
-netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
-                                           const char *filename,
-                                           void *user_ctx,
-                                           netos_pcapng_parse_callbacks_t *parse_cb)
+netos_status_t netos_pcapng_ctx_parse(const char *filename,
+                                      void *user_ctx,
+                                      netos_pcapng_parse_callbacks_t *parse_cb)
 {
     netos_pcapng_ctx_t *ctx;
     struct stat st;
@@ -570,57 +583,55 @@ netos_pcapng_ctx_t *netos_pcapng_ctx_parse(netos_pcapng_op_t op,
 
     ret = stat(filename, &st);
     if (ret != 0) {
-        return NULL;
+        return NETOS_STATUS_PCAPNG_FILESIZE_UNKNOWN;
     }
 
     ctx = calloc(1, sizeof(netos_pcapng_ctx_t));
     if (!ctx) {
-        return NULL;
+        return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
     }
 
     ctx->parse_cb_data = parse_cb;
 
-    if (op == NETOS_PCAPNG_OP_READ) {
-        ctx->fd = open(filename, O_RDONLY);
-        if (ctx->fd < 0) {
-            goto err;
-        }
+    ctx->fd = open(filename, O_RDONLY);
+    if (ctx->fd < 0) {
+        res = NETOS_STATUS_PCAPNG_INVAL_FILE;
+        goto err;
+    }
 
-        ctx->mapped_memory = mmap(NULL, st.st_size,
-                                  PROT_READ,
-                                  MAP_SHARED,
-                                  ctx->fd,
-                                  0);
-        if (ctx->mapped_memory == MAP_FAILED) {
-            // fallback to normal file i/o
-            goto err;
-        }
+    ctx->mapped_memory = mmap(NULL, st.st_size,
+                              PROT_READ,
+                              MAP_SHARED,
+                              ctx->fd,
+                              0);
+    if (ctx->mapped_memory == MAP_FAILED) {
+        res = NETOS_STATUS_FILE_OPEN_VIA_MMAP_FAILURE;
+        // fallback to normal file i/o
+        goto err;
+    }
 
-        netos_pcapng_shb_t *shb = (netos_pcapng_shb_t *)ctx->mapped_memory;
+    netos_pcapng_shb_t *shb = (netos_pcapng_shb_t *)ctx->mapped_memory;
 
-        if (shb->byte_order_magic == NETOS_PCAPNG_ENDIAN_BE) {
-            ctx->rec.big_endian = true;
-        } else if (shb->byte_order_magic == NETOS_PCAPNG_ENDIAN_LE) {
-            ctx->rec.big_endian = false;
-        } else {
-            goto err;
-        }
+    if (shb->byte_order_magic == NETOS_PCAPNG_ENDIAN_BE) {
+        ctx->rec.big_endian = true;
+    } else if (shb->byte_order_magic == NETOS_PCAPNG_ENDIAN_LE) {
+        ctx->rec.big_endian = false;
+    } else {
+        res = NETOS_STATUS_PCAPNG_INVAL_PCAPNG_MAGIC;
+        goto err;
+    }
 
-        ctx->offset += sizeof(netos_pcapng_shb_t);
+    ctx->offset += sizeof(netos_pcapng_shb_t);
 
-        bool no_options = false;
-        res = netos_pcapng_parse_shb(ctx, shb, &no_options);
-        if (res != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
+    bool no_options = false;
+    res = netos_pcapng_parse_shb(ctx, shb, &no_options);
+    if (res != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
 
-        res = netos_pcapng_parse_blocks(ctx);
-        if (res != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-        munmap(ctx->mapped_memory, st.st_size);
-        return ctx;
+    res = netos_pcapng_parse_blocks(ctx);
+    if (res != NETOS_STATUS_SUCCESS) {
+        goto err;
     }
 
 err:
@@ -637,6 +648,6 @@ err:
         free(ctx);
     }
 
-    return NULL;
+    return res;
 }
 
