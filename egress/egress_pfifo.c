@@ -46,8 +46,8 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
         }
 
         pfifo->in_pkts = 0;
-
         pfifo->queue.pkt_buf = NULL;
+        pfifo->queue.pkt_buf_last = NULL;
 
         pthread_mutex_unlock(&pfifo->pfifo_lock);
     }
