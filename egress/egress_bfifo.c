@@ -41,14 +41,14 @@ static void *netos_egress_bfifo_tx_queue_thread(void *ctx)
 
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
 
-                pkt_buf = next;
                 tx_bytes += pkt_buf->tx_len;
+                pkt_buf = next;
             }
         }
 
-        bfifo->in_bytes = 0;
-
+        bfifo->in_bytes -= tx_bytes;
         bfifo->queue.pkt_buf = NULL;
+        bfifo->queue.pkt_buf_last = NULL;
 
         pthread_mutex_unlock(&bfifo->bfifo_lock);
     }
