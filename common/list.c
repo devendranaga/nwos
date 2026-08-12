@@ -61,7 +61,6 @@ void netos_dll_for_each(netos_dll_impl_t *impl, void (*for_each_cb)(void *item))
 
 bool netos_dll_delete_item(netos_dll_impl_t *impl, void *item)
 {
-    netos_dll_t *prev;
     netos_dll_t *node;
 
     if (!impl->head) {
@@ -70,27 +69,32 @@ bool netos_dll_delete_item(netos_dll_impl_t *impl, void *item)
 
     if (impl->head->data == item) {
         if (impl->last == impl->head) {
+            free(impl->head);
+            impl->head = NULL;
             impl->last = NULL;
+        } else {
+            netos_dll_t *head = impl->head;
+
+            impl->head = impl->head->next;
+            impl->head->prev = impl->last;
+            impl->last->next = impl->head;
+            free(head);
         }
-        impl->head = impl->head->next;
         return true;
     }
 
-    prev = impl->head->next;
     node = impl->head->next;
-    while (node) {
+    while (node != impl->head) {
         if (node->data == item) {
-            if (node->next) {
-                prev->next = node->next;
-                node->next->prev = prev;
-            } else {
-                prev->next = NULL;
-                impl->last = prev;
+            node->prev->next = node->next;
+            node->next->prev = node->prev;
+
+            if (node == impl->last) {
+                impl->last = node->prev;
             }
             free(node);
             return true;
         }
-        prev = node;
         node = node->next;
     }
 
