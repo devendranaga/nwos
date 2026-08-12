@@ -2,7 +2,7 @@
 #define NETOS_LIST_H
 
 #include <stdlib.h>
-#include <unistd.h>
+#include <stdbool.h>
 
 /**
  * @brief - Circular doubly linked lists.
@@ -46,6 +46,16 @@ int netos_dll_add_item(netos_dll_impl_t *impl, void *item);
  */
 void netos_dll_for_each(netos_dll_impl_t *impl,
                         void (*for_each_cb)(void *item));
+
+/**
+ * @brief - Delete an item from the doubly linked list.
+ *
+ * @param [in] impl - DLL context.
+ * @param [in] item - pointer to delete.
+ *
+ * @return true on delete and false on failure to delete.
+ */
+bool netos_dll_delete_item(netos_dll_impl_t *impl, void *item);
 
 #endif
 

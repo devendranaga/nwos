@@ -16,8 +16,7 @@ void *netos_icmp_init(network_config_t *config)
 
 netos_status_t netos_icmp_rx(void *ctx,
                              netos_packet_parser_t *parsed_data,
-                             pkt_buffer_t *pkt_buf,
-                             void *cb_data)
+                             pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }

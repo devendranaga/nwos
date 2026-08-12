@@ -13,15 +13,13 @@ static struct {
     bool            valid;
     int             protocol;
     const char      *name;
-    void            *potocol_ctx;
-    void            *cb_data;
+    void            *protocol_ctx;
 
     void            *(*init)(network_config_t *config);
 
     netos_status_t  (*rx)(void *ctx,
                           netos_packet_parser_t *parsed_data,
-                          pkt_buffer_t *pkt_buf,
-                          void *cb_data);
+                          pkt_buffer_t *pkt_buf);
 
     netos_status_t  (*tx)(void *ctx,
                           pkt_buffer_t *pkt_buf);
@@ -29,10 +27,19 @@ static struct {
     void            (*deinit)(void *ctx);
 } protocol_table[255] = {
     {
+        false,
+        0,
+        "none",
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
         true,
         NETOS_PROTOCOL_ICMP,
         "ICMP",
-        NULL,
         NULL,
         netos_icmp_init,
         netos_icmp_rx,
@@ -48,8 +55,8 @@ netos_status_t netos_ipv4_initialize(network_config_t *config)
     for (i = 0; i < sizeof(protocol_table) / sizeof(protocol_table[0]); i ++) {
         if (protocol_table[i].valid &&
             protocol_table[i].init) {
-            protocol_table[i].potocol_ctx = protocol_table[i].init(config);
-            if (!protocol_table[i].potocol_ctx) {
+            protocol_table[i].protocol_ctx = protocol_table[i].init(config);
+            if (!protocol_table[i].protocol_ctx) {
                 netos_log_error("Failed to initialize protocol <%s>\n",
                                 protocol_table[i].name);
                 return NETOS_STATUS_PROTOCOL_INIT_FAILURE;
@@ -64,6 +71,13 @@ netos_status_t netos_ipv4_initialize(network_config_t *config)
 netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
                                      netos_packet_parser_t *pkt_parser)
 {
+    uint8_t protocol = pkt_parser->protocol;
+
+    if (protocol_table[protocol].rx) {
+        protocol_table[protocol].rx(protocol_table[protocol].protocol_ctx,
+                                    pkt_parser,
+                                    pkt_buf);
+    }
     return NETOS_STATUS_SUCCESS;
 }
 

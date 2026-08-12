@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "list.h"
 
@@ -50,12 +51,49 @@ void netos_dll_for_each(netos_dll_impl_t *impl, void (*for_each_cb)(void *item))
     }
 
     do {
-        printf("head %p last %p dll %p\n", impl->head, impl->last, dll);
         if (for_each_cb) {
             for_each_cb(dll->data);
         }
 
         dll = dll->next;
     } while (dll != impl->head);
+}
+
+bool netos_dll_delete_item(netos_dll_impl_t *impl, void *item)
+{
+    netos_dll_t *prev;
+    netos_dll_t *node;
+
+    if (!impl->head) {
+        return false;
+    }
+
+    if (impl->head->data == item) {
+        if (impl->last == impl->head) {
+            impl->last = NULL;
+        }
+        impl->head = impl->head->next;
+        return true;
+    }
+
+    prev = impl->head->next;
+    node = impl->head->next;
+    while (node) {
+        if (node->data == item) {
+            if (node->next) {
+                prev->next = node->next;
+                node->next->prev = prev;
+            } else {
+                prev->next = NULL;
+                impl->last = prev;
+            }
+            free(node);
+            return true;
+        }
+        prev = node;
+        node = node->next;
+    }
+
+    return false;
 }
 
