@@ -1061,6 +1061,7 @@ static void pgen_icmp_run()
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
     pgen.ipv4_hdr.gen_checksum = true;
     pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_ICMP;
+    pgen.ipv4_hdr.total_len = NETOS_ICMP_HDR_LEN + pgen.len;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
     if (pgen.len == 0) {

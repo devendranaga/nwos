@@ -154,12 +154,12 @@ netos_status_t netos_ipv4_encode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     if (ipv4_hdr->gen_checksum) {
         netos_checksum_t chksum = {
             .buffer = &pkt_buf->buffer[start_off],
-            .len = pkt_buf->offset - start_off,
+            .len    = pkt_buf->offset - start_off,
         };
 
         uint32_t checksum = netos_ipv4_checksum(&chksum);
-        pkt_buf->buffer[checksum_off] = (checksum & 0xFF00) >> 8;
-        pkt_buf->buffer[checksum_off + 1] = (checksum & 0x00FF);
+        pkt_buf->buffer[checksum_off]       = (checksum & 0xFF00) >> 8;
+        pkt_buf->buffer[checksum_off + 1]   = (checksum & 0x00FF);
     }
 
     return NETOS_STATUS_SUCCESS;

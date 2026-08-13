@@ -17,11 +17,11 @@ static struct {
 
     void            *(*init)(network_config_t *config);
 
-    netos_status_t  (*rx)(void *ctx,
+    void            (*rx)(void *ctx,
                           netos_packet_parser_t *parsed_data,
                           pkt_buffer_t *pkt_buf);
 
-    netos_status_t  (*tx)(void *ctx,
+    void            (*tx)(void *ctx,
                           pkt_buffer_t *pkt_buf);
 
     void            (*deinit)(void *ctx);

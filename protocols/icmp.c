@@ -1,4 +1,5 @@
 #include "netos_status.h"
+#include "netos_log.h"
 #include "icmp_hdr.h"
 #include "icmp.h"
 
@@ -14,17 +15,15 @@ void *netos_icmp_init(network_config_t *config)
     return icmp_ctx;
 }
 
-netos_status_t netos_icmp_rx(void *ctx,
-                             netos_packet_parser_t *parsed_data,
-                             pkt_buffer_t *pkt_buf)
+void netos_icmp_rx(void *ctx,
+                   netos_packet_parser_t *parsed_data,
+                   pkt_buffer_t *pkt_buf)
 {
-    return NETOS_STATUS_SUCCESS;
 }
 
-netos_status_t netos_icmp_tx(void *ctx,
-                             pkt_buffer_t *pkt_buf)
+void netos_icmp_tx(void *ctx,
+                   pkt_buffer_t *pkt_buf)
 {
-    return NETOS_STATUS_SUCCESS;
 }
 
 void netos_icmp_deinit(void *ctx)
