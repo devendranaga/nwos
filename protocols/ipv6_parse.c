@@ -13,6 +13,10 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
     }
 
     ipv6_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
+    if (ipv6_hdr->version != NETOS_IPV6_VERSION) {
+        return NETOS_STATUS_IPV6_MALFORMED_PKT;
+    }
+
     ipv6_hdr->dscp = ((pkt_buf->buffer[pkt_buf->offset] & 0x0F) << 2) |
                      ((pkt_buf->buffer[pkt_buf->offset + 1] & 0xC0) >> 6);
     pkt_buf->offset ++;
@@ -25,8 +29,16 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
     ipv6_hdr->flow_lable |= val;
 
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv6_hdr->payload_len);
+    if (ipv6_hdr->payload_len == 0) {
+        return NETOS_STATUS_IPV6_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->nh);
     pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->hop_limit);
+    if (ipv6_hdr->hop_limit == 0) {
+        return NETOS_STATUS_IPV6_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->src_ipaddr, NETOS_IPV6_ADDR_LEN);
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->dst_ipaddr, NETOS_IPV6_ADDR_LEN);
 

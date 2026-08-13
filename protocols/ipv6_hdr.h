@@ -5,8 +5,9 @@
 extern "C" {
 #endif
 
-#define NETOS_IPV6_HDR_LEN_DEFAULT 40
-#define NETOS_IPV6_ADDR_LEN 16
+#define NETOS_IPV6_VERSION          6
+#define NETOS_IPV6_HDR_LEN_DEFAULT  40
+#define NETOS_IPV6_ADDR_LEN         16
 
 /**
  *

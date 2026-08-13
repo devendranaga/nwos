@@ -6,6 +6,7 @@
 #include "vlan.h"
 #include "arp_hdr.h"
 #include "ipv4_hdr.h"
+#include "ipv6_hdr.h"
 #include "tcp_hdr.h"
 #include "udp_hdr.h"
 #include "icmp_hdr.h"
@@ -22,6 +23,7 @@ struct pgen {
     netos_vlan_hdr_t            vlan_hdr;
     netos_arp_hdr_t             arp_hdr;
     netos_ipv4_hdr_t            ipv4_hdr;
+    netos_ipv6_hdr_t            ipv6_hdr;
     netos_icmp_hdr_t            icmp_hdr;
     netos_macsec_hdr_t          macsec_hdr;
     netos_udp_hdr_t             udp_hdr;
