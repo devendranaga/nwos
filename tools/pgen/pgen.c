@@ -26,6 +26,7 @@ static void pgen_help(struct pgen_token *tokens, uint32_t n_tokens);
 static void pgen_eth_run();
 static void pgen_arp_run();
 static void pgen_ipv4_run();
+static void pgen_ipv6_run();
 static void pgen_icmp_run();
 static void pgen_macsec_run();
 static void pgen_pcap_run();
@@ -37,7 +38,7 @@ static void pgen_arp_free(void *config);
  *
  * These are only called when they are enabled during the "run" command.
  */
-static struct {
+static struct pgen_run_callback {
     const char  *str;
     const char  *desc;
     bool        enable;
@@ -69,6 +70,15 @@ static struct {
         "IPv4 based frame generations",
         false,
         pgen_ipv4_run,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
+        "ipv6",
+        "IPv6 based frame generations",
+        false,
+        pgen_ipv6_run,
         NULL,
         NULL,
         NULL,
@@ -180,9 +190,34 @@ static void pgen_set_defaults()
     }
 }
 
+static void set_enable_run(const char *name)
+{
+    uint32_t i = 0;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_run_callback_list); i ++) {
+        if (!strcmp(pgen_run_callback_list[i].str, name)) {
+            pgen_run_callback_list[i].enable = true;
+            break;
+        }
+    }
+}
+
+static struct pgen_run_callback *get_run_cb(const char *name)
+{
+    uint32_t i = 0;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(pgen_run_callback_list); i ++) {
+        if (!strcmp(pgen_run_callback_list[i].str, name)) {
+            return pgen_run_callback_list + i;
+        }
+    }
+
+    return NULL;
+}
+
 static void set_pcap_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    pgen_run_callback_list[5].enable = true;
+    set_enable_run("pcap");
 }
 
 static inline void set_pcap_open_help()
@@ -219,7 +254,7 @@ static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
 static void set_macsec_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen.macsec_enable                  = true;
-    pgen_run_callback_list[4].enable    = true;
+    set_enable_run("macsec");
 }
 
 static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
@@ -498,7 +533,7 @@ static void set_macsec_an(struct pgen_token *tokens, uint32_t n_tokens)
 static void set_icmp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen.icmp_enable                    = true;
-    pgen_run_callback_list[3].enable    = true;
+    set_enable_run("icmp");
 }
 
 static inline void set_icmp_type_help()
@@ -591,7 +626,7 @@ static void set_icmp_seq(struct pgen_token *tokens, uint32_t n_tokens)
 static void set_ipv4_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
     pgen.ipv4_enable                    = true;
-    pgen_run_callback_list[2].enable    = true;
+    set_enable_run("ipv4");
 }
 
 static void set_ipv4_version(struct pgen_token *tokens, uint32_t n_tokens)
@@ -754,12 +789,12 @@ static void set_vlan_next_ethertype(struct pgen_token *tokens, uint32_t n_tokens
 
 static void set_eth_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    pgen_run_callback_list[0].enable = true;
+    set_enable_run("eth");
 }
 
 static void set_arp_enable(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    pgen_run_callback_list[1].enable = true;
+    set_enable_run("arp");
 }
 
 static inline void set_arp_sha_help()
@@ -1052,6 +1087,24 @@ static void pgen_ipv4_run()
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 }
 
+static void pgen_ipv6_run()
+{
+    uint8_t data_buf[1024] = {0};
+    pkt_buffer_t pkt_buf;
+
+    pkt_buffer_initialize(&pkt_buf);
+    netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+
+    netos_ipv6_encode(&pgen.ipv6_hdr, &pkt_buf);
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+        pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
+    }
+
+    pkt_buffer_set_tx_len_default(&pkt_buf);
+    netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+}
+
 static void pgen_icmp_run()
 {
     uint8_t data_buf[1024] = {0};
@@ -1250,9 +1303,10 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
         return;
     }
 
+    struct pgen_run_callback *pgen_cb = get_run_cb("pgen");
     // pcap config is enabled
-    if (pgen_run_callback_list[5].enable) {
-        pgen_run_callback_list[5].callback();
+    if (pgen_cb && pgen_cb->enable) {
+        pgen_cb->callback();
     } else {
         for (i = 0; i < pgen.n_frames; i ++) {
 
