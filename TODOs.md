@@ -76,7 +76,6 @@
 - [ ] TCP statemachine
 - [ ] UDP Demux and Mux
 - [ ] TCP Demux and Mux
-- [ ] ICMP echo reply generation for a echo request frame
 - [ ] ARP request generation from the IP query to ARP
 - [ ] recvmsg and sendmsg support
 - [ ] PKT_MMAP or PF_RING support to receive and transmit frames
@@ -142,5 +141,6 @@
 - [x] Events: Storage maintenance (create timer to delete the events first items in the queues gets purged)
 - [x] Event manager to write logs to a file
 - [x] bfifo queueing discipline
+- [x] ICMP echo reply generation for a echo request frame
 
 
