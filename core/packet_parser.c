@@ -80,10 +80,6 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
                 }
             }
         break;
-        case NETOS_PROTOCOL_ICMP:
-            /* The checksum for icmp already verified in the decode. */
-            ret = netos_icmp_decode(&parsed_data->l4.icmp_hdr, pkt_buf);
-        break;
         case NETOS_PROTOCOL_ICMP6:
             ret = netos_icmp6_decode(&parsed_data->l4.icmp6_hdr, pkt_buf);
             if (ret == NETOS_STATUS_SUCCESS) {
@@ -99,8 +95,6 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
                 }
             }
         break;
-        default:
-            return NETOS_STATUS_INVAL_PROTOCOL;
     }
 
     return ret;

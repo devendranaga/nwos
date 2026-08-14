@@ -4,9 +4,11 @@
 #include "netos_status.h"
 #include "netos_config.h"
 #include "packet_parser.h"
+#include "buffer_pool.h"
 
 typedef struct {
-    network_config_t *config;
+    network_config_t    *config;
+    netos_buffer_pool_t *icmp_pool;
 } netos_icmp_ctx_t;
 
 void *netos_icmp_init(network_config_t *config);

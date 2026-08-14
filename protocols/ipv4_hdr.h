@@ -52,7 +52,12 @@ typedef struct netos_ipv4_hdr {
  * @param [in] __src_ipaddr - IPv4 src ip address.
  * @param [in] __dst_ipaddr - IPV4 dst ip address.
  */
-#define NETOS_IPV4_DEFAULTS(__ipv4_hdr, __total_len, __id, __protocol, __src_ipaddr, __dst_ipaddr) do {\
+#define NETOS_IPV4_DEFAULTS(__ipv4_hdr,\
+                            __total_len,\
+                            __id,\
+                            __protocol,\
+                            __src_ipaddr,\
+                            __dst_ipaddr) do {\
     (__ipv4_hdr).version                = NETOS_IPV4_VERSION;\
     (__ipv4_hdr).header_len             = (NETOS_IPV4_HDR_LEN_DEFAULT / 4);\
     (__ipv4_hdr).dscp                   = 0;\

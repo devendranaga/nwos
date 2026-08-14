@@ -27,6 +27,9 @@ extern "C" {
 #define NETOS_ICMP_ECHO_REPLY_LEN       4
 #define NETOS_ICMP_TIMESTAMP_LEN        16
 
+#define NETOS_ICMP_IS_ECHO_REQ(__icmp) (((__icmp)->type == NETOS_ICMP_TYPE_ECHO_REQ) &&\
+                                        ((__icmp)->code == NETOS_ICMP_CODE_ECHO_REQ))
+
 /**
  * @brief - ICMP echo.
  */
@@ -79,6 +82,15 @@ typedef struct {
     (__icmp_hdr).checksum               = 0;\
     (__icmp_hdr).u.echo_req.identifier  = __id;\
     (__icmp_hdr).u.echo_req.seq_no      = __seq_no;\
+} while (0)
+
+#define NETOS_ICMP_ECHO_REPLY_DEFAULTS(__icmp_hdr, __id, __seq_no) do {\
+    (__icmp_hdr).gen_checksum               = false;\
+    (__icmp_hdr).type                       = NETOS_ICMP_TYPE_ECHO_REPLY;\
+    (__icmp_hdr).code                       = NETOS_ICMP_CODE_ECHO_REPLY;\
+    (__icmp_hdr).checksum                   = 0;\
+    (__icmp_hdr).u.echo_reply.identifier    = __id;\
+    (__icmp_hdr).u.echo_reply.seq_no        = __seq_no;\
 } while (0)
 
 /**
