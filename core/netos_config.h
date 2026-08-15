@@ -104,6 +104,7 @@ typedef struct network_config {
     netos_vlan_table_config_t   vlan_table_config;
     netos_macsec_secy_config_t  secy_config;
     netos_event_config_t        event_config;
+    char                        *rule_file;
 } network_config_t;
 
 /**

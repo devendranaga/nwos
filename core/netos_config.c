@@ -390,6 +390,13 @@ netos_config_parse_event_config(network_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t
+netos_config_parse_rule_file(network_config_t *config,
+                             xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_string(&config->rule_file, doc, node);
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(network_config_t *config,
@@ -400,6 +407,7 @@ static const struct {
     { "protocols",              netos_config_parse_protocol_config },
     { "egress_control",         netos_config_parse_egress_config },
     { "events",                 netos_config_parse_event_config },
+    { "rule_file",              netos_config_parse_rule_file },
 };
 
 static netos_status_t
@@ -498,6 +506,9 @@ void netos_config_print(const network_config_t *config)
                     config->egress_ctrl.pfifo.max_pkts);
     fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
+    if (config->rule_file) {
+        fprintf(stderr, "    rule_file: %s\n", config->rule_file);
+    }
     fprintf(stderr, "}\n");
 }
 

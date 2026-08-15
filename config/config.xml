@@ -43,6 +43,7 @@
             <min_echo_payload_len>0</min_echo_payload_len>
         </icmp>
     </protocols>
+    <rule_file>rules.rules</rule_file>
     <egress_control>
         <pfifo>
             <max_packets>100</max_packets>

@@ -3,6 +3,17 @@
 # most or all elements are optional and the relation
 # is through the links.
 #
+# types of rules:
+#   allow - allow the frame to pass through.
+#   alert - alert via syslog / udp socket / log file.
+#   deny - deny the frame if this is matched - highest priority.
+#   route - route the frame if this is matched.
+#
+# if a frame hits multiple rules and one of them is deny, the deny will take the priority.
+# so until unless all the rules are examined the frame decision is not made fully.
+#
+# if an allow and route match, the route must take the priority.
+#
 # For TCP/UDP we could write something like:
 #
 # allow from_mac <> to_mac <> ethertype <>
@@ -18,4 +29,8 @@ allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <icmp> type <8> code <
 allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <tcp> from_src_port <1111> to_dst_port <1112>
 allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <icmp>
 alert from_ip <192.168.0.1> to_ip <192.168.0.11> protocol <icmp> message <"icmp frames from 192.168.0.1">
+
+#
+# route from_ip <> to_ip <> to from_ip <> to_ip <>
+route from_ip <192.168.0.1> to_ip <192.168.0.12> to from_ip <10.1.1.1> to_ip <10.1.1.2>
 
