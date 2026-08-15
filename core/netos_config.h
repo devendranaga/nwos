@@ -60,8 +60,8 @@ typedef struct netos_egress_control {
 
 typedef struct netos_vlan_entry {
     char        *ifname;
-    uint16_t    ingress_vid;
-    uint16_t    egress_vid;
+    uint32_t    ingress_vid;
+    uint32_t    egress_vid;
     struct netos_vlan_entry *next;
 } netos_vlan_entry_t;
 
@@ -95,7 +95,7 @@ typedef struct netos_event_config {
 /**
  * @brief - Defines network config.
  */
-typedef struct network_config {
+typedef struct netos_config {
     network_if_config_t         if_config[NETOS_IFLIST_MAX];
     uint32_t                    n_if_config;
     uint32_t                    rx_pkt_buffer_pool_len;
@@ -105,7 +105,7 @@ typedef struct network_config {
     netos_macsec_secy_config_t  secy_config;
     netos_event_config_t        event_config;
     char                        *rule_file;
-} network_config_t;
+} netos_config_t;
 
 /**
  * @brief - Parse configuration.
@@ -115,14 +115,14 @@ typedef struct network_config {
  *
  * @return NETOS_STATUS_SUCESS on sucess and error code on failure.
  */
-netos_status_t netos_config_parse(network_config_t *config, const char *config_path);
+netos_status_t netos_config_parse(netos_config_t *config, const char *config_path);
 
 /**
  * @brief - Prints configuration.
  *
  * @return NETOS_STATUS_SUCESS on success and error code on failure.
  */
-void netos_config_print(const network_config_t *config);
+void netos_config_print(const netos_config_t *config);
 
 #endif
 

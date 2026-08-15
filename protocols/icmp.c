@@ -7,7 +7,7 @@
 #include "egress_controller.h"
 #include "icmp.h"
 
-void *netos_icmp_init(network_config_t *config)
+void *netos_icmp_init(netos_config_t *config)
 {
     netos_icmp_ctx_t *icmp_ctx;
 

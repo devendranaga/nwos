@@ -239,7 +239,7 @@ static void netos_arp_cache_timer(void *ctx)
     pthread_mutex_unlock(&arp_protocol.lock);
 }
 
-netos_status_t netos_arp_protocol_init(network_config_t *config,
+netos_status_t netos_arp_protocol_init(netos_config_t *config,
                                        netos_gcd_ctx_t *gcd_ctx)
 {
     netos_status_t ret;

@@ -15,7 +15,7 @@ static struct {
     const char      *name;
     void            *protocol_ctx;
 
-    void            *(*init)(network_config_t *config);
+    void            *(*init)(netos_config_t *config);
 
     void            (*rx)(void *ctx,
                           netos_packet_parser_t *parsed_data,
@@ -48,7 +48,7 @@ static struct {
     }
 };
 
-netos_status_t netos_ipv4_initialize(network_config_t *config)
+netos_status_t netos_ipv4_initialize(netos_config_t *config)
 {
     uint32_t i;
 

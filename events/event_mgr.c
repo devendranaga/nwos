@@ -133,7 +133,7 @@ static void netos_event_mgr_process_timer(void *ctx)
 }
 
 netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx,
-                                    network_config_t *config)
+                                    netos_config_t *config)
 {
     evt_mgr.gcd_ctx = gcd_ctx;
 

@@ -34,7 +34,7 @@ typedef struct netos_arp_entry {
 } netos_arp_entry_t;
 
 typedef struct netos_arp_protocol {
-    network_config_t *config;
+    netos_config_t *config;
     netos_arp_mib_t mib;
     netos_hash_table_t *arp_cache;
     pthread_mutex_t lock;
@@ -44,7 +44,7 @@ typedef struct netos_arp_protocol {
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                                     netos_packet_parser_t *pkt_parser);
 
-netos_status_t netos_arp_protocol_init(network_config_t *config,
+netos_status_t netos_arp_protocol_init(netos_config_t *config,
                                        netos_gcd_ctx_t *gcd_ctx);
 
 void netos_arp_mib_in_arp_ok();

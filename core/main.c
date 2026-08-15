@@ -175,7 +175,7 @@ static void *netos_intf_parse_callback(void *cbdata)
 }
 
 static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config,
-                                                network_config_t *config)
+                                                netos_config_t *config)
 {
     netos_intf_t *intf;
     netos_status_t ret;
@@ -289,7 +289,7 @@ err:
  *
  * @return NETOS_STATUS_SUCCESS on success and error code on failure.
  */
-static netos_status_t netos_initialize_protocols(network_config_t *config,
+static netos_status_t netos_initialize_protocols(netos_config_t *config,
                                                  netos_gcd_ctx_t *gcd_ctx)
 {
     netos_status_t ret;

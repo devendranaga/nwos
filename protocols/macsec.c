@@ -18,7 +18,7 @@ static bool netos_macsec_cmp(void *key1, void *key2)
     return false;
 }
 
-netos_status_t netos_macsec_init(network_config_t *config,
+netos_status_t netos_macsec_init(netos_config_t *config,
                                  netos_gcd_ctx_t *gcd_ctx)
 {
     macsec_p.secy_table = netos_hash_table_init(NETOS_MACSEC_SECY_MAX,

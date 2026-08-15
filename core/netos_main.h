@@ -44,7 +44,7 @@ typedef struct netos_intf {
  */
 typedef struct netos_ctx {
     netos_cmdargs_t     cmdargs;
-    network_config_t    config;
+    netos_config_t    config;
     netos_intf_t        *interfaces;
     netos_gcd_ctx_t     *gcd_ctx;
 } netos_ctx_t;

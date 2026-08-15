@@ -143,7 +143,7 @@ static void netos_egress_alg_bfifo_deinit(netos_egress_controller_t *egress_ctrl
 
 netos_egress_controller_t *
 netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
-                             network_config_t *config)
+                             netos_config_t *config)
 {
     netos_egress_controller_t *egress_ctrl;
     netos_status_t ret;
