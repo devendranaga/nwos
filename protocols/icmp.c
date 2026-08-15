@@ -41,7 +41,11 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
     netos_ipv4_hdr_t ipv4_h;
     pkt_buffer_t *tx_buf;
 
+    // get the tx buffer from the buffer pool
     tx_buf = netos_buffer_pool_get_buffer(icmp_ctx->icmp_pool);
+    if (!tx_buf) {
+        return;
+    }
 
     pkt_buffer_reset(tx_buf);
     tx_buf->out_intf = pkt_buf->in_intf;
@@ -75,7 +79,6 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
 
     netos_icmp_encode(&reply, tx_buf);
 
-    tx_buf->out_intf = pkt_buf->in_intf;
     pkt_buffer_set_tx_len_default(tx_buf);
 
     netos_egress_enque(pkt_buf->in_intf->egress_ctrl,

@@ -82,6 +82,7 @@ SET(NETOS_SRC
     ./core/main.c
     ./core/packet_parser.c
     ./core/netos_config.c
+    ./core/rules_config.c
     ./protocols/arp.c
     ./protocols/macsec.c
     ./protocols/icmp.c
