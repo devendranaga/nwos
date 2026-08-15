@@ -34,7 +34,8 @@ SET(PROTOCOL_SRC
     ./protocols/icmp_parse.c
     ./protocols/icmp6_parse.c
     ./protocols/mka_parse.c
-    ./protocols/mka.c)
+    ./protocols/mka.c
+    ./protocols/mqtt_parse.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c
