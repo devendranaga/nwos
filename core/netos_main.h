@@ -7,6 +7,7 @@
 #include "netos_config.h"
 #include "pthread_intf.h"
 #include "buffer_pool.h"
+#include "rules_config.h"
 #include "event_mgr.h"
 #include "parser_thread_ctx.h"
 #include "packet_parser.h"
@@ -44,7 +45,8 @@ typedef struct netos_intf {
  */
 typedef struct netos_ctx {
     netos_cmdargs_t     cmdargs;
-    netos_config_t    config;
+    netos_config_t      config;
+    netos_rules_t       rules;
     netos_intf_t        *interfaces;
     netos_gcd_ctx_t     *gcd_ctx;
 } netos_ctx_t;

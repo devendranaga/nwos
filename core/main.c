@@ -8,6 +8,7 @@
 #include "arp.h"
 #include "ipv4.h"
 #include "netos_log.h"
+#include "rules_config.h"
 #include "netos_config.h"
 #include "cpu_affinity.h"
 #include "statistics_ctx.h"
@@ -369,6 +370,12 @@ int main(int argc, char **argv)
     ret = netos_config_parse(&ctx->config, ctx->cmdargs.config_file);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Config parse failure error : %x\n", ret);
+        return ret;
+    }
+
+    ret = netos_rule_config_parse(ctx->config.rule_file, &ctx->rules);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        netos_log_error("Rule parse failure error : %x\n", ret);
         return ret;
     }
 

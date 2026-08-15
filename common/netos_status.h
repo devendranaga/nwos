@@ -81,6 +81,8 @@ typedef enum {
 
     NETOS_STATUS_FILE_OPEN_VIA_MMAP_FAILURE         = 0x00000F00,
 
+    NETOS_STATUS_RULE_FILE_OPEN_FAILURE             = 0x00001000,
+
     NETOS_STATUS_GENERIC_ERROR                      = 0xFAFAFAFA,
 } netos_status_t;
 

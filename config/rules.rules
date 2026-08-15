@@ -16,21 +16,21 @@
 #
 # For TCP/UDP we could write something like:
 #
-# allow from_mac <> to_mac <> ethertype <>
-# allow from_mac <> to_mac <> from_ip <> to_ip <> protocol <> from_src_port <> to_dst_port <>
+# allow src_mac <> dst_mac <> ethertype <>
+# allow src_mac <> dst_mac <> src_ip <> dst_ip <> protocol <> from_src_port <> to_dst_port <>
 #
 # For icmp we could write something like:
 #
-# allow from_mac <> to_mac <> from_ip <> to_ip <> protocol <> type <> code <>
+# allow src_mac <> dst_mac <> src_ip <> dst_ip <> protocol <> type <> code <>
 
-allow from_mac <00:11:22:33:11:11> to_mac <00:12:10:11:11:44> ethertype <0x0800>
-allow from_ip <any> to_ip <any> protocol <tcp> to_dst_port <1122>
-allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <icmp> type <8> code <0>
-allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <tcp> from_src_port <1111> to_dst_port <1112>
-allow from_ip <192.168.0.1> to_ip <192.168.0.12> protocol <icmp>
-alert from_ip <192.168.0.1> to_ip <192.168.0.11> protocol <icmp> message <"icmp frames from 192.168.0.1">
+allow, src_mac <00:11:22:33:11:11>, dst_mac <00:12:10:11:11:44>, ethertype <0x0800>
+allow, src_ip <any>, dst_ip <any>, protocol <tcp>, to_dst_port <1122>
+allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>, type <8>, code <0>
+allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <tcp>, from_src_port <1111>, to_dst_port <1112>
+allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>
+alert, src_ip <192.168.0.1>, dst_ip <192.168.0.11>, protocol <icmp>, message <"icmp frames from 192.168.0.1">
 
 #
-# route from_ip <> to_ip <> to from_ip <> to_ip <>
-route from_ip <192.168.0.1> to_ip <192.168.0.12> to from_ip <10.1.1.1> to_ip <10.1.1.2>
+# route src_ip <> dst_ip <> to from_ip <> dst_ip <>
+route, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, to, from_ip <10.1.1.1>, dst_ip <10.1.1.2>
 
