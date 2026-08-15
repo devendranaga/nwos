@@ -1111,7 +1111,14 @@ static void pgen_icmp_run()
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
+
+    if (pgen.vlan_enable) {
+        pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_VLAN;
+    }
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+    if (pgen.vlan_enable) {
+        netos_vlan_encode(&pgen.vlan_hdr, &pkt_buf);
+    }
     pgen.ipv4_hdr.gen_checksum = true;
     pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_ICMP;
     pgen.ipv4_hdr.total_len = NETOS_ICMP_HDR_LEN + pgen.len;
