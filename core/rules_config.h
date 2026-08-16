@@ -74,5 +74,7 @@ typedef struct {
 
 netos_status_t netos_rule_config_parse(const char *file, netos_rules_t *rules);
 
+void netos_rule_config_print(netos_rules_t *rules);
+
 #endif
 
