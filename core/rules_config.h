@@ -16,6 +16,8 @@ typedef struct __attribute__ ((__packed__)) {
     uint32_t icmp_type      :1;
     uint32_t icmp_code      :1;
     uint32_t message_str    :1;
+    uint32_t rewrite_src_ip :1;
+    uint32_t rewrite_dst_ip :1;
 } netos_rule_config_bits_t;
 
 typedef enum {
@@ -40,6 +42,8 @@ typedef struct netos_rule_config {
         uint32_t                ipaddr;
         uint8_t                 ip6addr[NETOS_IPV6_ADDR_LEN];
     } dst;
+
+    uint32_t                    protocol;
 
     union {
         uint32_t                ipaddr;

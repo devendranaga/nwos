@@ -32,5 +32,5 @@ alert, src_ip <192.168.0.1>, dst_ip <192.168.0.11>, protocol <icmp>, message <"i
 
 #
 # route src_ip <> dst_ip <> to from_ip <> dst_ip <>
-route, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, to, from_ip <10.1.1.1>, dst_ip <10.1.1.2>
+route, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, rewrite_src_ip <10.1.1.1>, rewrite_dst_ip <10.1.1.2>
 
