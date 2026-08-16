@@ -65,12 +65,32 @@ impl ipv4_hdr {
     }
 
     pub fn decode(&mut self, pkt_buf : &mut pkt_buffer::netos_pkt_buffer) -> i32 {
-        self.version = (pkt_buf.buffer[pkt_buf.offset] & 0xF0) >> 4;
+        self.version    = (pkt_buf.buffer[pkt_buf.offset] & 0xF0) >> 4;
         self.header_len = (pkt_buf.buffer[pkt_buf.offset] & 0x0F) * 4;
         pkt_buf.offset += 1;
 
-        self.dscp = (pkt_buf.buffer[pkt_buf.offset] & 0xFC) >> 2;
-        self.ecn = pkt_buf.buffer[pkt_buf.offset] & 0x03;
+        self.dscp   = (pkt_buf.buffer[pkt_buf.offset] & 0xFC) >> 2;
+        self.ecn    = pkt_buf.buffer[pkt_buf.offset] & 0x03;
+        pkt_buf.offset += 1;
+
+        self.total_len = pkt_buf.decode_2_bytes();
+        pkt_buf.offset += 2;
+
+        self.id = pkt_buf.decode_2_bytes();
+        pkt_buf.offset += 2;
+
+        self.reserved   = (pkt_buf.buffer[pkt_buf.offset] & 0x80 == 0x80) as u8;
+        self.dont_frag  = (pkt_buf.buffer[pkt_buf.offset] & 0x40 == 0x40) as u8;
+        self.more_frag  = (pkt_buf.buffer[pkt_buf.offset] & 0x20 == 0x20) as u8;
+        self.frag_off   = (((pkt_buf.buffer[pkt_buf.offset] & 0x1F) as u32) << 8) as u32 |
+                            (pkt_buf.buffer[pkt_buf.offset + 1]) as u32;
+        pkt_buf.offset += 2;
+
+        self.ttl        = pkt_buf.decode_byte();
+        self.protocol   = pkt_buf.decode_byte();
+        self.hdr_chksum = pkt_buf.decode_2_bytes();
+        self.src_ipaddr = pkt_buf.decode_4_bytes();
+        self.dst_ipaddr = pkt_buf.decode_4_bytes();
 
         0
     }

@@ -6,6 +6,10 @@ use protocols::pkt_buffer::netos_pkt_buffer;
 use protocols::eth;
 use protocols::arp;
 use protocols::ipv4;
+use protocols::icmp;
+use protocols::udp;
+use protocols::tcp;
+use protocols::icmp6;
 
 fn netos_pktdump_parse_frame(pkt : &mut pcap::netos_pcap_packet_header) {
     let mut pkt_buf = netos_pkt_buffer::new();
