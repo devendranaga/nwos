@@ -1022,17 +1022,47 @@ static void set_ifname(struct pgen_token *tokens, uint32_t n_tokens)
     pgen.ifname = strdup(tokens[1].name);
 }
 
+static void set_payload_from_file_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("payload <payload_file.bin>\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\t Ex: payload f.bin");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\t will set the f.bin contents as data payload\n");
+}
+
+static void set_payload_from_file(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    FILE *fp;
+
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
+        set_payload_from_file_help();
+        return;
+    }
+
+    fp = fopen(tokens[1].name, "rb");
+    if (!fp) {
+        NETOS_PRINT_STD_ERROR_COLOR("Failed to open file <%s>\n", tokens[1].name);
+        return;
+    }
+
+    pgen.data_bytes_len = fread(pgen.data_bytes, 1, sizeof(pgen.data_bytes), fp);
+    fclose(fp);
+}
+
 static void pgen_eth_run()
 {
     pkt_buffer_t pkt_buf;
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
 
     pkt_buffer_initialize(&pkt_buf);
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
     if (pgen.vlan_enable) {
         netos_vlan_encode(&pgen.vlan_hdr, &pkt_buf);
     }
-    if ((pgen.len != 0) && (pgen.len < (sizeof(data_buf) - 80))) {
+    pgen.len = pgen.data_bytes_len;
+
+    if ((pgen.len != 0) && (pgen.len < (sizeof(pgen.data_bytes) - 80))) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
     pkt_buffer_set_tx_len_default(&pkt_buf);
@@ -1041,7 +1071,7 @@ static void pgen_eth_run()
 
 static void pgen_arp_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
@@ -1058,7 +1088,9 @@ static void pgen_arp_run()
     }
     netos_arp_encode(&pgen.arp_hdr, &pkt_buf);
 
-    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+    pgen.len = pgen.data_bytes_len;
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(pgen.data_bytes) - 80)) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
@@ -1068,7 +1100,7 @@ static void pgen_arp_run()
 
 static void pgen_ipv4_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
@@ -1081,7 +1113,9 @@ static void pgen_ipv4_run()
     }
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
-    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+    pgen.len = pgen.data_bytes_len;
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(pgen.data_bytes) - 80)) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
@@ -1091,7 +1125,7 @@ static void pgen_ipv4_run()
 
 static void pgen_ipv6_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
@@ -1099,7 +1133,9 @@ static void pgen_ipv6_run()
 
     netos_ipv6_encode(&pgen.ipv6_hdr, &pkt_buf);
 
-    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+    pgen.len = pgen.data_bytes_len;
+
+    if ((pgen.len != 0) && (pgen.len < sizeof(pgen.data_bytes) - 80)) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
@@ -1109,7 +1145,7 @@ static void pgen_ipv6_run()
 
 static void pgen_icmp_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
@@ -1121,9 +1157,14 @@ static void pgen_icmp_run()
     if (pgen.vlan_enable) {
         netos_vlan_encode(&pgen.vlan_hdr, &pkt_buf);
     }
+
+    pgen.len = pgen.data_bytes_len;
     pgen.ipv4_hdr.gen_checksum = true;
     pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_ICMP;
-    pgen.ipv4_hdr.total_len = NETOS_ICMP_HDR_LEN + pgen.len;
+    pgen.ipv4_hdr.total_len = NETOS_IPV4_HDR_LEN_DEFAULT +
+                              NETOS_ICMP_HDR_LEN +
+                              NETOS_ICMP_ECHO_REQ_LEN +
+                              pgen.len;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
     if (pgen.len == 0) {
@@ -1131,6 +1172,7 @@ static void pgen_icmp_run()
         pgen.icmp_hdr.u.echo_req.data_len = 0;
     } else {
         pgen.icmp_hdr.u.echo_req.data = data_buf;
+        pgen.len = pgen.data_bytes_len;
         pgen.icmp_hdr.u.echo_req.data_len = pgen.len;
     }
 
@@ -1143,11 +1185,12 @@ static void pgen_icmp_run()
 
     pkt_buffer_set_tx_len_default(&pkt_buf);
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+    pgen.icmp_hdr.checksum = 0;
 }
 
 static void pgen_macsec_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
     netos_status_t ret;
     uint8_t iv[12] = {0};
@@ -1156,6 +1199,8 @@ static void pgen_macsec_run()
     pkt_buffer_initialize(&pkt_buf);
     pgen.eth_hdr.ethertype = NETOS_ETHERTYPE_MACSEC;
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
+
+    pgen.len = pgen.data_bytes_len;
 
     pgen.macsec_hdr.hdr_len = 0;
     pgen.macsec_hdr.sl = 0;
@@ -1257,7 +1302,7 @@ static void pgen_pcap_run()
 #if 0
 static void pgen_udp_run()
 {
-    uint8_t data_buf[1024] = {0};
+    uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
 
     pkt_buffer_initialize(&pkt_buf);
@@ -1269,6 +1314,8 @@ static void pgen_udp_run()
         pgen.ipv4_hdr.gen_checksum = false;
     }
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
+
+    pgen.len = pgen.data_bytes_len;
 
     if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
@@ -1413,6 +1460,7 @@ static const struct pgen_sub_command pgen_sub_command_common[] = {
     { IFNAME_CMD,           IFNAME_STR,             set_ifname },
     { RUN_CMD,              RUN_STR,                pgen_run },
     { LISTEN_CMD,           LISTEN_STR,             pgen_listen },
+    { PAYLOAD_CMD,          PAYLOAD_STR,            set_payload_from_file },
     { EXIT_CMD,             EXIT_STR,               pgen_exit },
     { QUIT_CMD,             QUIT_STR,               pgen_exit },
     { HELP_CMD,             HELP_STR,               pgen_help },

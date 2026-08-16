@@ -19,6 +19,8 @@
  * @brief - Defines pgen context.
  */
 struct pgen {
+    uint8_t                     data_bytes[1500];
+    uint32_t                    data_bytes_len;
     netos_eth_hdr_t             eth_hdr;
     netos_vlan_hdr_t            vlan_hdr;
     netos_arp_hdr_t             arp_hdr;

@@ -309,14 +309,15 @@ netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
             }
 
             if (icmp_hdr->gen_checksum) {
+                uint32_t checksum;
                 netos_checksum_t chksum_info = {
                     .buffer     = &(pkt_buf->buffer[start_off]),
                     .len        = pkt_buf->offset - start_off,
                 };
 
-                icmp_hdr->checksum                  = netos_icmp_checksum(&chksum_info);
-                pkt_buf->buffer[checksum_off]       = (icmp_hdr->checksum & 0xFF00) >> 8;
-                pkt_buf->buffer[checksum_off + 1]   = (icmp_hdr->checksum & 0x00FF);
+                checksum                            = netos_icmp_checksum(&chksum_info);
+                pkt_buf->buffer[checksum_off]       = (checksum & 0xFF00) >> 8;
+                pkt_buf->buffer[checksum_off + 1]   = (checksum & 0x00FF);
             }
 
             break;
