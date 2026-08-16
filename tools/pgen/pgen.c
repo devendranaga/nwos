@@ -222,8 +222,8 @@ static void set_pcap_enable(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_pcap_open_help()
 {
-    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("pcap.open <pcap file>\n"
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("pcap.open <pcap file>\n"
                                 "Ex: pcap.open macsec_replay.pcap\n");
 }
 
@@ -304,8 +304,8 @@ static void set_macsec_key(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_encrypt_help()
 {
-    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.encrypt <on/off> "
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.encrypt <on/off> "
                                 "- turn MACsec encryption on or off\n");
 }
 
@@ -334,8 +334,8 @@ static void set_macsec_encrypt(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_changed_help()
 {
-    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.changed <on/off> "
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.changed <on/off> "
                                 "- turn MACsec authentication on or off\n");
 }
 
@@ -360,8 +360,8 @@ static void set_macsec_changed(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_es_help()
 {
-    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.es <on/off> - turn MACsec ES on or off\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.es <on/off> - turn MACsec ES on or off\n");
 }
 
 static void set_macsec_es(struct pgen_token *tokens, uint32_t n_tokens)
@@ -385,8 +385,8 @@ static void set_macsec_es(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_sc_help()
 {
-    NETOS_PRINT_STD_GREEN_COLOR("\nHelp:\n");
-    NETOS_PRINT_STD_GREEN_COLOR("macsec.sc <on/off> - turn MACsec SCI on or off\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.sc <on/off> - turn MACsec SCI on or off\n");
 }
 
 static void set_macsec_sc(struct pgen_token *tokens, uint32_t n_tokens)
@@ -410,8 +410,8 @@ static void set_macsec_sc(struct pgen_token *tokens, uint32_t n_tokens)
 
 static inline void set_macsec_pn_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "macsec.pn <value> - Set MACsec PN value\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.pn <value> - Set MACsec PN value\n");
 }
 
 static void set_macsec_pn(struct pgen_token *tokens, uint32_t n_tokens)
@@ -427,14 +427,15 @@ static void set_macsec_pn(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &pgen.macsec_hdr.pn);
     if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid pn value <%s>\n", tokens[1].name);
         return;
     }
 }
 
 static inline void set_macsec_version_help()
 {
-    fprintf(stderr, "\nHelp:\n");
-    fprintf(stderr, "macsec.version <value> - Set Version <1 bit value 0 or 1>\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("\nHelp:\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("macsec.version <value> - Set Version <1 bit value 0 or 1>\n");
 }
 
 static void set_macsec_version(struct pgen_token *tokens, uint32_t n_tokens)
@@ -451,6 +452,7 @@ static void set_macsec_version(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PRINT_STD_ERROR_COLOR("Invalid MACsec version <%s>\n", tokens[1].name);
         return;
     }
 
@@ -482,7 +484,7 @@ static void set_macsec_sci(struct pgen_token *tokens, uint32_t n_tokens)
                  &sci[0], &sci[1], &sci[2], &sci[3],
                  &sci[4], &sci[5], &sci[6], &sci[7]);
     if (ret != 8) {
-        fprintf(stderr, "invalid SCI format\n");
+        NETOS_PRINT_STD_ERROR_COLOR("Invalid SCI format\n");
         set_macsec_sci_help();
         return;
     }
@@ -607,7 +609,7 @@ static void set_icmp_id(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.identifier);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ICMP identifier value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP identifier value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -618,7 +620,7 @@ static void set_icmp_seq(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.seq_no);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ICMP seq_no value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP seq_no value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -636,7 +638,7 @@ static void set_ipv4_version(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &version);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4 version value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4 version value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -649,7 +651,7 @@ static void set_ipv4_src_ip(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.ipv4_hdr.src_ipaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.src_ip value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.src_ip value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -662,7 +664,7 @@ static void set_ipv4_dst_ip(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_ipv4addr_from_str(tokens[1].name, &pgen.ipv4_hdr.dst_ipaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.dst_ip value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.dst_ip value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -676,12 +678,12 @@ static void set_ipv4_ttl(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &ttl);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.ttl value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.ttl value <%s>\n", tokens[1].name);
         return;
     }
 
     if (ttl > NETOS_TTL_MAX) {
-        fprintf(stderr, "invalid ipv4.ttl value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.ttl value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -695,7 +697,7 @@ static void set_ipv4_protocol(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &protocol);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.protocol value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.protocol value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -709,7 +711,7 @@ static void set_ipv4_more_fragments(struct pgen_token *tokens, uint32_t n_tokens
 
     ret = netos_get_bool_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.more_fragments value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.more_fragments value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -723,7 +725,7 @@ static void set_ipv4_dont_fragment(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_bool_from_str(tokens[1].name, &val);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.dont_fragment value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.dont_fragment value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -736,7 +738,7 @@ static void set_ipv4_chksum(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.ipv4_hdr.hdr_chksum);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid ipv4.checksum value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid ipv4.checksum value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -748,7 +750,7 @@ static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &vid);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invlaid vlan.id value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invlaid vlan.id value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -764,7 +766,7 @@ static void set_vlan_priority(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &priority);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid vlan.priority value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid vlan.priority value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -779,7 +781,7 @@ static void set_vlan_next_ethertype(struct pgen_token *tokens, uint32_t n_tokens
 
     ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.vlan_hdr.ethertype);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid vlan.next_ethertype value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid vlan.next_ethertype value <%s>\n", tokens[1].name);
         return;
     }
 
@@ -819,7 +821,7 @@ static void set_arp_sha(struct pgen_token *tokens, uint32_t n_tokens)
     ret = netos_get_mac_addr_from_str(tokens[1].name,
                                       pgen.arp_hdr.sender_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid arp.sha value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.sha value <%s>\n", tokens[1].name);
         set_arp_sha_help();
         return;
     }
@@ -847,7 +849,7 @@ static void set_arp_spa(struct pgen_token *tokens, uint32_t n_tokens)
     ret = netos_get_ipv4addr_from_str(tokens[1].name,
                                       &pgen.arp_hdr.sender_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid arp.spa value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.spa value <%s>\n", tokens[1].name);
         set_arp_spa_help();
         return;
     }
@@ -878,7 +880,7 @@ static void set_arp_tha(struct pgen_token *tokens, uint32_t n_tokens)
     ret = netos_get_mac_addr_from_str(tokens[1].name,
                                       pgen.arp_hdr.target_hwaddr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid arp.tha value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.tha value <%s>\n", tokens[1].name);
         return;
     }
 }
@@ -905,7 +907,7 @@ static void set_arp_tpa(struct pgen_token *tokens, uint32_t n_tokens)
     ret = netos_get_ipv4addr_from_str(tokens[1].name,
                                       &pgen.arp_hdr.target_protocol_addr);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid arp.tpa value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.tpa value <%s>\n", tokens[1].name);
         set_arp_tpa_help();
         return;
     }
@@ -933,11 +935,11 @@ static void set_arp_op(struct pgen_token *tokens, uint32_t n_tokens)
 
     ret = netos_get_u32_from_str(tokens[1].name, &op);
     if (ret != NETOS_STATUS_SUCCESS) {
-        fprintf(stderr, "invalid arp.op value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.op value <%s>\n", tokens[1].name);
         return;
     }
     if ((op < 1) || (op > 2)) {
-        fprintf(stderr, "invalid arp.op value <%s>\n", tokens[1].name);
+        NETOS_PRINT_STD_ERROR_COLOR("invalid arp.op value <%s>\n", tokens[1].name);
         set_arp_op_help();
         return;
     }
@@ -1227,9 +1229,9 @@ static void pgen_pcap_run()
         ret = netos_pcap_read_file_entry(pgen.pcap_ctx, &pkt_hdr, &buffer);
         if (ret != NETOS_STATUS_SUCCESS) {
             if (ret == NETOS_STATUS_PCAP_EOF) {
-                fprintf(stderr, "end of pcap record\n");
+                NETOS_PRINT_STD_GREEN_COLOR("end of pcap record\n");
             } else {
-                fprintf(stderr, "invalid pcap record\n");
+                NETOS_PRINT_STD_ERROR_COLOR("invalid pcap record\n");
             }
             break;
         }
@@ -1249,7 +1251,7 @@ static void pgen_pcap_run()
         clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
     } while (1);
 
-    fprintf(stderr, "Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
+    NETOS_PRINT_STD_GREEN_COLOR("Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
 }
 
 #if 0
@@ -1282,14 +1284,14 @@ static void pgen_udp_run()
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
-        fprintf(stderr, "Interface name is not present. "
+        NETOS_PRINT_STD_ERROR_COLOR("Interface name is not present. "
                         "Interface should be provided via ifname\n");
         return;
     }
 
     pgen.raw = netos_raw_socket_init(pgen.ifname);
     if (!pgen.raw) {
-        fprintf(stderr, "Failed to create a raw socket.. "
+        NETOS_PRINT_STD_ERROR_COLOR("Failed to create a raw socket.. "
                         "is the interface available and up?\n");
         return;
     }
@@ -1306,7 +1308,7 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
     }
 
     if (!callback_ptr) {
-        fprintf(stderr, "No protocol generation enabled!\n");
+        NETOS_PRINT_STD_ERROR_COLOR("No protocol generation enabled!\n");
         return;
     }
 
@@ -1326,21 +1328,21 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 
             clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
         }
-        fprintf(stderr, "sent %d frames\n", pgen.n_frames);
+        NETOS_PRINT_STD_GREEN_COLOR("sent %d frames\n", pgen.n_frames);
     }
 }
 
 static void pgen_listen(struct pgen_token *tokens, uint32_t n_tokens)
 {
     if (!pgen.ifname) {
-        fprintf(stderr, "Interface name is not present. "
+        NETOS_PRINT_STD_ERROR_COLOR("Interface name is not present. "
                         "Interface should be provided via ifname\n");
         return;
     }
 
     pgen.raw = netos_raw_socket_init(pgen.ifname);
     if (!pgen.raw) {
-        fprintf(stderr, "Failed to create a raw socket.. "
+        NETOS_PRINT_STD_ERROR_COLOR("Failed to create a raw socket.. "
                         "is the interface available and up?\n");
         return;
     }
@@ -1361,7 +1363,7 @@ static void pgen_listen(struct pgen_token *tokens, uint32_t n_tokens)
     }
 
     if (!callback_ptr || !fill_callback || !free_callback) {
-        fprintf(stderr, "No protocol listen enabled!\n");
+        NETOS_PRINT_STD_ERROR_COLOR("No protocol listen enabled!\n");
         return;
     }
 
@@ -1391,7 +1393,7 @@ static void pgen_arp_free(void *config)
 
 static void pgen_exit(struct pgen_token *tokens, uint32_t n_tokens)
 {
-    fprintf(stderr, "exiting the pgen..\n");
+    NETOS_PRINT_STD_GREEN_COLOR("exiting the pgen..\n");
     exit(1);
 }
 
@@ -1640,7 +1642,7 @@ int main(int argc, char **argv)
             }
 
             if (!valid_cmd && !display_help) {
-                fprintf(stderr, "Invalid command <%s>\n", buf);
+                NETOS_PRINT_STD_ERROR_COLOR("Invalid command <%s>\n", buf);
             }
         } else {
             NETOS_PRINT_STD_ERROR_COLOR("Incorrect token sequence\n");
