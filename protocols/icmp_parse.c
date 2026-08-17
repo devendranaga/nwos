@@ -69,6 +69,24 @@ netos_icmp_decode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t
+netos_icmp_decode_dest_unreachable_common(netos_icmp_hdr_t *icmp_hdr,
+                                          pkt_buffer_t *pkt_buf)
+{
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_DEST_UNREACH_LEN)) {
+        return NETOS_STATUS_ICMP_MALFORMED_PKT;
+    }
+
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.dest_unreach.unused);
+    icmp_hdr->u.dest_unreach.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
+
+    if (icmp_hdr->u.dest_unreach.data_len != 0) {
+        icmp_hdr->u.dest_unreach.data = &pkt_buf->buffer[pkt_buf->offset];
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 /**
  * @brief - Encode timestamp request.
  *
@@ -200,6 +218,24 @@ static const struct {
     netos_status_t  (*decode)(netos_icmp_hdr_t *icmp_hdr,
                               pkt_buffer_t *pkt_buf);
 } netos_icmp_callbacks[] = {
+    {
+        NETOS_ICMP_TYPE_DEST_UNREACH,
+        NETOS_ICMP_CODE_NW_UNREACH,
+        NULL,
+        netos_icmp_decode_dest_unreachable_common,
+    },
+    {
+        NETOS_ICMP_TYPE_DEST_UNREACH,
+        NETOS_ICMP_CODE_HOST_UNREACH,
+        NULL,
+        netos_icmp_decode_dest_unreachable_common,
+    },
+    {
+        NETOS_ICMP_TYPE_DEST_UNREACH,
+        NETOS_ICMP_CODE_PROT_UNREACH,
+        NULL,
+        netos_icmp_decode_dest_unreachable_common,
+    },
     {
         NETOS_ICMP_TYPE_ECHO_REQ,
         NETOS_ICMP_CODE_ECHO_REQ,

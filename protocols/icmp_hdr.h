@@ -10,12 +10,16 @@ extern "C" {
 #include "pkt_buffer.h"
 
 // List of ICMP types
+#define NETOS_ICMP_TYPE_DEST_UNREACH    3
 #define NETOS_ICMP_TYPE_ECHO_REQ        8
 #define NETOS_ICMP_TYPE_ECHO_REPLY      0
 #define NETOS_ICMP_TYPE_TIMESTAMP_REQ   13
 #define NETOS_ICMP_TYPE_TIMESTAMP_REPLY 14
 
 // List of ICMP codes
+#define NETOS_ICMP_CODE_NW_UNREACH      0
+#define NETOS_ICMP_CODE_HOST_UNREACH    1
+#define NETOS_ICMP_CODE_PROT_UNREACH    2
 #define NETOS_ICMP_CODE_ECHO_REQ        0
 #define NETOS_ICMP_CODE_ECHO_REPLY      0
 #define NETOS_ICMP_CODE_TIMESTAMP_REQ   0
@@ -26,6 +30,7 @@ extern "C" {
 #define NETOS_ICMP_ECHO_REQ_LEN         4
 #define NETOS_ICMP_ECHO_REPLY_LEN       4
 #define NETOS_ICMP_TIMESTAMP_LEN        16
+#define NETOS_ICMP_DEST_UNREACH_LEN     4
 
 #define NETOS_ICMP_IS_ECHO_REQ(__icmp) (((__icmp)->type == NETOS_ICMP_TYPE_ECHO_REQ) &&\
                                         ((__icmp)->code == NETOS_ICMP_CODE_ECHO_REQ))
@@ -39,6 +44,12 @@ typedef struct {
     uint16_t    data_len;
     uint8_t     *data;
 } netos_icmp_echo_t;
+
+typedef struct {
+    uint32_t unused;
+    uint16_t data_len;
+    uint8_t  *data;
+} netos_dest_unreachable_t;
 
 /**
  * @brief - ICMP timestamp.
@@ -61,10 +72,11 @@ typedef struct {
     uint16_t    checksum;
 
     union {
-        netos_icmp_echo_t       echo_req;
-        netos_icmp_echo_t       echo_reply;
-        netos_icmp_timestamp_t  ts_req;
-        netos_icmp_timestamp_t  ts_reply;
+        netos_dest_unreachable_t    dest_unreach;
+        netos_icmp_echo_t           echo_req;
+        netos_icmp_echo_t           echo_reply;
+        netos_icmp_timestamp_t      ts_req;
+        netos_icmp_timestamp_t      ts_reply;
     } u;
 } netos_icmp_hdr_t;
 
