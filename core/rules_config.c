@@ -29,6 +29,8 @@
 #define NETOS_ETHERTYPE_LEN_BYTES       9
 #define NETOS_PROTOCOL_LEN_BYTES        8
 #define NETOS_REWRITE_SRC_IPADDR_LEN_BYTES 14
+#define NETOS_TO_DST_PORT_LEN_BYTES     11
+#define NETOS_ICMP_TYPE_LEN_BYTES       9
 
 struct netos_rule_token {
     char token[1024];
@@ -64,8 +66,7 @@ static uint32_t netos_rule_tokenize(const char *buf)
 }
 
 static netos_status_t netos_rule_set_rule_type(netos_rule_config_t *rule,
-                                               uint32_t index,
-                                               uint32_t n_tokens)
+                                               uint32_t index)
 {
     if (!strcmp(tokens[index].token, "allow")) {
         rule->rule_type = NETOS_RULE_TYPE_ALLOW;
@@ -104,7 +105,7 @@ static netos_status_t netos_rule_set_src_macaddr(netos_rule_config_t *rule,
     netos_status_t ret;
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, mac_str);
-    if ((data_len == 0) || (data_len == 1)) {
+    if (data_len == 0) {
         return NETOS_STATUS_RULE_SRC_MAC_INVALID;
     }
 
@@ -127,7 +128,7 @@ static netos_status_t netos_rule_set_dst_macaddr(netos_rule_config_t *rule,
     netos_status_t ret;
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, mac_str);
-    if ((data_len == 0) || (data_len == 1)) {
+    if (data_len == 0) {
         return NETOS_STATUS_RULE_DST_MAC_INVALID;
     }
 
@@ -151,7 +152,7 @@ static netos_status_t netos_rule_set_ipaddr(uint32_t *ipaddr,
     netos_status_t ret;
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, ipaddr_str);
-    if ((data_len == 0) || (data_len == 1)) {
+    if (data_len == 0) {
         return NETOS_STATUS_RULE_INVALID;
     }
 
@@ -223,7 +224,7 @@ static netos_status_t netos_rule_set_ethertype(netos_rule_config_t *rule,
     netos_status_t ret;
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, ethertype_str);
-    if ((data_len == 0) || (data_len == 1)) {
+    if (data_len == 0) {
         return NETOS_STATUS_RULE_ETHERTYPE_INVALID;
     }
 
@@ -250,7 +251,7 @@ static netos_status_t netos_rule_set_protocol(netos_rule_config_t *rule,
     netos_status_t ret;
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, protocol_str);
-    if ((data_len == 0) || (data_len == 1)) {
+    if (data_len == 0) {
         return NETOS_STATUS_RULE_PROTOCOL_INVALID;
     }
 
@@ -274,12 +275,176 @@ static netos_status_t netos_rule_set_protocol(netos_rule_config_t *rule,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_rule_set_to_dst_port(netos_rule_config_t *rule,
+                                                 uint32_t index)
+{
+    char dst_port_str[32] = {'\0'};
+    const uint32_t len = NETOS_TO_DST_PORT_LEN_BYTES + 2; // 1 for space + 1 for <
+    uint32_t data_len = 0;
+    netos_status_t ret;
+
+    data_len = netos_rule_get_token_data(tokens[index].token, len, dst_port_str);
+    if (data_len == 0) {
+        return NETOS_STATUS_RULE_TO_DST_PORT_INVALID;
+    }
+
+    ret = netos_get_u32_from_str(dst_port_str, &rule->l4.ports.dst_port);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    rule->bits.to_dst_port = 1;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_rule_set_icmp_type(netos_rule_config_t *rule,
+                                               uint32_t index)
+{
+    char icmp_type_str[32] = {'\0'};
+    const uint32_t len = NETOS_ICMP_TYPE_LEN_BYTES + 2; // 1 for space + 1 for <
+    uint32_t data_len = 0;
+    netos_status_t ret;
+
+    data_len = netos_rule_get_token_data(tokens[index].token, len, icmp_type_str);
+    if (data_len == 0) {
+        return NETOS_STATUS_RULE_TO_DST_PORT_INVALID;
+    }
+
+    ret = netos_get_u32_from_str(icmp_type_str, &rule->l4.icmp.type);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    rule->bits.icmp_type = 1;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_rule_set_message(netos_rule_config_t *rule,
+                                             uint32_t index)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_rule_set_dst_ip(netos_rule_config_t *rule,
+                                            uint32_t index)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+typedef struct {
+    char *name;
+    netos_status_t (*callback)(netos_rule_config_t *rule, uint32_t index);
+} netos_rule_index_config_t;
+
+static const struct {
+    uint32_t index;
+    uint32_t n_callbacks;
+    netos_rule_index_config_t config[10];
+} netos_rule_metdata[] = {
+    {
+        NETOS_RULE_TYPE_INDEX,
+        4,
+        {
+            {
+                "allow",
+                netos_rule_set_rule_type,
+            },
+            {
+                "deny",
+                netos_rule_set_rule_type,
+            },
+            {
+                "alert",
+                netos_rule_set_rule_type,
+            },
+            {
+                "route",
+                netos_rule_set_rule_type,
+            }
+        }
+    },
+    {
+        NETOS_SRC_MAC_ADDR_INDEX,
+        2,
+        {
+            {
+                "src_mac",
+                netos_rule_set_src_macaddr,
+            },
+            {
+                "src_ip",
+                netos_rule_set_src_ipaddr,
+            }
+        }
+    },
+    {
+        NETOS_DST_MAC_ADDR_INDEX,
+        2,
+        {
+            {
+                "dst_mac",
+                netos_rule_set_dst_macaddr,
+            },
+            {
+                "dst_ip",
+                netos_rule_set_dst_ipaddr,
+            }
+        }
+    },
+    {
+        NETOS_ETHERTYPE_INDEX,
+        3,
+        {
+            {
+                "ethertype",
+                netos_rule_set_ethertype,
+            },
+            {
+                "protocol",
+                netos_rule_set_protocol,
+            },
+            {
+                "rewrite_src_ip",
+                netos_rule_set_rewrite_src_ipaddr,
+            }
+        }
+    },
+    {
+        NETOS_REWRITE_DST_IP_INDEX,
+        5,
+        {
+            {
+                "to_dst_port",
+                netos_rule_set_to_dst_port,
+            },
+            {
+                "icmp_type",
+                netos_rule_set_icmp_type,
+            },
+            {
+                "message",
+                netos_rule_set_message,
+            },
+            {
+                "rewrite_dst_ip",
+                netos_rule_set_dst_ip,
+            },
+            {
+                "src_ip",
+                netos_rule_set_src_ipaddr
+            }
+        }
+    }
+};
+
 static netos_rule_config_t *netos_rule_parse(const char *buf)
 {
     netos_rule_config_t *rule;
     uint32_t n_tokens;
-    bool invalid_token = true;
-    netos_status_t ret;
+    uint32_t i;
+    uint32_t j;
 
     n_tokens = netos_rule_tokenize(buf);
     if (n_tokens == 0) {
@@ -291,98 +456,28 @@ static netos_rule_config_t *netos_rule_parse(const char *buf)
         return NULL;
     }
 
-    // parse rule_type
-    ret = netos_rule_set_rule_type(rule, NETOS_RULE_TYPE_INDEX, n_tokens);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        goto err;
-    }
+    for (i = 0; (i < NETOS_SIZEOF_ARRAY(netos_rule_metdata)) && (i < n_tokens); i ++) {
+        if (i == netos_rule_metdata[i].index) {
+            bool found = false;
 
-    // parse src_mac / src_ip and so on
-    if (strstr(tokens[NETOS_SRC_MAC_ADDR_INDEX].token, "src_mac")) {
-        ret = netos_rule_set_src_macaddr(rule, NETOS_SRC_MAC_ADDR_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    } else if (strstr(tokens[NETOS_SRC_IPADDR_INDEX].token, "src_ip")) {
-        ret = netos_rule_set_src_ipaddr(rule, NETOS_SRC_IPADDR_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    } else {
-        netos_log_error("Invalid string <%s> expecting <src_mac/src_ip>\n",
-                        tokens[NETOS_SRC_MAC_ADDR_INDEX].token);
-        goto err;
-    }
-
-    // parse dst_mac / dst_ip and so on
-    if (strstr(tokens[NETOS_DST_MAC_ADDR_INDEX].token, "dst_mac")) {
-        ret = netos_rule_set_dst_macaddr(rule, NETOS_DST_MAC_ADDR_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    } else if (strstr(tokens[NETOS_DST_IPADDR_INDEX].token, "dst_ip")) {
-        ret = netos_rule_set_dst_ipaddr(rule, NETOS_DST_IPADDR_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    } else {
-        netos_log_error("Invalid string <%s> expecting <dst_mac/dst_ip>\n",
-                        tokens[NETOS_DST_MAC_ADDR_INDEX].token);
-        goto err;
-    }
-
-    if (strstr(tokens[NETOS_ETHERTYPE_INDEX].token, "ethertype")) {
-        invalid_token = false;
-
-        ret = netos_rule_set_ethertype(rule, NETOS_ETHERTYPE_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    } else if (strstr(tokens[NETOS_SRC_IPADDR_INDEX_1].token, "src_ip")) {
-        invalid_token = false;
-
-        if (strstr(tokens[NETOS_REWRITE_SRC_IP_INDEX].token, "rewrite_src_ip")) {
-            ret = netos_rule_set_rewrite_src_ipaddr(rule, NETOS_REWRITE_SRC_IP_INDEX);
-            if (ret != NETOS_STATUS_SUCCESS) {
-                goto err;
+            for (j = 0; j < netos_rule_metdata[i].n_callbacks; j ++) {
+                if (netos_rule_metdata[i].config[j].name &&
+                    strstr(tokens[i].token,
+                           netos_rule_metdata[i].config[j].name)) {
+                    if (netos_rule_metdata[i].config[j].callback) {
+                        netos_rule_metdata[i].config[j].callback(rule, i);
+                        found = true;
+                    }
+                }
             }
-
-        } else {
-            ret = netos_rule_set_src_ipaddr(rule, NETOS_SRC_IPADDR_INDEX_1);
-            if (ret != NETOS_STATUS_SUCCESS) {
-                goto err;
+            if (!found) {
+                netos_log_error("failed to match any rule string with token [%s]\n",
+                                tokens[i].token);
             }
-
         }
-    } else if (strstr(tokens[NETOS_PROTOCOL_INDEX].token, "protocol")) {
-        invalid_token = false;
-
-        ret = netos_rule_set_protocol(rule, NETOS_PROTOCOL_INDEX);
-        if (ret != NETOS_STATUS_SUCCESS) {
-            goto err;
-        }
-
-    }
-
-    if (invalid_token) {
-        netos_log_error("Invalid string <%s> expecting <ethertype/src_ip/protocol>\n",
-                        tokens[NETOS_ETHERTYPE_INDEX].token);
-        goto err;
     }
 
     return rule;
-
-err:
-    if (rule) {
-        free(rule);
-    }
-
-    return NULL;
 }
 
 netos_status_t netos_rule_config_parse(const char *file, netos_rules_t *rules)
@@ -451,6 +546,12 @@ void netos_rule_config_print(netos_rules_t *rules)
         }
         if (rule->bits.protocol) {
             netos_log_info("\t protocol: %d\n", rule->protocol);
+        }
+        if (rule->bits.to_dst_port) {
+            netos_log_info("\t to_dst_port: %d\n", rule->l4.ports.dst_port);
+        }
+        if (rule->bits.icmp_type) {
+            netos_log_info("\t icmp_type: %d\n", rule->l4.icmp.type);
         }
         netos_log_info("}\n");
     }

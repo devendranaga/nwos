@@ -25,8 +25,8 @@
 
 allow, src_mac <00:11:22:33:11:11>, dst_mac <00:12:10:11:11:44>, ethertype <0x0800>
 allow, src_ip <any>, dst_ip <any>, protocol <tcp>, to_dst_port <1122>
-allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>, type <8>, code <0>
-allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <tcp>, from_src_port <1111>, to_dst_port <1112>
+allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>, icmp_type <8>, icmp_code <0>
+allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <tcp>, to_dst_port <1112>
 allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>
 alert, src_ip <192.168.0.1>, dst_ip <192.168.0.11>, protocol <icmp>, message <"icmp frames from 192.168.0.1">
 

@@ -57,13 +57,13 @@ typedef struct netos_rule_config {
 
     struct {
         union {
-            uint16_t            src_port;
-            uint16_t            dst_port;
+            uint32_t            src_port;
+            uint32_t            dst_port;
         } ports;
 
         union {
-            uint8_t             type;
-            uint8_t             code;
+            uint32_t             type;
+            uint32_t             code;
         } icmp;
     } l4;
 

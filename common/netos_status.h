@@ -91,6 +91,7 @@ typedef enum {
     NETOS_STATUS_RULE_INVALID                       = 0x00001007,
     NETOS_STATUS_RULE_REWRITE_SRC_IP_INVALID        = 0x00001008,
     NETOS_STATUS_RULE_PROTOCOL_INVALID              = 0x00001009,
+    NETOS_STATUS_RULE_TO_DST_PORT_INVALID           = 0x0000100A,
 
     NETOS_STATUS_GENERIC_ERROR                      = 0xFAFAFAFA,
 } netos_status_t;
