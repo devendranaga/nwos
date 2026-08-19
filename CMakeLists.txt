@@ -93,6 +93,9 @@ SET(NETOS_SRC
     ./egress/egress_rr.c
     ./egress/egress_pfifo.c
     ./egress/egress_bfifo.c
+    ./egress/egress_sfq.c
+    ./egress/egress_drr.c
+    ./egress/egress_pfifo_fast.c
     ./statistics/statistics.c)
 
 set(TOOL_PGEN_SRC

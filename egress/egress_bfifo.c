@@ -67,7 +67,10 @@ netos_egress_bfifo_init(netos_egress_bfifo_mgr_t *bfifo,
     pthread_mutex_init(&bfifo->bfifo_lock, NULL);
     pthread_cond_init(&bfifo->bfifo_cond, NULL);
 
-    ret = netos_pthread_create_detached(&bfifo->bfifo_tid, 1, netos_egress_bfifo_tx_queue_thread, bfifo);
+    ret = netos_pthread_create_detached(&bfifo->bfifo_tid,
+                                        1,
+                                        netos_egress_bfifo_tx_queue_thread,
+                                        bfifo);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
