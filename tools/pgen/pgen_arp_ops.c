@@ -44,6 +44,26 @@ static bool __pgen_find_arp_entry(netos_arp_hdr_t *arp_hdr,
     return false;
 }
 
+static void __pgen_print_arp_entries()
+{
+    netos_arp_entry_t *entry;
+
+    netos_log_info("ifname\t sender_mac\t    sender_ip\n");
+    netos_log_info("-----------------------------------------\n");
+    for (entry = entries; entry; entry = entry->next) {
+        netos_log_info("<%s>\t <%02x:%02x:%02x:%02x:%02x:%02x> <%d.%d.%d.%d>\n",
+                       entry->ifname,
+                       entry->sender_mac[0], entry->sender_mac[1],
+                       entry->sender_mac[2], entry->sender_mac[3],
+                       entry->sender_mac[4], entry->sender_mac[5],
+                       (entry->sender_ip & 0xFF000000) >> 24,
+                       (entry->sender_ip & 0x00FF0000) >> 16,
+                       (entry->sender_ip & 0x0000FF00) >> 8,
+                       (entry->sender_ip & 0x000000FF));
+    }
+    netos_log_info("-----------------------------------------\n");
+}
+
 static void __pgen_arp_add_entry(const char *ifname,
                                  netos_arp_hdr_t *arp_hdr,
                                  netos_eth_hdr_t *eh)
@@ -80,6 +100,8 @@ static void __pgen_arp_add_entry(const char *ifname,
             tail = entry;
         }
     }
+
+    __pgen_print_arp_entries();
 }
 
 static void __pgen_arp_listen(const char *ifname, pkt_buffer_t *pkt_buf)
@@ -93,7 +115,6 @@ static void __pgen_arp_listen(const char *ifname, pkt_buffer_t *pkt_buf)
     if (ret == NETOS_STATUS_SUCCESS) {
         ret = netos_arp_decode(&arp_hdr, pkt_buf);
         if (ret == NETOS_STATUS_SUCCESS) {
-            netos_arp_print(&arp_hdr);
             __pgen_arp_add_entry(ifname, &arp_hdr, &eh);
         }
     }
