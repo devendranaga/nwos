@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <signal.h>
 #include "netos_status.h"
 #include "netos_log.h"
 #include "pkt_buffer.h"
@@ -64,6 +65,11 @@ static void __pgen_print_arp_entries()
     netos_log_info("-----------------------------------------\n");
 }
 
+static void pgen_signal_handler(int sig)
+{
+    __pgen_print_arp_entries();
+}
+
 static void __pgen_arp_add_entry(const char *ifname,
                                  netos_arp_hdr_t *arp_hdr,
                                  netos_eth_hdr_t *eh)
@@ -100,8 +106,6 @@ static void __pgen_arp_add_entry(const char *ifname,
             tail = entry;
         }
     }
-
-    __pgen_print_arp_entries();
 }
 
 static void __pgen_arp_listen(const char *ifname, pkt_buffer_t *pkt_buf)
@@ -122,6 +126,10 @@ static void __pgen_arp_listen(const char *ifname, pkt_buffer_t *pkt_buf)
 
 void pgen_arp_listen(netos_raw_socket_ctx_t *raw, void *config)
 {
+    netos_log_info("Scanning for ARP entries .. press Ctrl + C to print entries Ctrl + \\ to stop\n");
+
+    signal(SIGINT, pgen_signal_handler);
+
     while (1) {
         pkt_buffer_t rx_buf;
         int ret;
