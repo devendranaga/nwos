@@ -6,6 +6,13 @@
 #define NETOS_SIZEOF_ARRAY(__a) ((sizeof(__a)) / (sizeof(__a[0])))
 #define NETOS_FOR_EACH_LIST(__item, __type, __head) for(__type *__item = __head; __item; __item = __item->next)
 
+/**
+ * @brief - check if the MAC is a broadcast mac.
+ *
+ * @param [in] mac - MAC address.
+ *
+ * @return true if its a broadcast mac and false otherwise.
+ */
 static inline bool netos_is_broadcast_mac(const uint8_t *mac)
 {
     const uint8_t bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};

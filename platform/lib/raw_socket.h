@@ -18,6 +18,8 @@ typedef struct {
     uint32_t    ipaddr;
     // interface index
     int         ifindex;
+    // mtu size
+    uint32_t    mtu;
     // egress controller pointer
     void        *egress_ctrl;
     // statistics pointer

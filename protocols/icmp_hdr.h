@@ -96,6 +96,13 @@ typedef struct {
     (__icmp_hdr).u.echo_req.seq_no      = __seq_no;\
 } while (0)
 
+/**
+ * @brief - helper to set the icmp echo reply to defaults.
+ *
+ * @param [in] __icmp_hdr - ICMP header.
+ * @param [in] __id - ICMP id.
+ * @param [in] __seq_no - ICMP seq no.
+ */
 #define NETOS_ICMP_ECHO_REPLY_DEFAULTS(__icmp_hdr, __id, __seq_no) do {\
     (__icmp_hdr).gen_checksum               = false;\
     (__icmp_hdr).type                       = NETOS_ICMP_TYPE_ECHO_REPLY;\

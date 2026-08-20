@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "icmp_hdr.h"
 #include "pkt_buffer.h"
+#include "common.h"
 #include "checksum.h"
 #include "event_info.h"
 #include "netos_status.h"
@@ -285,7 +286,7 @@ netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
     /**
      * match type and code in the list of supported callbacks and call them.
      */
-    for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(netos_icmp_callbacks); i ++) {
         if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
             (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
             (netos_icmp_callbacks[i].decode)) {

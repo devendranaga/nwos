@@ -73,6 +73,12 @@ netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
         ret = NETOS_STATUS_SUCCESS;
     }
 
+    // get the MTU
+    ret = netos_ioctl_get_mtu(raw->fd, ifname, &raw->mtu);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
+
     return raw;
 
 err:

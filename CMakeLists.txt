@@ -18,7 +18,11 @@ endif()
 set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os")
 
 if(DEBUG)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
+else() # production build options
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-protector-strong -fstack-clash-protection")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -fPIE")
 endif()
 
 SET(PROTOCOL_SRC

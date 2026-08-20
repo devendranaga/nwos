@@ -130,3 +130,21 @@ netos_status_t netos_ioctl_get_ipaddr(int fd, const char *ifname, uint32_t *ipad
     return NETOS_STATUS_SUCCESS;
 }
 
+netos_status_t netos_ioctl_get_mtu(int fd, const char *ifname, uint32_t *mtu)
+{
+    struct ifreq ifr;
+    int ret;
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    ret = ioctl(fd, SIOCGIFMTU, &ifr);
+    if (ret != 0) {
+        return NETOS_STATUS_IOCTL_GET_MTU_FAILED;
+    }
+
+    *mtu = ifr.ifr_mtu;
+    return NETOS_STATUS_SUCCESS;
+}
+

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "protocol_const.h"
 #include "netos_status.h"
@@ -82,10 +83,15 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
+    assert(pkt_buf != NULL);
+    assert(pkt_parser != NULL);
+
     pthread_mutex_lock(&arp_protocol.lock);
 
     // if ARP's sender hwaddr does not match with the ethernet SA
     // drop the frame
+    //
+    // This frame is not destined to us.
     if (memcmp(pkt_parser->arp_hdr.sender_hwaddr,
                pkt_parser->eh.src, NETOS_MACADDR_LEN) != 0) {
         ret = NETOS_STATUS_ARP_MALFORMED_PKT;

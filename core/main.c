@@ -198,6 +198,16 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     }
 
     netos_log_info("raw socket on [%s] create ok\n", intf_config->ifname);
+    netos_log_info("-------------------------------------\n");
+    netos_log_info("\t ifname:  \t %s\n", intf->raw->ifname);
+    netos_log_info("\t mac:     \t %02x:%02x:%02x:%02x:%02x:%02x\n",
+                   intf->raw->mac[0], intf->raw->mac[1],
+                   intf->raw->mac[2], intf->raw->mac[3],
+                   intf->raw->mac[4], intf->raw->mac[5]);
+    netos_log_info("\t ipaddr:  \t 0x%x\n", intf->raw->ipaddr);
+    netos_log_info("\t ifindex: \t %d\n", intf->raw->ifindex);
+    netos_log_info("\t MTU:     \t %d\n", intf->raw->mtu);
+    netos_log_info("-------------------------------------\n");
 
     intf->raw->stats_ctx = netos_statistics_add(intf_config->ifname);
     if (!intf->raw->stats_ctx) {

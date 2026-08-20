@@ -37,5 +37,7 @@ netos_status_t netos_ioctl_get_macaddr(int fd, const char *ifname, uint8_t *maca
 
 netos_status_t netos_ioctl_get_ipaddr(int fd, const char *ifname, uint32_t *ipaddr);
 
+netos_status_t netos_ioctl_get_mtu(int fd, const char *ifname, uint32_t *mtu);
+
 #endif
 
