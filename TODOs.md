@@ -99,6 +99,7 @@
 - [ ] PCAPng file writes
 - [ ] PCAP file writes
 - [ ] Tool: Enable pcap file writes from the regular run commands in pgen
+- [ ] In ICMP reply, check for the device MTU is capable of sending the input frame, if its not capable send a ICMP packet too big message.
 
 ## Done
 
