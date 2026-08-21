@@ -40,6 +40,39 @@ static netos_status_t netos_icmp6_decode_echo_reply(netos_icmp6_hdr_t *icmp6_hdr
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
+                                            pkt_buffer_t *pkt_buf)
+{
+    uint8_t type;
+    uint8_t len;
+
+    pkt_buf->offset += 4;
+
+    pkt_buffer_decode_bytes(pkt_buf,
+                            icmp6_hdr->u.ns.target_addr,
+                            NETOS_IPV6_ADDR_LEN);
+    while (pkt_buf->offset < pkt_buf->rx_len) {
+        pkt_buffer_decode_byte(pkt_buf, &type);
+        pkt_buffer_decode_byte(pkt_buf, &len);
+
+        switch (type) {
+            case NETOS_ICMP6_NS_OPT_SLL: {
+                if (len != NETOS_ICMP6_NS_OPT_SLL_LEN) {
+                    return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+                }
+
+                pkt_buffer_decode_bytes(pkt_buf,
+                                        icmp6_hdr->u.ns.u.sll_addr.sll_addr,
+                                        NETOS_MACADDR_LEN);
+            } break;
+            default:
+                return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     uint8_t type;
     uint8_t code;
@@ -59,6 +92,12 @@ static const struct {
         NETOS_ICMP6_CODE_ECHO_REPLY,
         NULL,
         netos_icmp6_decode_echo_reply
+    },
+    {
+        NETOS_ICMP6_TYPE_NEIGHBOR_SOLICITATION,
+        NETOS_ICMP6_CODE_NEIGHBOR_SOLICITATION,
+        NULL,
+        netos_icmp6_decode_ns
     }
 };
 

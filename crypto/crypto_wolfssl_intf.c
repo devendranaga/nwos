@@ -1,4 +1,5 @@
 #include "crypto_intf.h"
+#include "crypto_yellow_page.h"
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>

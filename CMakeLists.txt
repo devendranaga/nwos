@@ -39,7 +39,12 @@ SET(PROTOCOL_SRC
     ./protocols/icmp6_parse.c
     ./protocols/mka_parse.c
     ./protocols/mka.c
-    ./protocols/mqtt_parse.c)
+    ./protocols/mqtt_parse.c
+    ./protocols/dhcp_parse.c
+    ./protocols/dns_parse.c
+    ./protocols/ieee_8021qbb_parse.c
+    ./protocols/ripng_parse.c
+    ./protocols/ripng.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c
