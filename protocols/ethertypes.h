@@ -12,6 +12,7 @@ typedef enum {
     NETOS_ETHERTYPE_MACSEC          = 0x88E5,
     NETOS_ETHERTYPE_IPV4            = 0x0800,
     NETOS_ETHERTYPE_IPV6            = 0x86DD,
+    NETOS_ETHERTYPE_IEEE_8021QBB    = 0x8808,
 } netos_ethertype_t;
 
 #endif
