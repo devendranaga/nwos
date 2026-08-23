@@ -100,6 +100,45 @@
 - [ ] PCAP file writes
 - [ ] Tool: Enable pcap file writes from the regular run commands in pgen
 - [ ] In ICMP reply, check for the device MTU is capable of sending the input frame, if its not capable send a ICMP packet too big message.
+- [ ] ARP Duplicate address detection
+- [ ] Gratituous ARP
+- [ ] Static ARP entry support
+- [ ] ARP statistics
+- [ ] DEI to drop precedence mapping
+- [ ] VLAN filtering / access-list per port
+- [ ] IP option parsing (record route, timestamp, source route)
+- [ ] DSCP/ECN based QoS classification
+- [ ] IPinIP tunnel decapsulation
+- [ ] Multicast group management
+- [ ] Routing table and forwarding logic
+- [ ] TTL decrement and ICMP time exceeded generation
+- [ ] PMTU discovery support
+- [ ] Extension header chain parsing (Hop-by-Hop, Routing, Fragment, Destination, AH and ESP)
+- [ ] Fragmentation reassembly
+- [ ] Flow label parsing
+- [ ] NDP support
+- [ ] MLD
+- [ ] IPv6 encode functionality
+- [ ] TCP options parsing
+- [ ] TCP flag validation
+- [ ] TCP RST generation for refused connection
+- [ ] TCP state tracking
+- [ ] Sequence number tracking for stateful inspection
+- [ ] TCP MSS
+- [ ] TCP window scaling
+- [ ] SYN flood detection / SYN cookie support
+- [ ] ICMP ratelimit
+- [ ] Trace route
+- [ ] ICMP statistics
+- [ ] MKPDU parsing
+- [ ] MQTT fixed header parsing
+- [ ] Will message handling
+- [ ] QoS flow tracking
+- [ ] Topic filtering and wildcard matching
+- [ ] RED egress queueing
+- [ ] WRED egress queueing
+- [ ] Per queue statistics
+- [ ] Statistics reset
 
 ## Done
 
