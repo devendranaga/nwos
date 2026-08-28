@@ -4,9 +4,11 @@
 #include "netos_status.h"
 #include "netos_config.h"
 #include "packet_parser.h"
+#include "common.h"
 #include "protocols.h"
-#include "icmp.h"
 #include "ipv4.h"
+#include "udp.h"
+#include "icmp.h"
 #include "netos_log.h"
 
 static struct {
@@ -25,17 +27,7 @@ static struct {
                           pkt_buffer_t *pkt_buf);
 
     void            (*deinit)(void *ctx);
-} protocol_table[255] = {
-    {
-        false,
-        0,
-        "none",
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-    },
+} protocol_table[] = {
     {
         true,
         NETOS_PROTOCOL_ICMP,
@@ -45,6 +37,16 @@ static struct {
         netos_icmp_rx,
         netos_icmp_tx,
         netos_icmp_deinit
+    },
+    {
+        true,
+        NETOS_PROTOCOL_UDP,
+        "UDP",
+        NULL,
+        netos_udp_init,
+        netos_udp_rx,
+        netos_udp_tx,
+        netos_udp_deinit
     }
 };
 
@@ -72,12 +74,16 @@ netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
                                      netos_packet_parser_t *pkt_parser)
 {
     uint8_t protocol = pkt_parser->protocol;
+    uint32_t i;
 
-    if (protocol_table[protocol].rx) {
-        protocol_table[protocol].rx(protocol_table[protocol].protocol_ctx,
-                                    pkt_parser,
-                                    pkt_buf);
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_table); i ++) {
+        if (protocol_table[i].rx && (protocol_table[i].protocol == protocol)) {
+            protocol_table[i].rx(protocol_table[i].protocol_ctx,
+                                 pkt_parser,
+                                 pkt_buf);
+        }
     }
+
     return NETOS_STATUS_SUCCESS;
 }
 

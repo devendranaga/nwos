@@ -6,6 +6,7 @@
  */
 typedef enum {
     NETOS_ETHERTYPE_ARP             = 0x0806,
+    NETOS_ETHERTYPE_RARP            = 0x8035,
     NETOS_ETHERTYPE_VLAN            = 0x8100,
     NETOS_ETHERTYPE_NON_STD_VLAN    = 0x9100,
     NETOS_ETHERTYPE_8021AD          = 0x88A8,

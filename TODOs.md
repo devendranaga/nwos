@@ -16,7 +16,6 @@
 - [ ] CMAC PRF
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
-- [ ] Expand the Events matching to suricata
 - [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
 - [ ] Tools: Missing error handling in pgen.
@@ -185,5 +184,6 @@
 - [x] Event manager to write logs to a file
 - [x] bfifo queueing discipline
 - [x] ICMP echo reply generation for a echo request frame
+- [x] Expand the Events matching to suricata
 
 

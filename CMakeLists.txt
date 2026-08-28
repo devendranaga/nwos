@@ -41,13 +41,12 @@ SET(PROTOCOL_SRC
     ./protocols/icmp_parse.c
     ./protocols/icmp6_parse.c
     ./protocols/mka_parse.c
-    ./protocols/mka.c
     ./protocols/mqtt_parse.c
     ./protocols/dhcp_parse.c
     ./protocols/dns_parse.c
     ./protocols/ieee_8021qbb_parse.c
     ./protocols/ripng_parse.c
-    ./protocols/ripng.c)
+    ./protocols/lldp_parse.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c
@@ -100,6 +99,10 @@ SET(NETOS_SRC
     ./protocols/macsec.c
     ./protocols/icmp.c
     ./protocols/ipv4.c
+    ./protocols/mka.c
+    ./protocols/ripng.c
+    ./protocols/lldp.c
+    ./protocols/udp.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c
