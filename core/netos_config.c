@@ -324,8 +324,9 @@ netos_config_parse_egress_config(netos_config_t *config,
     netos_status_t ret;
 
     for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
-        for (uint32_t i = 0; i < sizeof(protocol_config_callbacks) /
-                                 sizeof(protocol_config_callbacks[0]); i ++) {
+        for (uint32_t i = 0;
+             i < NETOS_SIZEOF_ARRAY(egress_config_callbacks);
+             i ++) {
             if ((node_ptr->type == XML_ELEMENT_NODE) &&
                 (strcmp((const char *)node_ptr->name,
                         egress_config_callbacks[i].name) == 0)) {
