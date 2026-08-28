@@ -1,5 +1,33 @@
 # Design notes
 
+## Rule heirarchy and optimisations
+
+Right now the DAG is very complex to implement. Lets learn it little more and understand how a DAG can be created following this rule definitions.
+
+In order to the DAG, we also need to look at the duplicate rules which can be redundant in the DAG and might cause false positives.
+
+First split the implementations into two parts.
+
+1. Ethertype based matches.
+2. Flow based matches.
+
+First the rule needs to be split based on the ethertype.
+
+Each of these become list entries in a long list of rules.
+
+List will contain for example arp_rule -> vlan_rule -> tcp_udp_flow_rule.
+
+The arp_rule will further contains a list of sub rules.
+For the connection tracking tcp_udp_flow rules will be a list of sub rules.
+
+Each of the tcp_udp_flow will then be a hash table instead of a list.
+
+The 5 tuple is hashed to figure out which is the best rule match for this input frame.
+
+Organize the rules such that direct hash based matches can be performed on TCP / UDP specific flows.
+
+Assume src_port = 0 when doing the hashing.
+
 ## Configuration
 
 **config design**
