@@ -582,7 +582,7 @@ netos_status_t netos_rule_config_parse(const char *file, netos_rules_t *rules)
 
 static const char *netos_get_rule_type_str(netos_rule_type_t rule_type)
 {
-    const static struct {
+    const struct {
         netos_rule_type_t rule_type;
         const char *rule_str;
     } rule_type_strings[] = {
