@@ -94,8 +94,8 @@ static const struct {
         netos_icmp6_decode_echo_reply
     },
     {
-        NETOS_ICMP6_TYPE_NEIGHBOR_SOLICITATION,
-        NETOS_ICMP6_CODE_NEIGHBOR_SOLICITATION,
+        NETOS_ICMP6_TYPE_NS,
+        NETOS_ICMP6_CODE_NS,
         NULL,
         netos_icmp6_decode_ns
     }

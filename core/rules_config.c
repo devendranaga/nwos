@@ -516,13 +516,35 @@ netos_status_t netos_rule_config_parse(const char *file, netos_rules_t *rules)
     return ret;
 }
 
+static const char *netos_get_rule_type_str(netos_rule_type_t rule_type)
+{
+    const static struct {
+        netos_rule_type_t rule_type;
+        const char *rule_str;
+    } rule_type_strings[] = {
+        {NETOS_RULE_TYPE_ALLOW, "Allow"},
+        {NETOS_RULE_TYPE_ALERT, "Alert"},
+        {NETOS_RULE_TYPE_DENY,  "Deny" },
+        {NETOS_RULE_TYPE_ROUTE, "Route"},
+    };
+    uint32_t i;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(rule_type_strings); i ++) {
+        if (rule_type == rule_type_strings[i].rule_type) {
+            return rule_type_strings[i].rule_str;
+        }
+    }
+
+    return "Unknown";
+}
+
 void netos_rule_config_print(netos_rules_t *rules)
 {
     netos_rule_config_t *rule;
 
     for (rule = rules->rules; rule; rule = rule->next) {
         netos_log_info("rule: {\n");
-        netos_log_info("\t rule_type: %d\n", rule->rule_type);
+        netos_log_info("\t rule_type: <%s>\n", netos_get_rule_type_str(rule->rule_type));
         if (rule->bits.src_mac) {
             netos_log_info("\t src_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
                             rule->src_mac[0], rule->src_mac[1],

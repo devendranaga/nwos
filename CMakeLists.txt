@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
-project(netos)
+project(netos
+        DESCRIPTION "A Netos implementation"
+        LANGUAGES C
+        VERSION 0.8.0)
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(LINK_SEARCH_START_STATIC ON)
