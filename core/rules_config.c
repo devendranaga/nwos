@@ -21,6 +21,7 @@
 #define NETOS_PROTOCOL_INDEX            3
 #define NETOS_REWRITE_SRC_IP_INDEX      3
 #define NETOS_REWRITE_DST_IP_INDEX      4
+#define NETOS_ICMP_CODE_INDEX           5
 
 #define NETOS_SRC_MAC_ADDR_LEN_BYTES    7
 #define NETOS_DST_MAC_ADDR_LEN_BYTES    7
@@ -29,8 +30,11 @@
 #define NETOS_ETHERTYPE_LEN_BYTES       9
 #define NETOS_PROTOCOL_LEN_BYTES        8
 #define NETOS_REWRITE_SRC_IPADDR_LEN_BYTES 14
+#define NETOS_REWRITE_DST_IPADDR_LEN_BYTES 14
 #define NETOS_TO_DST_PORT_LEN_BYTES     11
 #define NETOS_ICMP_TYPE_LEN_BYTES       9
+#define NETOS_ICMP_CODE_LEN_BYTES       9
+#define NETOS_MESSAGE_LEN_BYTES         7
 
 struct netos_rule_token {
     char token[1024];
@@ -205,7 +209,9 @@ static netos_status_t netos_rule_set_rewrite_src_ipaddr(netos_rule_config_t *rul
 {
     netos_status_t ret;
 
-    ret = netos_rule_set_ipaddr(&rule->dst.ipaddr, NETOS_REWRITE_SRC_IPADDR_LEN_BYTES, index);
+    ret = netos_rule_set_ipaddr(&rule->route_src.ipaddr,
+                                NETOS_REWRITE_SRC_IPADDR_LEN_BYTES,
+                                index);
     if (ret != NETOS_STATUS_SUCCESS) {
         return NETOS_STATUS_RULE_REWRITE_SRC_IP_INVALID;
     }
@@ -308,7 +314,7 @@ static netos_status_t netos_rule_set_icmp_type(netos_rule_config_t *rule,
 
     data_len = netos_rule_get_token_data(tokens[index].token, len, icmp_type_str);
     if (data_len == 0) {
-        return NETOS_STATUS_RULE_TO_DST_PORT_INVALID;
+        return NETOS_STATUS_RULE_ICMP_TYPE_INVALID;
     }
 
     ret = netos_get_u32_from_str(icmp_type_str, &rule->l4.icmp.type);
@@ -321,15 +327,63 @@ static netos_status_t netos_rule_set_icmp_type(netos_rule_config_t *rule,
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_rule_set_message(netos_rule_config_t *rule,
-                                             uint32_t index)
+static netos_status_t netos_rule_set_icmp_code(netos_rule_config_t *rule,
+                                               uint32_t index)
 {
+    char icmp_code_str[32] = {'\0'};
+    const uint32_t len = NETOS_ICMP_CODE_LEN_BYTES + 2; // 1 for space + 1 for <
+    uint32_t data_len = 0;
+    netos_status_t ret;
+
+    data_len = netos_rule_get_token_data(tokens[index].token, len, icmp_code_str);
+    if (data_len == 0) {
+        return NETOS_STATUS_RULE_ICMP_CODE_INVALID;
+    }
+
+    ret = netos_get_u32_from_str(icmp_code_str, &rule->l4.icmp.code);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    rule->bits.icmp_code = 1;
+
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_rule_set_dst_ip(netos_rule_config_t *rule,
+static netos_status_t netos_rule_set_message(netos_rule_config_t *rule,
+                                             uint32_t index)
+{
+    char message_str[256] = {'\0'};
+    const uint32_t len = NETOS_MESSAGE_LEN_BYTES + 2; // 1 for space + 1 for <
+    uint32_t data_len = 0;
+
+    data_len = netos_rule_get_token_data(tokens[index].token, len, message_str);
+    if (data_len == 0) {
+        return NETOS_STATUS_RULE_MESSAGE_FMT_INVALID;
+    }
+
+    message_str[strlen(message_str) - 1] = '\0';
+
+    rule->message = strdup(&message_str[1]);
+    rule->bits.message_str = 1;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_rule_set_rewrite_dst_ipaddr(netos_rule_config_t *rule,
                                             uint32_t index)
 {
+    netos_status_t ret;
+
+    ret = netos_rule_set_ipaddr(&rule->route_dst.ipaddr,
+                                NETOS_REWRITE_DST_IPADDR_LEN_BYTES,
+                                index);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return NETOS_STATUS_RULE_REWRITE_DST_IP_INVALID;
+    }
+
+    rule->bits.rewrite_dst_ip = 1;
+
     return NETOS_STATUS_SUCCESS;
 }
 
@@ -429,11 +483,21 @@ static const struct {
             },
             {
                 "rewrite_dst_ip",
-                netos_rule_set_dst_ip,
+                netos_rule_set_rewrite_dst_ipaddr,
             },
             {
                 "src_ip",
                 netos_rule_set_src_ipaddr
+            }
+        }
+    },
+    {
+        NETOS_ICMP_CODE_INDEX,
+        1,
+        {
+            {
+                "icmp_code",
+                netos_rule_set_icmp_code
             }
         }
     }
@@ -574,6 +638,18 @@ void netos_rule_config_print(netos_rules_t *rules)
         }
         if (rule->bits.icmp_type) {
             netos_log_info("\t icmp_type: %d\n", rule->l4.icmp.type);
+        }
+        if (rule->bits.icmp_code) {
+            netos_log_info("\t icmp_code: %d\n", rule->l4.icmp.code);
+        }
+        if (rule->bits.message_str) {
+            netos_log_info("\t message_str: %s\n", rule->message);
+        }
+        if (rule->bits.rewrite_src_ip) {
+            netos_log_info("\t route_src_ip: 0x%x\n", rule->route_src.ipaddr);
+        }
+        if (rule->bits.rewrite_dst_ip) {
+            netos_log_info("\t route_dst_ip: 0x%x\n", rule->route_dst.ipaddr);
         }
         netos_log_info("}\n");
     }

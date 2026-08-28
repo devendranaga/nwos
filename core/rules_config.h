@@ -55,13 +55,13 @@ typedef struct netos_rule_config {
         uint8_t                 ip6addr[NETOS_IPV6_ADDR_LEN];
     } route_dst;
 
-    struct {
-        union {
+    union {
+        struct {
             uint32_t            src_port;
             uint32_t            dst_port;
         } ports;
 
-        union {
+        struct {
             uint32_t             type;
             uint32_t             code;
         } icmp;
