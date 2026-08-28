@@ -29,6 +29,7 @@ typedef struct __attribute__ ((__packed__)) {
 } netos_event_ipv6_data_t;
 
 typedef struct __attribute__ ((__packed__)) {
+    uint32_t    rule_id;
     uint8_t     type;
     uint32_t    desc;
     char        ifname[16];
@@ -63,7 +64,7 @@ typedef struct __attribute__ ((__packed__)) {
     // TODO: Probably need to think if 4 byte 0s can be replaced with something else for strong IV.
     //
     // user can simply set flags to 0 and do not encrypt any file contents.
-    uint32_t timesatmp_sec;
+    uint32_t timestamp_sec;
     uint32_t timestamp_usec;
     uint32_t flags;
     uint8_t  signature_alg;
