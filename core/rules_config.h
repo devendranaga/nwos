@@ -28,6 +28,7 @@ typedef enum {
 } netos_rule_type_t;
 
 typedef struct netos_rule_config {
+    uint32_t                    rule_id;
     netos_rule_type_t           rule_type;
     uint8_t                     src_mac[NETOS_MACADDR_LEN];
     uint8_t                     dst_mac[NETOS_MACADDR_LEN];

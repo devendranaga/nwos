@@ -10,19 +10,21 @@
 #include "rules_config.h"
 #include "netos_log.h"
 
-#define NETOS_RULE_TYPE_INDEX           0
-#define NETOS_SRC_MAC_ADDR_INDEX        1
-#define NETOS_SRC_IPADDR_INDEX          1
-#define NETOS_SRC_IPADDR_INDEX_1        3
-#define NETOS_DST_MAC_ADDR_INDEX        2
-#define NETOS_DST_IPADDR_INDEX          2
-#define NETOS_DST_IPADDR_INDEX_1        4
-#define NETOS_ETHERTYPE_INDEX           3
-#define NETOS_PROTOCOL_INDEX            3
-#define NETOS_REWRITE_SRC_IP_INDEX      3
-#define NETOS_REWRITE_DST_IP_INDEX      4
-#define NETOS_ICMP_CODE_INDEX           5
+#define NETOS_RULE_ID_INDEX             0
+#define NETOS_RULE_TYPE_INDEX           1
+#define NETOS_SRC_MAC_ADDR_INDEX        2
+#define NETOS_SRC_IPADDR_INDEX          2
+#define NETOS_SRC_IPADDR_INDEX_1        4
+#define NETOS_DST_MAC_ADDR_INDEX        3
+#define NETOS_DST_IPADDR_INDEX          3
+#define NETOS_DST_IPADDR_INDEX_1        5
+#define NETOS_ETHERTYPE_INDEX           4
+#define NETOS_PROTOCOL_INDEX            4
+#define NETOS_REWRITE_SRC_IP_INDEX      4
+#define NETOS_REWRITE_DST_IP_INDEX      5
+#define NETOS_ICMP_CODE_INDEX           6
 
+#define NETOS_RULE_ID_LEN_BYTES         4
 #define NETOS_SRC_MAC_ADDR_LEN_BYTES    7
 #define NETOS_DST_MAC_ADDR_LEN_BYTES    7
 #define NETOS_SRC_IPADDR_LEN_BYTES      6
@@ -98,6 +100,27 @@ static uint32_t netos_rule_get_token_data(const char *token, uint32_t offset, ch
     data[i] = '\0';
 
     return i;
+}
+
+static netos_status_t netos_rule_set_rule_id(netos_rule_config_t *rule,
+                                             uint32_t index)
+{
+    char rule_id_str[64] = {'\0'};
+    const uint32_t len = NETOS_RULE_ID_LEN_BYTES + 2; // 1 for space + 1 for <
+    uint32_t data_len = 0;
+    netos_status_t ret;
+
+    data_len = netos_rule_get_token_data(tokens[index].token, len, rule_id_str);
+    if (data_len == 0) {
+        return NETOS_STATUS_RULE_RULE_ID_INVALID;
+    }
+
+    ret = netos_get_u32_from_str(rule_id_str, &rule->rule_id);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
+
+    return NETOS_STATUS_SUCCESS;
 }
 
 static netos_status_t netos_rule_set_src_macaddr(netos_rule_config_t *rule,
@@ -398,6 +421,16 @@ static const struct {
     netos_rule_index_config_t config[10];
 } netos_rule_metdata[] = {
     {
+        NETOS_RULE_ID_INDEX,
+        1,
+        {
+            {
+                "rule",
+                netos_rule_set_rule_id
+            }
+        }
+    },
+    {
         NETOS_RULE_TYPE_INDEX,
         4,
         {
@@ -608,6 +641,7 @@ void netos_rule_config_print(netos_rules_t *rules)
 
     for (rule = rules->rules; rule; rule = rule->next) {
         netos_log_info("rule: {\n");
+        netos_log_info("\t rule_id: %d\n", rule->rule_id);
         netos_log_info("\t rule_type: <%s>\n", netos_get_rule_type_str(rule->rule_type));
         if (rule->bits.src_mac) {
             netos_log_info("\t src_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",

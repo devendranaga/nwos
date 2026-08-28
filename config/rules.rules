@@ -23,14 +23,14 @@
 #
 # allow src_mac <> dst_mac <> src_ip <> dst_ip <> protocol <> type <> code <>
 
-allow, src_mac <00:11:22:33:11:11>, dst_mac <00:12:10:11:11:44>, ethertype <0x0800>
-allow, src_ip <any>, dst_ip <any>, protocol <tcp>, to_dst_port <1122>
-allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>, icmp_type <8>, icmp_code <0>
-allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <tcp>, to_dst_port <1112>
-allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>
-alert, src_ip <192.168.0.1>, dst_ip <192.168.0.11>, protocol <icmp>, message <"icmp frames from 192.168.0.1">
+rule <1>, allow, src_mac <00:11:22:33:11:11>, dst_mac <00:12:10:11:11:44>, ethertype <0x0800>
+rule <2>, allow, src_ip <any>, dst_ip <any>, protocol <tcp>, to_dst_port <1122>
+rule <3>, allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>, icmp_type <8>, icmp_code <0>
+rule <4>, allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <tcp>, to_dst_port <1112>
+rule <5>, allow, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, protocol <icmp>
+rule <6>, alert, src_ip <192.168.0.1>, dst_ip <192.168.0.11>, protocol <icmp>, message <"icmp frames from 192.168.0.1">
 
 #
 # route src_ip <> dst_ip <> to from_ip <> dst_ip <>
-route, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, rewrite_src_ip <10.1.1.1>, rewrite_dst_ip <10.1.1.2>
+rule <7>, route, src_ip <192.168.0.1>, dst_ip <192.168.0.12>, rewrite_src_ip <10.1.1.1>, rewrite_dst_ip <10.1.1.2>
 

@@ -97,6 +97,7 @@ typedef enum {
     NETOS_STATUS_RULE_ICMP_TYPE_INVALID             = 0x0000100C,
     NETOS_STATUS_RULE_ICMP_CODE_INVALID             = 0x0000100D,
     NETOS_STATUS_RULE_MESSAGE_FMT_INVALID           = 0x0000100E,
+    NETOS_STATUS_RULE_RULE_ID_INVALID               = 0x0000100F,
 
     NETOS_STATUS_GENERIC_ERROR                      = 0xFAFAFAFA,
 } netos_status_t;
