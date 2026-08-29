@@ -4,7 +4,10 @@
 #include "eth.h"
 #include "ipv4_hdr.h"
 #include "udp_hdr.h"
+#include "netos_log.h"
 #include "egress_controller.h"
+#include "checksum_l4.h"
+#include "event_info.h"
 #include "udp.h"
 
 void *netos_udp_init(netos_config_t *config)
@@ -36,10 +39,26 @@ void netos_udp_rx(void *ctx,
                   pkt_buffer_t *pkt_buf)
 {
     netos_status_t ret;
+    uint16_t start_off;
+    uint16_t remaining_len;
+
+    start_off = pkt_buf->offset;
+    remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
 
     /* The checksum for udp already verified in the decode. */
     ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
     if (ret != NETOS_STATUS_SUCCESS) {
+        return;
+    }
+
+    ret = netos_do_checksum_l4(start_off,
+                               remaining_len,
+                               parsed_data,
+                               pkt_buf);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_UDP_CHECKSUM_VERIFY_FAILED);
         return;
     }
 }

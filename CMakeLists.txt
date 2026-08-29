@@ -38,6 +38,7 @@ SET(PROTOCOL_SRC
     ./protocols/tcp_parse.c
     ./protocols/udp_parse.c
     ./protocols/checksum.c
+    ./protocols/checksum_l4.c
     ./protocols/icmp_parse.c
     ./protocols/icmp6_parse.c
     ./protocols/mka_parse.c

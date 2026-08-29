@@ -1430,6 +1430,7 @@ static void pgen_udp_run()
     } else {
         pgen.ipv4_hdr.gen_checksum = false;
     }
+    pgen.ipv4_hdr.total_len = NETOS_IPV4_HDR_LEN_DEFAULT + NETOS_UDP_HDR_LEN + pgen.len;
     pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_UDP;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 

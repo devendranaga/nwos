@@ -9,35 +9,8 @@
 #include "netos_status.h"
 #include "netos_config.h"
 #include "checksum.h"
+#include "checksum_l4.h"
 #include "event_info.h"
-
-static netos_status_t netos_do_checksum_l4(uint16_t start_off,
-                                           uint16_t remaining_len,
-                                           netos_packet_parser_t *parsed_data,
-                                           pkt_buffer_t *pkt_buf)
-{
-    netos_checksum_t chksum = {
-        .buffer         = &pkt_buf->buffer[start_off],
-        .len            = remaining_len,
-        .is_v4          = true,
-        .u.v4.src_ip    = parsed_data->l3.ipv4_hdr.src_ipaddr,
-        .u.v4.dst_ip    = parsed_data->l3.ipv4_hdr.dst_ipaddr,
-        .protocol       = parsed_data->protocol
-    };
-
-    if (NETOS_IS_IPV6_FRAME(parsed_data)) {
-        chksum.is_v4        = false;
-        chksum.u.v6.src_ip  = parsed_data->l3.ipv6_hdr.src_ipaddr;
-        chksum.u.v6.dst_ip  = parsed_data->l3.ipv6_hdr.dst_ipaddr;
-    }
-
-    uint16_t checksum = netos_l4_checksum(&chksum);
-    if (checksum == 0) {
-        return NETOS_STATUS_SUCCESS;
-    }
-
-    return NETOS_STATUS_L4_CHECKSUM_FAILED;
-}
 
 netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
                               netos_packet_parser_t *parsed_data)
@@ -50,21 +23,6 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
     remaining_len   = pkt_buffer_remaining_rx_len(pkt_buf);
 
     switch (parsed_data->protocol) {
-        case NETOS_PROTOCOL_UDP:
-            ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
-            if (ret == NETOS_STATUS_SUCCESS) {
-                ret = netos_do_checksum_l4(start_off,
-                                           remaining_len,
-                                           parsed_data,
-                                           pkt_buf);
-                if (ret != NETOS_STATUS_SUCCESS) {
-                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
-                                               NETOS_EVENT_TYPE_DENY,
-                                               NETOS_EVENT_DESC_UDP_CHECKSUM_VERIFY_FAILED);
-                    return ret;
-                }
-            }
-        break;
         case NETOS_PROTOCOL_TCP:
             ret = netos_tcp_decode(&parsed_data->l4.tcp_hdr, pkt_buf);
             if (ret == NETOS_STATUS_SUCCESS) {
