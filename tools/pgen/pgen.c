@@ -13,6 +13,7 @@
 #include "pkt_buffer.h"
 #include "ethertypes.h"
 #include "protocols.h"
+#include "checksum.h"
 #include "netos_log.h"
 #include "pgen_arp_ops.h"
 #include "pgen.h"
@@ -29,6 +30,7 @@ static void pgen_ipv4_run();
 static void pgen_ipv6_run();
 static void pgen_icmp_run();
 static void pgen_macsec_run();
+static void pgen_udp_run();
 static void pgen_pcap_run();
 static void *pgen_arp_fill();
 static void pgen_arp_free(void *config);
@@ -97,6 +99,15 @@ static struct pgen_run_callback {
         "MACsec based frame generations",
         false,
         pgen_macsec_run,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
+        "udp",
+        "UDP based frame generations",
+        false,
+        pgen_udp_run,
         NULL,
         NULL,
         NULL,
@@ -797,6 +808,34 @@ static void set_ipv4_chksum(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void set_udp_enable(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    pgen.udp_enable = true;
+    set_enable_run("udp");
+}
+
+static void set_udp_src_port(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_from_str(tokens[1].name, &pgen.udp_hdr.src_port);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid udp.src_port value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
+static void set_udp_dst_port(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_from_str(tokens[1].name, &pgen.udp_hdr.dst_port);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid udp.dst_port value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
 static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
@@ -1363,11 +1402,13 @@ static void pgen_pcap_run()
     NETOS_PRINT_STD_GREEN_COLOR("Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
 }
 
-#if 0
 static void pgen_udp_run()
 {
     uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
+    uint32_t start_off;
+
+    memset(pkt_buf.buffer, 0, sizeof(pkt_buf.buffer));
 
     pkt_buffer_initialize(&pkt_buf);
     netos_eth_encode(&pgen.eth_hdr, &pkt_buf);
@@ -1377,20 +1418,38 @@ static void pgen_udp_run()
     } else {
         pgen.ipv4_hdr.gen_checksum = false;
     }
+    pgen.ipv4_hdr.protocol = NETOS_PROTOCOL_UDP;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
+    start_off = pkt_buf.offset;
     pgen.len = pgen.data_bytes_len;
 
-    if ((pgen.len != 0) && (pgen.len < sizeof(data_buf) - 80)) {
+    uint32_t udp_hdr_off = pkt_buf.offset;
+
+    if (pgen.len != 0) {
+        pkt_buf.offset += NETOS_UDP_HDR_LEN;
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
+    netos_checksum_t chksum = {
+        .buffer         = &pkt_buf.buffer[start_off],
+        .len            = pgen.len + NETOS_UDP_HDR_LEN,
+        .is_v4          = true,
+        .u.v4.src_ip    = (pgen.ipv4_hdr.src_ipaddr),
+        .u.v4.dst_ip    = (pgen.ipv4_hdr.dst_ipaddr),
+        .protocol       = NETOS_PROTOCOL_UDP
+    };
+
+    pgen.udp_hdr.checksum = netos_l4_checksum(&chksum);
+
+    pkt_buf.offset = udp_hdr_off;
+    pgen.udp_hdr.length = chksum.len;
     netos_udp_encode(&pgen.udp_hdr, &pkt_buf);
 
+    pkt_buf.offset += pgen.len;
     pkt_buffer_set_tx_len_default(&pkt_buf);
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
 }
-#endif
 
 static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 {
@@ -1569,6 +1628,12 @@ static const struct pgen_sub_command pgen_sub_command_ipv4[] = {
     { IPV4_CHKSUM_CMD,      IPV4_CHKSUM_STR,        set_ipv4_chksum },
 };
 
+static const struct pgen_sub_command pgen_sub_command_udp[] = {
+    { UDP_ENABLE_CMD,       UDP_ENABLE_STR,         set_udp_enable },
+    { UDP_SRC_PORT_CMD,     UDP_SRC_PORT_STR,       set_udp_src_port },
+    { UDP_DST_PORT_CMD,     UDP_DST_PORT_STR,       set_udp_dst_port },
+};
+
 static const struct pgen_sub_command pgen_sub_command_icmp[] = {
     { ICMP_ENABLE_CMD,      ICMP_ENABLE_STR,        set_icmp_enable },
     { ICMP_TYPE_CMD,        ICMP_TYPE_STR,          set_icmp_type },
@@ -1602,6 +1667,7 @@ static const struct {
     { ARP_CMD,    ARP_CMD_DESC,    pgen_sub_command_arp,    NETOS_SIZEOF_ARRAY(pgen_sub_command_arp) },
     { VLAN_CMD,   VLAN_CMD_DESC,   pgen_sub_command_vlan,   NETOS_SIZEOF_ARRAY(pgen_sub_command_vlan) },
     { IPV4_CMD,   IPV4_CMD_DESC,   pgen_sub_command_ipv4,   NETOS_SIZEOF_ARRAY(pgen_sub_command_ipv4) },
+    { UDP_CMD,    UDP_CMD_DESC,    pgen_sub_command_udp,    NETOS_SIZEOF_ARRAY(pgen_sub_command_udp) },
     { ICMP_CMD,   ICMP_CMD_DESC,   pgen_sub_command_icmp,   NETOS_SIZEOF_ARRAY(pgen_sub_command_icmp) },
     { PCAP_CMD,   PCAP_CMD_DESC,   pgen_sub_command_pcap,   NETOS_SIZEOF_ARRAY(pgen_sub_command_pcap) },
     { COMMON_CMD, COMMON_CMD_DESC, pgen_sub_command_common, NETOS_SIZEOF_ARRAY(pgen_sub_command_common) },

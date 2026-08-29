@@ -25,9 +25,7 @@ netos_status_t netos_udp_encode(netos_udp_hdr_t *udp_hdr,
     pkt_buffer_encode_2_bytes(pkt_buf, udp_hdr->src_port);
     pkt_buffer_encode_2_bytes(pkt_buf, udp_hdr->dst_port);
     pkt_buffer_encode_2_bytes(pkt_buf, udp_hdr->length);
-    if (udp_hdr->gen_checksum) {
-        pkt_buffer_encode_2_bytes(pkt_buf, udp_hdr->checksum);
-    }
+    pkt_buffer_encode_2_bytes(pkt_buf, udp_hdr->checksum);
 
     return NETOS_STATUS_SUCCESS;
 }
