@@ -1424,10 +1424,13 @@ static void pgen_udp_run()
     start_off = pkt_buf.offset;
     pgen.len = pgen.data_bytes_len;
 
-    uint32_t udp_hdr_off = pkt_buf.offset;
+    uint32_t chksum_off = pkt_buf.offset + 6;
+
+    pgen.udp_hdr.length = pgen.len + NETOS_UDP_HDR_LEN;
+    pgen.udp_hdr.checksum = 0;
+    netos_udp_encode(&pgen.udp_hdr, &pkt_buf);
 
     if (pgen.len != 0) {
-        pkt_buf.offset += NETOS_UDP_HDR_LEN;
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
@@ -1442,9 +1445,8 @@ static void pgen_udp_run()
 
     pgen.udp_hdr.checksum = netos_l4_checksum(&chksum);
 
-    pkt_buf.offset = udp_hdr_off;
-    pgen.udp_hdr.length = chksum.len;
-    netos_udp_encode(&pgen.udp_hdr, &pkt_buf);
+    pkt_buf.offset = chksum_off;
+    pkt_buffer_encode_2_bytes(&pkt_buf, pgen.udp_hdr.checksum);
 
     pkt_buf.offset += pgen.len;
     pkt_buffer_set_tx_len_default(&pkt_buf);
