@@ -836,6 +836,17 @@ static void set_udp_dst_port(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void set_udp_checksum(struct pgen_token *tokens, uint32_t n_tokens)
+{
+    netos_status_t ret;
+
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.udp_hdr.checksum);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid udp.checksum value <%s>\n", tokens[1].name);
+        return;
+    }
+}
+
 static void set_vlan_id(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
@@ -1407,6 +1418,7 @@ static void pgen_udp_run()
     uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
     uint32_t start_off;
+    uint16_t checksum;
 
     memset(pkt_buf.buffer, 0, sizeof(pkt_buf.buffer));
 
@@ -1424,29 +1436,33 @@ static void pgen_udp_run()
     start_off = pkt_buf.offset;
     pgen.len = pgen.data_bytes_len;
 
+    // get the udp checksum offset from the start of udp header.
     uint32_t chksum_off = pkt_buf.offset + 6;
 
-    pgen.udp_hdr.length = pgen.len + NETOS_UDP_HDR_LEN;
-    pgen.udp_hdr.checksum = 0;
+    pgen.udp_hdr.length     = pgen.len + NETOS_UDP_HDR_LEN;
     netos_udp_encode(&pgen.udp_hdr, &pkt_buf);
 
     if (pgen.len != 0) {
         pkt_buffer_encode_bytes(&pkt_buf, data_buf, pgen.len);
     }
 
-    netos_checksum_t chksum = {
-        .buffer         = &pkt_buf.buffer[start_off],
-        .len            = pgen.len + NETOS_UDP_HDR_LEN,
-        .is_v4          = true,
-        .u.v4.src_ip    = (pgen.ipv4_hdr.src_ipaddr),
-        .u.v4.dst_ip    = (pgen.ipv4_hdr.dst_ipaddr),
-        .protocol       = NETOS_PROTOCOL_UDP
-    };
+    if (pgen.udp_hdr.checksum == 0) {
+        netos_checksum_t chksum = {
+            .buffer         = &pkt_buf.buffer[start_off],
+            .len            = pgen.udp_hdr.length,
+            .is_v4          = true,
+            .u.v4.src_ip    = pgen.ipv4_hdr.src_ipaddr,
+            .u.v4.dst_ip    = pgen.ipv4_hdr.dst_ipaddr,
+            .protocol       = NETOS_PROTOCOL_UDP
+        };
 
-    pgen.udp_hdr.checksum = netos_l4_checksum(&chksum);
+        checksum = netos_l4_checksum(&chksum);
+    } else {
+        checksum = pgen.udp_hdr.checksum;
+    }
 
     pkt_buf.offset = chksum_off;
-    pkt_buffer_encode_2_bytes(&pkt_buf, pgen.udp_hdr.checksum);
+    pkt_buffer_encode_2_bytes(&pkt_buf, checksum);
 
     pkt_buf.offset += pgen.len;
     pkt_buffer_set_tx_len_default(&pkt_buf);
@@ -1634,6 +1650,7 @@ static const struct pgen_sub_command pgen_sub_command_udp[] = {
     { UDP_ENABLE_CMD,       UDP_ENABLE_STR,         set_udp_enable },
     { UDP_SRC_PORT_CMD,     UDP_SRC_PORT_STR,       set_udp_src_port },
     { UDP_DST_PORT_CMD,     UDP_DST_PORT_STR,       set_udp_dst_port },
+    { UDP_CHECKSUM_CMD,     UDP_CHECKSUM_STR,       set_udp_checksum },
 };
 
 static const struct pgen_sub_command pgen_sub_command_icmp[] = {
