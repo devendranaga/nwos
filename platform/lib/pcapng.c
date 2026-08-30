@@ -40,6 +40,12 @@
 #define NETOS_NRB_REC_IPV4 1
 #define NETOS_NRB_REC_IPV6 2
 
+#define NETOS_ISB_OPT_COMMENT 0x01
+#define NETOS_ISB_OPT_START_TIME 0x02
+#define NETOS_ISB_OPT_END_TIME 0x03
+#define NETOS_ISB_OPT_PKT_RECV 0x04
+#define NETOS_ISB_OPT_PKT_DROP 0x05
+
 /**
  * @brief - Defines an SHB block typecasted to the mapped memory
  */
@@ -80,6 +86,18 @@ typedef struct {
 } netos_pcapng_nrb_t;
 
 typedef struct {
+    uint32_t        intf_id;
+    uint64_t        timestamp;
+    struct {
+        char        *comment;
+        uint64_t    start_time;
+        uint64_t    end_time;
+        uint64_t    pkts_rx;
+        uint64_t    pkts_dropped;
+    } options;
+} netos_pcapng_isb_t;
+
+typedef struct {
     uint32_t    intf_id;
     uint32_t    ts_high;
     uint32_t    ts_low;
@@ -103,6 +121,7 @@ typedef struct {
     netos_pcapng_epb_t  epb;
     netos_pcapng_dsb_t  dsb;
     netos_pcapng_nrb_t  nrb;
+    netos_pcapng_isb_t  isb;
     netos_pcapng_spb_t  spb;
 } netos_pcapng_file_record_t;
 
@@ -168,6 +187,42 @@ static inline uint32_t netos_pcapng_get_u32(netos_pcapng_ctx_t *ctx)
     ctx->offset += 4;
 
     return val;
+}
+
+static inline uint64_t netos_pcapng_get_u64(netos_pcapng_ctx_t *ctx)
+{
+    uint64_t val = 0;
+    uint8_t *pkt = ctx->mapped_memory;
+
+    if (ctx->rec.big_endian) {
+        val = ((uint64_t)(pkt[ctx->offset]) << 56)      |
+              ((uint64_t)(pkt[ctx->offset + 1]) << 48)  |
+              ((uint64_t)(pkt[ctx->offset + 2]) << 40)  |
+              ((uint64_t)(pkt[ctx->offset + 3]) << 32)  |
+              (pkt[ctx->offset + 4] << 24)              |
+              (pkt[ctx->offset + 5] << 16)              |
+              (pkt[ctx->offset + 6] << 8)               |
+              (pkt[ctx->offset + 7]);
+    } else {
+        val = ((uint64_t)(pkt[ctx->offset + 7]) << 56)  |
+              ((uint64_t)(pkt[ctx->offset + 6]) << 48)  |
+              ((uint64_t)(pkt[ctx->offset + 5]) << 40)  |
+              ((uint64_t)(pkt[ctx->offset + 4]) << 32)  |
+              (pkt[ctx->offset + 3] << 24)              |
+              (pkt[ctx->offset + 2] << 16)              |
+              (pkt[ctx->offset + 1] << 8)               |
+              (pkt[ctx->offset]);
+    }
+
+    ctx->offset += 8;
+
+    return val;
+}
+
+static inline void netos_pcapng_get_bytes(netos_pcapng_ctx_t *ctx, uint8_t *bytes, uint32_t len)
+{
+    memcpy(bytes, ctx->mapped_memory + ctx->offset, len);
+    ctx->offset += len;
 }
 
 static inline uint32_t netos_pcapng_get_len_pad(uint32_t len)
@@ -459,6 +514,86 @@ static netos_status_t netos_pcapng_parse_dsb(netos_pcapng_ctx_t *ctx,
     return NETOS_STATUS_SUCCESS;
 }
 
+static void netos_pcapng_print_isb(netos_pcapng_ctx_t *ctx)
+{
+    printf("ISB:\n");
+    printf("\t comment: %s\n", ctx->rec.isb.options.comment);
+    printf("\t start_time: %lu\n", ctx->rec.isb.options.start_time);
+    printf("\t end_time: %lu\n", ctx->rec.isb.options.end_time);
+    printf("\t pkt_recv: %lu\n", ctx->rec.isb.options.pkts_rx);
+    printf("\t pkt_dropped: %lu\n", ctx->rec.isb.options.pkts_dropped);
+}
+
+static netos_status_t netos_pcapng_parse_isb(netos_pcapng_ctx_t *ctx,
+                                             uint16_t block_total_len,
+                                             bool *no_options)
+{
+    uint32_t block_len;
+
+    ctx->rec.isb.intf_id = netos_pcapng_get_u32(ctx);
+    ctx->rec.isb.timestamp = netos_pcapng_get_u64(ctx);
+
+    uint16_t opt_type;
+    uint16_t opt_len;
+
+    do {
+        opt_type = netos_pcapng_get_u16(ctx);
+        opt_len = netos_pcapng_get_u16(ctx);
+
+        if ((opt_type == 0) && (opt_len == 0)) {
+            block_len = netos_pcapng_get_u32(ctx);
+
+            if ((uint32_t)block_total_len != block_len) {
+                return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+            } else {
+                netos_pcapng_print_isb(ctx);
+                return NETOS_STATUS_SUCCESS;
+            }
+        }
+
+        switch (opt_type) {
+            case NETOS_ISB_OPT_COMMENT:
+                if (ctx->rec.isb.options.comment) {
+                    free(ctx->rec.isb.options.comment);
+                }
+                ctx->rec.isb.options.comment = calloc(1, opt_len + 1);
+                if (!ctx->rec.isb.options.comment) {
+                    return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+                }
+
+                netos_pcapng_get_bytes(ctx, (uint8_t *)ctx->rec.isb.options.comment, opt_len);
+                ctx->rec.isb.options.comment[opt_len] = '\0';
+            break;
+            case NETOS_ISB_OPT_START_TIME:
+                ctx->rec.isb.options.start_time = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_END_TIME:
+                ctx->rec.isb.options.end_time = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_PKT_RECV:
+                ctx->rec.isb.options.pkts_rx = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_PKT_DROP:
+                ctx->rec.isb.options.pkts_dropped = netos_pcapng_get_u64(ctx);
+            break;
+            default:
+                netos_log_error("unknown option <%d>\n", opt_type);
+                return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+        }
+        if (opt_len % 4 != 0) {
+            uint32_t pad = (opt_len + 3) & ~3;
+            ctx->offset += pad;
+        }
+    } while (1);
+
+    block_len = netos_pcapng_get_u32(ctx);
+    if (block_len == block_total_len) {
+        return NETOS_STATUS_SUCCESS;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_pcapng_parse_nrb(netos_pcapng_ctx_t *ctx,
                                              uint16_t block_total_len,
                                              bool *no_options)
@@ -602,6 +737,12 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
                     return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
                 }
             } break;
+            case NETOS_PCAPNG_ISB: {
+                ret = netos_pcapng_parse_isb(ctx, block_total_len, &has_options);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
+                }
+            } break;
             case NETOS_PCAPNG_EPB: {
                 has_options = false;
 
@@ -690,9 +831,6 @@ netos_status_t netos_pcapng_ctx_parse(const char *filename,
 
 err:
     if (ctx) {
-        if (ctx->rec.os) {
-            free(ctx->rec.os);
-        }
         if (ctx->fd > 0) {
             close(ctx->fd);
         }
