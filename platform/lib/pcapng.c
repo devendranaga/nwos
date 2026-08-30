@@ -45,6 +45,9 @@
 #define NETOS_ISB_OPT_END_TIME 0x03
 #define NETOS_ISB_OPT_PKT_RECV 0x04
 #define NETOS_ISB_OPT_PKT_DROP 0x05
+#define NETOS_ISB_OPT_FILTER_ACCEPT 0x06
+#define NETOS_ISB_OPT_OS_DROP 0x07
+#define NETOS_ISB_OPT_USR_DELIV 0x08
 
 /**
  * @brief - Defines an SHB block typecasted to the mapped memory
@@ -94,6 +97,9 @@ typedef struct {
         uint64_t    end_time;
         uint64_t    pkts_rx;
         uint64_t    pkts_dropped;
+        uint64_t    filter_accept;
+        uint64_t    os_drop;
+        uint64_t    usr_deliv;
     } options;
 } netos_pcapng_isb_t;
 
@@ -514,6 +520,7 @@ static netos_status_t netos_pcapng_parse_dsb(netos_pcapng_ctx_t *ctx,
     return NETOS_STATUS_SUCCESS;
 }
 
+#if defined(PCAPNG_ISB_PRINT)
 static void netos_pcapng_print_isb(netos_pcapng_ctx_t *ctx)
 {
     printf("ISB:\n");
@@ -523,6 +530,7 @@ static void netos_pcapng_print_isb(netos_pcapng_ctx_t *ctx)
     printf("\t pkt_recv: %lu\n", ctx->rec.isb.options.pkts_rx);
     printf("\t pkt_dropped: %lu\n", ctx->rec.isb.options.pkts_dropped);
 }
+#endif
 
 static netos_status_t netos_pcapng_parse_isb(netos_pcapng_ctx_t *ctx,
                                              uint16_t block_total_len,
@@ -546,7 +554,9 @@ static netos_status_t netos_pcapng_parse_isb(netos_pcapng_ctx_t *ctx,
             if ((uint32_t)block_total_len != block_len) {
                 return NETOS_STATUS_PCAPNG_INVAL_PKT_BLOCK;
             } else {
+#if defined(PCAPNG_ISB_PRINT)
                 netos_pcapng_print_isb(ctx);
+#endif
                 return NETOS_STATUS_SUCCESS;
             }
         }
@@ -575,6 +585,15 @@ static netos_status_t netos_pcapng_parse_isb(netos_pcapng_ctx_t *ctx,
             break;
             case NETOS_ISB_OPT_PKT_DROP:
                 ctx->rec.isb.options.pkts_dropped = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_FILTER_ACCEPT:
+                ctx->rec.isb.options.filter_accept = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_OS_DROP:
+                ctx->rec.isb.options.os_drop = netos_pcapng_get_u64(ctx);
+            break;
+            case NETOS_ISB_OPT_USR_DELIV:
+                ctx->rec.isb.options.usr_deliv = netos_pcapng_get_u64(ctx);
             break;
             default:
                 netos_log_error("unknown option <%d>\n", opt_type);
