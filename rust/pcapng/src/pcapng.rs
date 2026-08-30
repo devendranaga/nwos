@@ -110,6 +110,9 @@ pub struct intf_stats_block {
     pub end_time        : u64,
     pub pkts_rx         : u64,
     pub pkts_dropped    : u64,
+    pub filter_accept   : u64,
+    pub os_drop         : u64,
+    pub usr_deliv       : u64,
 }
 
 impl intf_stats_block {
@@ -122,6 +125,9 @@ impl intf_stats_block {
             end_time        : 0,
             pkts_rx         : 0,
             pkts_dropped    : 0,
+            filter_accept   : 0,
+            os_drop         : 0,
+            usr_deliv       : 0
         }
     }
 }
@@ -453,6 +459,9 @@ impl pcapng_parser {
         const ISB_OPT_END_TIME      : u16 = 3;
         const ISB_OPT_PKT_RECV      : u16 = 4;
         const ISB_OPT_PKT_DROP      : u16 = 5;
+        const ISB_OPT_FILTER_ACCEPT : u16 = 6;
+        const ISB_OPT_OS_DROP       : u16 = 7;
+        const ISB_OPT_USR_DELIV     : u16 = 8;
 
         unsafe {
             self.offset = 0;
@@ -499,6 +508,15 @@ impl pcapng_parser {
                     },
                     ISB_OPT_PKT_DROP => {
                         self.stats.pkts_dropped = self.get_u64();
+                    },
+                    ISB_OPT_FILTER_ACCEPT => {
+                        self.stats.filter_accept = self.get_u64();
+                    },
+                    ISB_OPT_OS_DROP => {
+                        self.stats.os_drop = self.get_u64();
+                    },
+                    ISB_OPT_USR_DELIV => {
+                        self.stats.usr_deliv = self.get_u64();
                     },
                     _ => {
                         println!("Invalid ISB option {} at line {}",
