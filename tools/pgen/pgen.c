@@ -260,7 +260,7 @@ static void set_pcap_open(struct pgen_token *tokens, uint32_t n_tokens)
         netos_pcap_close_file(pgen.pcap_ctx);
     }
 
-    pgen.pcap_ctx = netos_pcap_read_file(tokens[1].name);
+    pgen.pcap_ctx = netos_pcap_open_file_to_read(tokens[1].name);
     if (!pgen.pcap_ctx) {
         NETOS_PRINT_STD_ERROR_COLOR("failed to open the pcap file for reading: %s\n",
                                     tokens[1].name);

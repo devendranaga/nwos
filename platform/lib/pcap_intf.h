@@ -1,6 +1,10 @@
 #ifndef NETOS_PCAP_INTF_H
 #define NETOS_PCAP_INTF_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 
@@ -48,13 +52,26 @@ typedef struct {
     netos_pcap_global_header_t  *glob_hdr;
 } netos_pcap_context_t;
 
-netos_pcap_context_t *netos_pcap_read_file(const char *filename);
+netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename);
+
+netos_pcap_context_t *netos_pcap_open_file_to_write(const char *filename,
+                                                    uint32_t file_size);
 
 netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
                                           netos_pcap_packet_header_t **pkt_hdr,
                                           uint8_t **buf);
 
+netos_status_t netos_pcap_write_file_entry(netos_pcap_context_t *ctx,
+                                           uint8_t *buf,
+                                           uint32_t buf_len,
+                                           uint32_t ts_sec,
+                                           uint32_t ts_usec);
+
 void netos_pcap_close_file(netos_pcap_context_t *ctx);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

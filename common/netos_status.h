@@ -72,6 +72,7 @@ typedef enum {
 
     NETOS_STATUS_PCAP_INVAL_PKT_HDR                 = 0x00000C00,
     NETOS_STATUS_PCAP_EOF                           = 0x00000C01,
+    NETOS_STATUS_PCAP_WRITE_BUFFER_FULL             = 0x00000C02,
 
     NETOS_STATUS_INIT_SCREEN_FAILURE                = 0x00000D00,
 
