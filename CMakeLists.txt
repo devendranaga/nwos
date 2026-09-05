@@ -18,7 +18,7 @@ elseif(COMPILER_ARM)
     set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
 endif()
 
-set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os -fsanitize=address -fsanitize=bounds")
+set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os")
 
 if(DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")
@@ -158,6 +158,8 @@ target_link_libraries(netos_test_hash_table PRIVATE netos)
 
 if(STATIC_BUILD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=bounds")
 endif()
 
 add_library(netos_crypto STATIC ${CRYPTO_SRC})
