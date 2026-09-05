@@ -18,7 +18,7 @@ elseif(COMPILER_ARM)
     set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
 endif()
 
-set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os")
+set(CMAKE_C_FLAGS "-Wall -Werror -Wextra -Wno-unused-parameter -Os -fsanitize=address -fsanitize=bounds")
 
 if(DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -ggdb")

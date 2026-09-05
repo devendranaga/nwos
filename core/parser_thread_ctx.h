@@ -16,12 +16,12 @@ typedef struct netos_protocol_context {
 
 typedef struct netos_parser_thread {
     char                        *ifname;
-    netos_raw_socket_ctx_t      *raw;
+    netos_raw_socket_ctx_t      *__counted_by(1) raw;
     pthread_t                   tid;
     pthread_mutex_t             parse_q_lock;
     pthread_cond_t              parse_q_cond;
     // receive buffer pool
-    netos_buffer_pool_t         *rx_pool;
+    netos_buffer_pool_t         *__counted_by(1) rx_pool;
     netos_ring_t                parse_ring;
     netos_protocol_context_t    protocol_ctx;
 } netos_parser_thread_t;
