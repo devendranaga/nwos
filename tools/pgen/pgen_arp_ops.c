@@ -141,7 +141,7 @@ void pgen_arp_listen(netos_raw_socket_ctx_t *raw, void *config)
                                             NETOS_PKT_BUFFER_LEN,
                                             NETOS_ETHERTYPE_ARP);
         if (ret < 0) {
-            netos_log_error("failed to recvfrom\n");
+            netos_log_error("failed to recvfrom interface %s\n", raw->ifname);
             return;
         } else if (ret > 0) {
             rx_buf.rx_len = ret; // set rx frame length to decode

@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include "netos_status.h"
 #include "pkt_buffer.h"
+#include "compiler_def.h"
 
 // List of ICMP types
 #define NETOS_ICMP_TYPE_DEST_UNREACH    3
@@ -42,13 +43,13 @@ typedef struct {
     uint16_t    identifier;
     uint16_t    seq_no;
     uint16_t    data_len;
-    uint8_t     *data;
+    uint8_t     *data __counted_by_ptr(data_len);
 } netos_icmp_echo_t;
 
 typedef struct {
     uint32_t unused;
     uint16_t data_len;
-    uint8_t  *data;
+    uint8_t  *data __counted_by_ptr(data_len);
 } netos_dest_unreachable_t;
 
 /**
