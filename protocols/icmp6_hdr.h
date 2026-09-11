@@ -18,8 +18,12 @@ extern "C" {
 #define NETOS_ICMP6_CODE_NS                     0
 #define NETOS_ICMP6_CODE_NA                     0
 
-#define NETOS_ICMP6_NS_OPT_SLL 1
-#define NETOS_ICMP6_NS_OPT_SLL_LEN 8
+#define NETOS_ICMP6_NS_OPT_SLL                  1
+#define NETOS_ICMP6_NS_OPT_SLL_LEN              8
+
+#define NETOS_ICMP6_ECHO_LEN                    4
+#define NETOS_ICMP6_NS_LEN                      20 // no options
+#define NETOS_ICMP6_NA_LEN                      20
 
 /**
  * @brief - Defines ICMP6 echo request.

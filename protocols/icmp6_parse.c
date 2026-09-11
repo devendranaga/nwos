@@ -7,6 +7,10 @@ static netos_status_t netos_icmp6_decode_echo_req(netos_icmp6_hdr_t *icmp6_hdr,
 {
     uint16_t remaining_len;
 
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP6_ECHO_LEN)) {
+        return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_req.identifier);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_req.seq_no);
 
@@ -25,6 +29,10 @@ static netos_status_t netos_icmp6_decode_echo_reply(netos_icmp6_hdr_t *icmp6_hdr
                                                     pkt_buffer_t *pkt_buf)
 {
     uint16_t remaining_len;
+
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP6_ECHO_LEN)) {
+        return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+    }
 
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_reply.identifier);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_reply.seq_no);
@@ -45,6 +53,10 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
 {
     uint8_t type;
     uint8_t len;
+
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP6_NS_LEN)) {
+        return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+    }
 
     pkt_buf->offset += 4;
 
@@ -69,6 +81,21 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
                 return NETOS_STATUS_ICMP6_MALFORMED_PKT;
         }
     }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_icmp6_decode_na(netos_icmp6_hdr_t *icmp6_hdr,
+                                            pkt_buffer_t *pkt_buf)
+{
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP6_NA_LEN)) {
+        return NETOS_STATUS_ICMP6_MALFORMED_PKT;
+    }
+
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp6_hdr->u.na.flags);
+    pkt_buffer_decode_bytes(pkt_buf,
+                            icmp6_hdr->u.na.target_addr,
+                            NETOS_IPV6_ADDR_LEN);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -98,6 +125,12 @@ static const struct {
         NETOS_ICMP6_CODE_NS,
         NULL,
         netos_icmp6_decode_ns
+    },
+    {
+        NETOS_ICMP6_TYPE_NA,
+        NETOS_ICMP6_CODE_NA,
+        NULL,
+        netos_icmp6_decode_na
     }
 };
 
