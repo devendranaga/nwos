@@ -9,6 +9,14 @@ extern "C" {
 #define NETOS_IPV6_HDR_LEN_DEFAULT  40
 #define NETOS_IPV6_ADDR_LEN         16
 
+#define NETOS_IPV6_NH_HOP_BY_HOP    0
+#define NETOS_IPV6_NH_IPIP          4
+#define NETOS_IPV6_NH_ROUTING       43
+#define NETOS_IPV6_NH_FRAG_HDR      44
+#define NETOS_IPV6_NH_ESP           50
+#define NETOS_IPV6_NH_AH            51
+#define NETOS_IPV6_NH_DEST_OPT      60
+
 /**
  *
  * |--4 bits-|---6 bits---|--2 bits--|----20 bits--------|

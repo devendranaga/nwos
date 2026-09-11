@@ -44,15 +44,19 @@ typedef struct netos_macsec_rxsa {
     void                *gcm_ctx;
 } netos_macsec_rxsa_t;
 
-typedef struct netos_macsec_rxsc {
+typedef struct netos_macsec_rxsc_config {
     uint8_t             sci[NETOS_MACSEC_SCI_LEN];
     uint8_t             cipher_suite;
-    uint8_t             current_an;
     bool                replay_protect_en;
     uint32_t            replay_duration;
     bool                validate_frames;
     uint32_t            validation_mode;
-    netos_macsec_rxsa_t rxsa[NETOS_MACSEC_RXSA_LEN];
+} netos_macsec_rxsc_config_t;
+
+typedef struct netos_macsec_rxsc {
+    uint8_t                     current_an;
+    netos_macsec_rxsc_config_t  rxsc_config;
+    netos_macsec_rxsa_t         rxsa[NETOS_MACSEC_RXSA_LEN];
 } netos_macsec_rxsc_t;
 
 typedef enum macsec_secy_type {
@@ -84,6 +88,25 @@ typedef struct netos_macsec_protocol {
     netos_hash_table_t *secy_table;
     netos_macsec_mib_t mib;
 } netos_macsec_protocol_t;
+
+typedef struct macsec_secy_config {
+    bool es;
+    bool sc;
+    bool scb;
+    bool encrypt;
+    bool auth;
+} macsec_secy_config_t;
+
+netos_status_t netos_macsec_init(netos_config_t *config,
+                                 netos_gcd_ctx_t *gcd_ctx);
+
+netos_macsec_secy_t *netos_macsec_create_txsc(uint8_t *sci, uint8_t cipher_suite);
+
+netos_macsec_secy_t *netos_macsec_create_rxsc(netos_macsec_rxsc_config_t *rxsc_config);
+
+netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy, uint8_t an, uint64_t pn, netos_crypto_key_t *sak);
+
+netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy, uint8_t an, uint64_t pn, netos_crypto_key_t *sak);
 
 #endif
 

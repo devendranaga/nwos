@@ -1,11 +1,100 @@
+#include <stdint.h>
+#include <stdbool.h>
 #include "netos_status.h"
+#include "common.h"
 #include "pkt_buffer.h"
 #include "ipv6_hdr.h"
+#include "protocols.h"
 #include "netos_log.h"
+
+static netos_status_t netos_ipv6_decode_hop_by_hop_opt(netos_ipv6_hdr_t *ipv6_hdr,
+                                                       pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_ipip(netos_ipv6_hdr_t *ipv6_hdr,
+                                             pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_routing(netos_ipv6_hdr_t *ipv6_hdr,
+                                                pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_frag_hdr(netos_ipv6_hdr_t *ipv6_hdr,
+                                                 pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_esp(netos_ipv6_hdr_t *ipv6_hdr,
+                                            pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_ah(netos_ipv6_hdr_t *ipv6_hdr,
+                                           pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_ipv6_decode_dest_opt(netos_ipv6_hdr_t *ipv6_hdr,
+                                                 pkt_buffer_t *pkt_buf)
+{
+    return NETOS_STATUS_SUCCESS;
+}
+
+static const struct {
+    uint8_t opt_type;
+    netos_status_t (*decode_opt_callback)(netos_ipv6_hdr_t *ipv6_hdr,
+                                          pkt_buffer_t *pkt_buf);
+} netos_ipv6_opt_list[] = {
+    {
+        NETOS_IPV6_NH_HOP_BY_HOP,
+        netos_ipv6_decode_hop_by_hop_opt,
+    },
+    {
+        NETOS_IPV6_NH_IPIP,
+        netos_ipv6_decode_ipip,
+    },
+    {
+        NETOS_IPV6_NH_ROUTING,
+        netos_ipv6_decode_routing,
+    },
+    {
+        NETOS_IPV6_NH_FRAG_HDR,
+        netos_ipv6_decode_frag_hdr,
+    },
+    {
+        NETOS_IPV6_NH_ESP,
+        netos_ipv6_decode_esp,
+    },
+    {
+        NETOS_IPV6_NH_AH,
+        netos_ipv6_decode_ah,
+    },
+    {
+        NETOS_IPV6_NH_DEST_OPT,
+        netos_ipv6_decode_dest_opt,
+    },
+};
+
+const static uint8_t protocol_exceptions[] = {
+    NETOS_PROTOCOL_ICMP,
+    NETOS_PROTOCOL_TCP,
+    NETOS_PROTOCOL_UDP,
+    NETOS_PROTOCOL_ICMP6,
+}
 
 netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
                                  pkt_buffer_t *pkt_buf)
 {
+    netos_status_t ret;
     uint16_t val;
 
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_IPV6_HDR_LEN_DEFAULT)) {
@@ -41,6 +130,27 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
 
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->src_ipaddr, NETOS_IPV6_ADDR_LEN);
     pkt_buffer_decode_bytes(pkt_buf, ipv6_hdr->dst_ipaddr, NETOS_IPV6_ADDR_LEN);
+
+    while (pkt_buffer_remaining_rx_len(pkt_buf)) {
+        uint32_t i;
+
+        // check if we see the protocol number
+        for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_exceptions); i ++) {
+            if (ipv6_hdr->nh == protocol_exceptions[i]) {
+                return NETOS_STATUS_SUCCESS;
+            }
+        }
+
+        // parse the options
+        for (i = 0; i < NETOS_SIZEOF_ARRAY(netos_ipv6_opt_list); i ++) {
+            if (ipv6_hdr->nh == netos_ipv6_opt_list[i].opt_type) {
+                ret = netos_ipv6_opt_list[i].decode_opt_callback(ipv6_hdr, pkt_buf);
+                if (ret != NETOS_STATUS_SUCCESS) {
+                    return ret;
+                }
+            }
+        }
+    }
 
     return NETOS_STATUS_SUCCESS;
 }

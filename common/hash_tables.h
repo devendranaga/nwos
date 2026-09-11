@@ -28,10 +28,36 @@ netos_status_t netos_hash_item_add(netos_hash_table_t *hash_table, void *key, vo
 
 void netos_hash_item_for_each(netos_hash_table_t *hash_table, void *ctx, for_each_fn for_each);
 
+/**
+ * @brief - Find the value given the key.
+ *
+ * @param [inout] hash_table - hash table context.
+ * @param [in] key - input key for lookup.
+ *
+ * @return returns a valid value pointer on success and NULL on error.
+ */
 void *netos_hash_item_find(netos_hash_table_t *hash_table, void *key);
 
+/**
+ * @brief - Delete a hash table entry after a key lookup.
+ *
+ * Calls delete function if valid.
+ *
+ * @param [inout] hash_table - hash table context.
+ * @param [in] del - delete callback.
+ */
 void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del);
 
+/**
+ * @brief - Deinit the hash tables and call del callback to free up keys and values.
+ *
+ * hash_tbl must be a valid pointer.
+ *
+ * if delete callback is not set, function will not free anything.
+ *
+ * @param [inout] hash_tbl - hash table context.
+ * @param [in] del - delete callback.
+ */
 void netos_hash_table_deinit(netos_hash_table_t *hash_tbl, del_fn del);
 
 #endif

@@ -6,6 +6,7 @@
 
 #include "ethertypes.h"
 #include "arp.h"
+#include "macsec.h"
 #include "ipv4.h"
 #include "netos_log.h"
 #include "rules_config.h"
@@ -304,6 +305,11 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
                                                  netos_gcd_ctx_t *gcd_ctx)
 {
     netos_status_t ret;
+
+    ret = netos_macsec_init(config, gcd_ctx);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
+    }
 
     // initialize the ARP protocol
     ret = netos_arp_protocol_init(config, gcd_ctx);

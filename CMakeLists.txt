@@ -177,9 +177,9 @@ if(COMPILER_ARM)
 endif()
 
 if(STATIC_BUILD)
-    target_link_libraries(netosd PRIVATE netos xml2 icui18n icuuc icudata z lzma m pthread stdc++ dl)
+    target_link_libraries(netosd PRIVATE netos_crypto ${CRYPTO_LINKER_FLAGS} netos xml2 icui18n icuuc icudata z lzma m pthread stdc++ dl)
 else()
-    target_link_libraries(netosd PRIVATE netos xml2 m z lzma icuuc)
+    target_link_libraries(netosd PRIVATE netos netos_crypto ${CRYPTO_LINKER_FLAGS} xml2 m z lzma icuuc)
 endif()
 
 add_custom_target(pcapng_rust ALL

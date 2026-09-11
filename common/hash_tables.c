@@ -96,6 +96,10 @@ void *netos_hash_item_find(netos_hash_table_t *hash_table, void *key)
     netos_hash_item_t *item;
     uint32_t index;
 
+    if (!key) {
+        return NULL;
+    }
+
     index = hash_table->hash(key) % hash_table->n_items;
     item = hash_table->items[index];
 
@@ -128,7 +132,7 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
 
     if (hash_table->cmp(key, item->key)) {
         hash_table->items[index] = item->next;
-        if (del(item->key, item->val)) {
+        if (del && del(item->key, item->val)) {
             free(item);
             return;
         }
@@ -139,7 +143,7 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
             entry = item;
             if (hash_table->cmp(key, item->key)) {
                 entry->next = item->next;
-                if (del(item->key, item->val)) {
+                if (del && del(item->key, item->val)) {
                     free(item);
                     return;
                 }
@@ -153,7 +157,7 @@ void netos_hash_table_deinit(netos_hash_table_t *hash_tbl, del_fn del)
 {
     uint32_t i;
 
-    if (!hash_tbl) {
+    if (!hash_tbl || !del) {
         return;
     }
 
@@ -166,10 +170,6 @@ void netos_hash_table_deinit(netos_hash_table_t *hash_tbl, del_fn del)
             del(item->key, item->val);
             item = item->next;
             free(prev);
-        }
-
-        if (item) {
-            free(item);
         }
     }
 

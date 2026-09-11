@@ -137,6 +137,8 @@
 - [ ] WRED egress queueing
 - [ ] Per queue statistics
 - [ ] Statistics reset
+- [ ] Convert pcapng to pcap
+- [ ] Convert pcap to pcapng
 
 ## Done
 
