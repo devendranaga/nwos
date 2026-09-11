@@ -56,6 +56,12 @@ typedef enum {
     // ICMP6 related events
     NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED       = 0x00006000,
 
+    // IPv6 related events
+    NETOS_EVENT_DESC_IPV6_SHORT_HDR_LEN                 = 0x00007000,
+    NETOS_EVENT_DESC_IPV6_INVAL_VERSION                 = 0x00007001,
+    NETOS_EVENT_DESC_IPV6_ZERO_PAYLOAD_LEN              = 0x00007002,
+    NETOS_EVENT_DESC_IPV6_ZERO_HOP_LIMIT                = 0x00007003,
+
     // invalid event description id
     NETOS_EVENT_DESC_INVAL                              = 0xFAFAFAFA,
 } netos_event_desc_t;

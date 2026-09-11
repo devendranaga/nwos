@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "netos_status.h"
+#include "event_info.h"
 #include "common.h"
 #include "pkt_buffer.h"
 #include "ipv6_hdr.h"
@@ -98,11 +99,17 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
     uint16_t val;
 
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_IPV6_HDR_LEN_DEFAULT)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV6_SHORT_HDR_LEN);
         return NETOS_STATUS_IPV6_MALFORMED_PKT;
     }
 
     ipv6_hdr->version = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
     if (ipv6_hdr->version != NETOS_IPV6_VERSION) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV6_INVAL_VERSION);
         return NETOS_STATUS_IPV6_MALFORMED_PKT;
     }
 
@@ -119,12 +126,18 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
 
     pkt_buffer_decode_2_bytes(pkt_buf, &ipv6_hdr->payload_len);
     if (ipv6_hdr->payload_len == 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV6_ZERO_PAYLOAD_LEN);
         return NETOS_STATUS_IPV6_MALFORMED_PKT;
     }
 
     pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->nh);
     pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->hop_limit);
     if (ipv6_hdr->hop_limit == 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_IPV6_ZERO_HOP_LIMIT);
         return NETOS_STATUS_IPV6_MALFORMED_PKT;
     }
 
