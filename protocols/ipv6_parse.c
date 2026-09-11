@@ -89,7 +89,7 @@ const static uint8_t protocol_exceptions[] = {
     NETOS_PROTOCOL_TCP,
     NETOS_PROTOCOL_UDP,
     NETOS_PROTOCOL_ICMP6,
-}
+};
 
 netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
                                  pkt_buffer_t *pkt_buf)
