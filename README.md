@@ -26,6 +26,12 @@ Static build does not work in Github CI. Not sure.
 | 5 | `COMPILER_ARM` | use ARM compiler (arm64) |
 | 6 | `WITH_WOLFSSL` | With WolfSSL crypto library |
 
+## Macro defines / feature flags
+
+| S.No | option | description |
+|------|--------|-------------|
+| 1 | `NETOS_PERF` | Performance measurement interface. |
+
 ### Build configuration
 
 **1. GCC Static Build**

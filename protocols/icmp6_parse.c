@@ -85,6 +85,14 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * @brief - Decode the Neighbor Advertisements.
+ *
+ * @param [inout] icmp6_hdr - ICMPv6 header.
+ * @param [inout] pkt_buf - packet buffer.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error on failure.
+ */
 static netos_status_t netos_icmp6_decode_na(netos_icmp6_hdr_t *icmp6_hdr,
                                             pkt_buffer_t *pkt_buf)
 {
@@ -100,6 +108,9 @@ static netos_status_t netos_icmp6_decode_na(netos_icmp6_hdr_t *icmp6_hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * @brief - Defines callback table for decoder.
+ */
 static const struct {
     uint8_t type;
     uint8_t code;
@@ -148,6 +159,7 @@ netos_status_t netos_icmp6_decode(netos_icmp6_hdr_t *icmp6_hdr,
     pkt_buffer_decode_byte(pkt_buf, &icmp6_hdr->code);
     pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->checksum);
 
+    // iterate over the callbacks and run the decoder.
     for (i = 0; i < sizeof(netos_icmp6_callbacks) /
                     sizeof(netos_icmp6_callbacks[0]); i ++) {
         if ((netos_icmp6_callbacks[i].type == icmp6_hdr->type) &&

@@ -97,6 +97,9 @@ static void netos_update_rx_event(const netos_parser_thread_t *parse_thr, pkt_bu
     // all the new events will be dropped if we do not have a free buffer
     evt_info = netos_event_mgr_get_evt_buf();
     if (!evt_info) {
+        // there is no event buffer space, clear out the current event
+        pkt_buf->event_type = 0;
+        pkt_buf->event_desc = 0;
         return;
     }
 

@@ -184,9 +184,9 @@ typedef struct netos_event_info {
 #define NETOS_EVENT_INFO_SET_IPV4_FIELDS(__evt_info,\
                                          __src_addr,\
                                          __dst_addr) do {\
-    (__evt_info)->s.ethertype = 0x0800u;\
-    (__evt_info)->s.ip.v4.src_addr = __src_addr;\
-    (__evt_info)->s.ip.v4.dst_addr = __dst_addr;\
+    (__evt_info)->s.ethertype       = NETOS_ETHERTYPE_IPV4;\
+    (__evt_info)->s.ip.v4.src_addr  = __src_addr;\
+    (__evt_info)->s.ip.v4.dst_addr  = __dst_addr;\
 } while (0)
 
 /**
@@ -201,9 +201,9 @@ typedef struct netos_event_info {
                                    __protocol,\
                                    __src_port,\
                                    __dst_port) do {\
-    (__evt_info)->s.protocol = __protocol;\
-    (__evt_info)->s.l4.ports.src_port = __src_port;\
-    (__evt_info)->s.l4.ports.dst_port = __dst_port;\
+    (__evt_info)->s.protocol            = __protocol;\
+    (__evt_info)->s.l4.ports.src_port   = __src_port;\
+    (__evt_info)->s.l4.ports.dst_port   = __dst_port;\
 } while (0)
 
 /**
