@@ -21,6 +21,13 @@
 // find a way to make it within the global context instead of static global
 static netos_event_mgr_t evt_mgr;
 
+/**
+ * @brief - Create a new event database.
+ *
+ * @param [in] filename - event filename pattern.
+ *
+ * @returns NETOS_STATUS_SUCCESS on success.
+ */
 static netos_status_t netos_event_mgr_create_file(const char *filename)
 {
     time_t now;
@@ -40,17 +47,23 @@ static netos_status_t netos_event_mgr_create_file(const char *filename)
              t->tm_min,
              t->tm_sec);
 
+    // try to mmap the entire file so we can
+    // only write to RAM instead of file directly.
     evt_mgr.evt_log_ptr = netos_mmap_open_file(filepath, NETOS_EVENT_FILE_SIZE_MAX);
     if (!evt_mgr.evt_log_ptr) {
         return NETOS_STATUS_FILE_OPEN_VIA_MMAP_FAILURE;
     }
+
+    // clear the write buffer offset.
     evt_mgr.file_offset = 0;
 
+    // setup the event metadata
     netos_event_hdr_t *evt_hdr = evt_mgr.evt_log_ptr->memory;
 
-    evt_hdr->magic = NETOS_EVENT_MSG_HDR_MAGIC;
-    evt_hdr->version = NETOS_EVENT_MSG_VERSION;
+    evt_hdr->magic      = NETOS_EVENT_MSG_HDR_MAGIC;
+    evt_hdr->version    = NETOS_EVENT_MSG_VERSION;
 
+    // skip past the metadata to the content.
     evt_mgr.file_offset += sizeof(netos_event_hdr_t);
 
     return NETOS_STATUS_SUCCESS;
@@ -65,6 +78,9 @@ static void netos_event_mgr_write_event_log(netos_event_info_t *evt_info)
                                       sizeof(netos_event_l4_tcp_udp_t);
     netos_status_t ret;
 
+    // close the file if its full. msync and munmap and write back the contents.
+    //
+    // open a new file agains.
     if ((evt_mgr.file_offset + default_max_size) >= NETOS_EVENT_FILE_SIZE_MAX) {
         netos_mmap_close_file(evt_mgr.evt_log_ptr, evt_mgr.file_offset);
         ret = netos_event_mgr_create_file(evt_mgr.config->event_config.storage_file);
