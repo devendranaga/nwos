@@ -1,0 +1,7 @@
+#ifndef NETOS_PORT_NUMBERS_H
+#define NETOS_PORT_NUMBERS_H
+
+#define NETOS_PORT_NUM_MQTT 1883
+
+#endif
+

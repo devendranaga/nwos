@@ -104,6 +104,8 @@ SET(NETOS_SRC
     ./protocols/ripng.c
     ./protocols/lldp.c
     ./protocols/udp.c
+    ./protocols/mqtt.c
+    ./protocols/tcp.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c

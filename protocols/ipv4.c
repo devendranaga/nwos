@@ -8,6 +8,7 @@
 #include "protocols.h"
 #include "ipv4.h"
 #include "udp.h"
+#include "tcp.h"
 #include "icmp.h"
 #include "netos_log.h"
 
@@ -40,6 +41,16 @@ static struct {
     },
     {
         true,
+        NETOS_PROTOCOL_TCP,
+        "TCP",
+        NULL,
+        netos_tcp_initialize,
+        netos_tcp_rx_process,
+        netos_tcp_tx_process,
+        netos_tcp_deinit
+    },
+    {
+        true,
         NETOS_PROTOCOL_UDP,
         "UDP",
         NULL,
@@ -63,7 +74,7 @@ netos_status_t netos_ipv4_initialize(netos_config_t *config)
                                 protocol_table[i].name);
                 return NETOS_STATUS_PROTOCOL_INIT_FAILURE;
             }
-            netos_log_info("%s initialized\n", protocol_table[i].name);
+            netos_log_info("%s Initialized\n", protocol_table[i].name);
         }
     }
 

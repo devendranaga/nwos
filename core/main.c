@@ -320,7 +320,7 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
         return ret;
     }
 
-    netos_log_info("ARP initialized\n");
+    netos_log_info("ARP Initialized\n");
 
     // initialize the IPv4 protocol
     ret = netos_ipv4_initialize(config);
@@ -328,7 +328,7 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
         return ret;
     }
 
-    netos_log_info("IPv4 initialized\n");
+    netos_log_info("IPv4 Initialized\n");
 
     return NETOS_STATUS_SUCCESS;
 }
