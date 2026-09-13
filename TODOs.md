@@ -129,7 +129,6 @@
 - [ ] Trace route
 - [ ] ICMP statistics
 - [ ] MKPDU parsing
-- [ ] MQTT fixed header parsing
 - [ ] Will message handling
 - [ ] QoS flow tracking
 - [ ] Topic filtering and wildcard matching
@@ -139,6 +138,7 @@
 - [ ] Statistics reset
 - [ ] Convert pcapng to pcap
 - [ ] Convert pcap to pcapng
+- [ ] call `NETOS_PANIC` for all alloc failures
 
 ## Done
 
@@ -187,5 +187,6 @@
 - [x] ICMP echo reply generation for a echo request frame
 - [x] Expand the Events matching to suricata
 - [x] Tooling: UDP over IPV4
+- [x] MQTT fixed header parsing
 
 
