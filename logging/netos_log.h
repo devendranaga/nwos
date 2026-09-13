@@ -2,6 +2,7 @@
 #define NETOS_LOG_H
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 /**
  * @brief - Defines Logging level.
@@ -21,6 +22,18 @@ typedef enum netos_log_level {
 #define NETOS_ANSI_COLOR_MAGENTA    "\x1b[35m"
 #define NETOS_ANSI_COLOR_CYAN       "\x1b[36m"
 #define NETOS_ANSI_COLOR_RESET      "\x1b[0m"
+
+/**
+ * @brief - Panic message and stop program.
+ *
+ * @param [in] fmt - format.
+ */
+#define NETOS_PANIC(__fmt, ...) do {\
+    fprintf(stderr, \
+            NETOS_ANSI_COLOR_RED "Panic at %s %u: "\
+            __fmt NETOS_ANSI_COLOR_RESET, __func__, __LINE__, ##__VA_ARGS__);\
+    exit(1);\
+} while (0)
 
 /**
  * @brief - print error in red.

@@ -23,21 +23,6 @@ netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
     remaining_len   = pkt_buffer_remaining_rx_len(pkt_buf);
 
     switch (parsed_data->protocol) {
-        case NETOS_PROTOCOL_TCP:
-            ret = netos_tcp_decode(&parsed_data->l4.tcp_hdr, pkt_buf);
-            if (ret == NETOS_STATUS_SUCCESS) {
-                ret = netos_do_checksum_l4(start_off,
-                                           remaining_len,
-                                           parsed_data,
-                                           pkt_buf);
-                if (ret != NETOS_STATUS_SUCCESS) {
-                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
-                                               NETOS_EVENT_TYPE_DENY,
-                                               NETOS_EVENT_DESC_TCP_CHECKSUM_VERIFY_FAILED);
-                    return ret;
-                }
-            }
-        break;
         case NETOS_PROTOCOL_ICMP6:
             ret = netos_icmp6_decode(&parsed_data->l4.icmp6_hdr, pkt_buf);
             if (ret == NETOS_STATUS_SUCCESS) {
