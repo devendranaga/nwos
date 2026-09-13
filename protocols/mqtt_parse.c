@@ -46,6 +46,66 @@ static netos_status_t netos_mqtt_decode_sub_req(netos_mqtt_hdr_t *hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_mqtt_decode_sub_ack(netos_mqtt_hdr_t *hdr,
+                                                pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->sub_ack.msg_id);
+    pkt_buffer_decode_byte(pkt_buf, &hdr->sub_ack.granted_qos);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_publish_msg(netos_mqtt_hdr_t *hdr,
+                                                    pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->publish.topic.topic_len);
+    hdr->publish.topic.topic_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+    pkt_buf->offset += hdr->publish.topic.topic_len;
+
+    if (pkt_buf->rx_len > pkt_buf->offset) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    hdr->publish.msg_len = pkt_buf->rx_len - pkt_buf->offset;
+    if (hdr->publish.msg_len != 0) {
+        hdr->publish.msg = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+        pkt_buf->offset += hdr->publish.msg_len;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_ping_req(netos_mqtt_hdr_t *hdr,
+                                                 pkt_buffer_t *pkt_buf)
+{
+    if ((hdr->msg_len != 0) || (pkt_buf->rx_len > pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+
+static netos_status_t netos_mqtt_decode_ping_resp(netos_mqtt_hdr_t *hdr,
+                                                  pkt_buffer_t *pkt_buf)
+{
+    if ((hdr->msg_len != 0) || (pkt_buf->rx_len > pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_disconnect_req(netos_mqtt_hdr_t *hdr,
+                                                       pkt_buffer_t *pkt_buf)
+{
+    if ((hdr->msg_len != 0) || (pkt_buf->rx_len > pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     uint8_t msg_type;
     netos_status_t (*cmd_encode_callback)(netos_mqtt_hdr_t *hdr,
@@ -67,6 +127,31 @@ static const struct {
         NETOS_MQTT_SUB_REQ,
         NULL,
         netos_mqtt_decode_sub_req
+    },
+    {
+        NETOS_MQTT_SUB_ACK,
+        NULL,
+        netos_mqtt_decode_sub_ack
+    },
+    {
+        NETOS_MQTT_PUBLISH,
+        NULL,
+        netos_mqtt_decode_publish_msg
+    },
+    {
+        NETOS_MQTT_PING_REQ,
+        NULL,
+        netos_mqtt_decode_ping_req
+    },
+    {
+        NETOS_MQTT_PING_RESP,
+        NULL,
+        netos_mqtt_decode_ping_resp
+    },
+    {
+        NETOS_MQTT_DISCONNECT,
+        NULL,
+        netos_mqtt_decode_disconnect_req
     }
 };
 

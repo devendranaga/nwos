@@ -85,7 +85,7 @@ static const struct {
     },
 };
 
-const static uint8_t protocol_exceptions[] = {
+static const uint8_t protocol_exceptions[] = {
     NETOS_PROTOCOL_ICMP,
     NETOS_PROTOCOL_TCP,
     NETOS_PROTOCOL_UDP,
