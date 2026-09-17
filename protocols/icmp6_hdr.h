@@ -25,6 +25,8 @@ extern "C" {
 #define NETOS_ICMP6_NS_LEN                      20 // no options
 #define NETOS_ICMP6_NA_LEN                      20
 
+#define NETOS_ICMP6_IS_ECHO_REQ(__icmp6_hdr) ((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_ECHO_REQ)
+
 /**
  * @brief - Defines ICMP6 echo request.
  */
@@ -61,6 +63,16 @@ typedef struct {
     uint32_t    flags;
     uint8_t     target_addr[NETOS_IPV6_ADDR_LEN];
 } netos_icmp6_na_t;
+
+#define NETOS_ICMP6_ECHO_REPLY_DEFAULTS(__icmp6_hdr, __id, __seq_no) do {\
+    (__icmp6_hdr).type                      = NETOS_ICMP6_TYPE_ECHO_REPLY;\
+    (__icmp6_hdr).code                      = NETOS_ICMP6_CODE_ECHO_REPLY;\
+    (__icmp6_hdr).checksum                  = 0;\
+    (__icmp6_hdr).u.echo_reply.identifier   = __id;\
+    (__icmp6_hdr).u.echo_reply.seq_no       = __seq_no;\
+    (__icmp6_hdr).u.echo_reply.data         = NULL;\
+    (__icmp6_hdr).u.echo_reply.data_len     = 0;\
+} while (0)
 
 /**
  * @brief - Defines ICMP6 header.
