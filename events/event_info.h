@@ -49,6 +49,8 @@ typedef enum {
     // TCP related events
     NETOS_EVENT_DESC_TCP_CHECKSUM_VERIFY_FAILED         = 0x00004000,
     NETOS_EVENT_DESC_TCP_SHORT_HDR_LEN                  = 0x00004001,
+    NETOS_EVENT_DESC_TCP_FLAGS_ALL_SET                  = 0x00004002,
+    NETOS_EVENT_DESC_TCP_FLAGS_ALL_ZERO                 = 0x00004003,
 
     // UDP related events
     NETOS_EVENT_DESC_UDP_CHECKSUM_VERIFY_FAILED         = 0x00005000,
