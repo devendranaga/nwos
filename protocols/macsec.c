@@ -106,6 +106,10 @@ netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy, uint8_t an, u
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
+    if (an > NETOS_MACSEC_TXSA_LEN) {
+        return NETOS_STATUS_MACSEC_TXSA_AN_INVAL;
+    }
+
     secy->txsc->txsa[an].valid = true;
     secy->txsc->txsa[an].an = an;
     secy->txsc->txsa[an].pn = pn;
@@ -137,6 +141,10 @@ err:
 netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy, uint8_t an, uint64_t pn, netos_crypto_key_t *sak)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
+
+    if (an > NETOS_MACSEC_RXSA_LEN) {
+        return NETOS_STATUS_MACSEC_RXSA_AN_INVAL;
+    }
 
     secy->rxsc->rxsa[an].valid = true;
     secy->rxsc->rxsa[an].an = an;
