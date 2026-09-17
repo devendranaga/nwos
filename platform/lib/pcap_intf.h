@@ -57,6 +57,8 @@ netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename);
 netos_pcap_context_t *netos_pcap_open_file_to_write(const char *filename,
                                                     uint32_t file_size);
 
+void netos_pcap_sync_file(netos_pcap_context_t *ctx);
+
 netos_status_t netos_pcap_read_file_entry(netos_pcap_context_t *ctx,
                                           netos_pcap_packet_header_t **pkt_hdr,
                                           uint8_t **buf);

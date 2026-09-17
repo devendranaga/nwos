@@ -101,6 +101,8 @@ netos_pcap_context_t *netos_pcap_open_file_to_write(const char *filename, uint32
     ctx->glob_hdr->snaplen          = 65535;
     ctx->glob_hdr->network          = 1;
 
+    ctx->offset += sizeof(netos_pcap_global_header_t);
+
     return ctx;
 
 err:
@@ -149,10 +151,10 @@ netos_status_t netos_pcap_write_file_entry(netos_pcap_context_t *ctx,
 
     pkt_hdr = (netos_pcap_packet_header_t *)(ctx->mapped_memory + ctx->offset);
 
-    pkt_hdr->ts_sec = ts_sec;
-    pkt_hdr->ts_usec = ts_usec;
-    pkt_hdr->incl_len = buf_len;
-    pkt_hdr->orig_len = buf_len;
+    pkt_hdr->ts_sec     = ts_sec;
+    pkt_hdr->ts_usec    = ts_usec;
+    pkt_hdr->incl_len   = buf_len;
+    pkt_hdr->orig_len   = buf_len;
 
     ctx->offset += sizeof(netos_pcap_packet_header_t);
 
@@ -160,6 +162,11 @@ netos_status_t netos_pcap_write_file_entry(netos_pcap_context_t *ctx,
     ctx->offset += buf_len;
 
     return NETOS_STATUS_SUCCESS;
+}
+
+void netos_pcap_sync_file(netos_pcap_context_t *ctx)
+{
+    msync(ctx->mapped_memory, ctx->offset, MS_SYNC);
 }
 
 void netos_pcap_close_file(netos_pcap_context_t *ctx)
