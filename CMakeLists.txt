@@ -106,6 +106,7 @@ SET(NETOS_SRC
     ./protocols/udp.c
     ./protocols/mqtt.c
     ./protocols/tcp.c
+    ./protocols/ndp.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c
