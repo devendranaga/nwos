@@ -34,9 +34,35 @@ static struct {
     }
 };
 
+static uint32_t netos_tcp_hash_easy(netos_tcp_conn_key_t *conn_key)
+{
+    uint32_t hash;
+    uint32_t i;
+
+    hash = conn_key->protocol;
+
+    if (conn_key->is_ipv4) {
+        hash += conn_key->v4.src_ip + conn_key->v4.dst_ip;
+    } else {
+        for (i = 0; i < NETOS_IPV6_ADDR_LEN / 4; i ++) {
+            hash += *(uint32_t *)(conn_key->v6.src_ip + i);
+        }
+        for (i = 0; i < NETOS_IPV6_ADDR_LEN / 4; i ++) {
+            hash += *(uint32_t *)(conn_key->v6.dst_ip + i);
+        }
+    }
+
+    hash += conn_key->src_port;
+    hash += conn_key->dst_port;
+
+    return hash;
+}
+
 static uint32_t netos_tcp_hash(void *key)
 {
-    return 0;
+    netos_tcp_conn_key_t *conn_key = key;
+
+    return netos_tcp_hash_easy(conn_key);
 }
 
 static bool netos_tcp_compare(void *key1, void *key2)
@@ -48,8 +74,6 @@ void *netos_tcp_initialize(netos_config_t *config)
 {
     netos_tcp_context_t *tcp_ctx;
     uint32_t i;
-
-    NETOS_PANIC("TCP Init\n");
 
     tcp_ctx = calloc(1, sizeof(netos_tcp_context_t));
     if (!tcp_ctx) {

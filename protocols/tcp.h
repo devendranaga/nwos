@@ -9,8 +9,12 @@
 #include "packet_parser.h"
 #include "ipv6_hdr.h"
 
+// Maximum possible connections that we can track right now
 #define NETOS_TCP_CONN_LIST_MAX 320
 
+/**
+ * @brief - Defines the TCP states.
+ */
 typedef enum {
     NETOS_TCP_STATE_INIT = 1,
     NETOS_TCP_STATE_CLIENT_SENT_SYN,
@@ -21,7 +25,11 @@ typedef enum {
     NETOS_TCP_STATE_CLOSED,
 } netos_tcp_state_t;
 
+/**
+ * @brief - Defines a TCP connection.
+ */
 typedef struct netos_tcp_connection {
+    bool                        is_ipv4;
     union {
         struct {
             uint32_t            src_ip;
@@ -42,8 +50,33 @@ typedef struct netos_tcp_connection {
     struct netos_tcp_connection *next;
 } netos_tcp_connection_t;
 
+/**
+ * @brief - Defines TCP connection key.
+ */
+typedef struct netos_tcp_conn_key {
+    uint8_t             protocol;
+    bool                is_ipv4;
+    union {
+        struct {
+            uint32_t    src_ip;
+            uint32_t    dst_ip;
+        } v4;
+        struct {
+            uint8_t     src_ip[NETOS_IPV6_ADDR_LEN];
+            uint32_t    dst_ip[NETOS_IPV6_ADDR_LEN];
+        } v6;
+    };
+    uint16_t            src_port;
+    uint16_t            dst_port;
+} netos_tcp_conn_key_t;
+
+/**
+ * @brief - Defines TCP context.
+ */
 typedef struct {
+    // user config
     netos_config_t      *config;
+    // list of TCP connections
     netos_hash_table_t  *conn_list;
 } netos_tcp_context_t;
 

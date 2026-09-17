@@ -32,6 +32,35 @@ netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
     tcp_hdr->flags.rst = !!(pkt_buf->buffer[pkt_buf->offset] & 0x04);
     tcp_hdr->flags.syn = !!(pkt_buf->buffer[pkt_buf->offset] & 0x02);
     tcp_hdr->flags.fin = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
+
+    if (tcp_hdr->flags.cwr &&
+        tcp_hdr->flags.ece &&
+        tcp_hdr->flags.urg &&
+        tcp_hdr->flags.ack &&
+        tcp_hdr->flags.psh &&
+        tcp_hdr->flags.rst &&
+        tcp_hdr->flags.syn &&
+        tcp_hdr->flags.fin) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_ALL_SET);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    if ((tcp_hdr->flags.cwr == 0) &&
+        (tcp_hdr->flags.ece == 0) &&
+        (tcp_hdr->flags.urg == 0) &&
+        (tcp_hdr->flags.ack == 0) &&
+        (tcp_hdr->flags.psh == 0) &&
+        (tcp_hdr->flags.rst == 0) &&
+        (tcp_hdr->flags.syn == 0) &&
+        (tcp_hdr->flags.fin == 0)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_ALL_ZERO);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
     pkt_buf->offset ++;
 
     pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->window);
