@@ -39,9 +39,10 @@ static void *netos_egress_bfifo_tx_queue_thread(void *ctx)
                     netos_statistics_inc_bfifo_tx(pkt_buf->out_intf->stats_ctx);
                 }
 
+                tx_bytes += pkt_buf->tx_len;
+
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
 
-                tx_bytes += pkt_buf->tx_len;
                 pkt_buf = next;
             }
         }
