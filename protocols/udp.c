@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "netos_status.h"
 #include "netos_log.h"
 #include "ethertypes.h"
@@ -16,11 +17,13 @@ void *netos_udp_init(netos_config_t *config)
 
     udp_ctx = calloc(1, sizeof(netos_udp_ctx_t));
     if (!udp_ctx) {
+        NETOS_PANIC("failed to allocate udp_ctx\n");
         return NULL;
     }
 
-    udp_ctx->udp_pool = netos_buffer_pool_alloc(32);
+    udp_ctx->udp_pool = netos_buffer_pool_alloc(NETOS_UDP_POOL_LEN);
     if (!udp_ctx->udp_pool) {
+        NETOS_PANIC("failed to allocate udp_pool\n");
         goto err;
     }
 

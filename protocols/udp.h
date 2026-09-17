@@ -6,6 +6,8 @@
 #include "packet_parser.h"
 #include "buffer_pool.h"
 
+#define NETOS_UDP_POOL_LEN 256
+
 typedef struct {
     netos_config_t *config;
     netos_buffer_pool_t *udp_pool;
