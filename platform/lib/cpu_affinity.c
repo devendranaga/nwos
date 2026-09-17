@@ -23,6 +23,9 @@ netos_status_t netos_attach_thread_to_cpu(uint32_t cpu_no, pthread_t *tid)
     int res;
 
     n_cpus = netos_get_num_cpu();
+    if (n_cpus <= 0) {
+        return NETOS_STATUS_CPU_INVALID;
+    }
     CPU_ZERO(&cpuset);
 
     // the pthread_setaffinity_np fails if the number of cpus
@@ -32,6 +35,7 @@ netos_status_t netos_attach_thread_to_cpu(uint32_t cpu_no, pthread_t *tid)
         netos_log_info("number of available cpus [%d] are less than the asked CPU core [%d] "
                        "setting max cpus to [%d]\n",
                         n_cpus, cpu_no, n_cpus);
+        // hook to the last or max cpu number
         cpu_no = n_cpus - 1;
     }
 
