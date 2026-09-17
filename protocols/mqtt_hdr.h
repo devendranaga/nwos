@@ -46,10 +46,21 @@ typedef struct {
     uint8_t                         *protocol_name;
 } netos_mqtt_protocol_name_t;
 
+typedef struct __attribute__ ((__packed__)) {
+    uint8_t                         username        :1;
+    uint8_t                         password        :1;
+    uint8_t                         will_retain     :1;
+    uint8_t                         qos_level       :2;
+    uint8_t                         will_flag       :1;
+    uint8_t                         clean_session   :1;
+    uint8_t                         reserved        :1;
+} netos_mqtt_connect_flags_t;
+
 typedef struct {
     netos_mqtt_protocol_name_t      protocol_name;
     uint8_t                         version;
     uint8_t                         connect_flags;
+    netos_mqtt_connect_flags_t      d_conn_flags;
     uint16_t                        keep_alive;
     uint16_t                        client_id_len;
     uint8_t                         *client_id;

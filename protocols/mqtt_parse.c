@@ -3,18 +3,42 @@
 #include "common.h"
 #include "mqtt_hdr.h"
 
+static void netos_mqtt_decode_connect_flags(netos_mqtt_hdr_t *hdr)
+{
+    hdr->connect.d_conn_flags.username = !!(hdr->connect.connect_flags & 0x80);
+    hdr->connect.d_conn_flags.password = !!(hdr->connect.connect_flags & 0x40);
+    hdr->connect.d_conn_flags.will_retain = !!(hdr->connect.connect_flags & 0x20);
+    hdr->connect.d_conn_flags.qos_level = (hdr->connect.connect_flags & 0x18) >> 3;
+    hdr->connect.d_conn_flags.will_flag = !!(hdr->connect.connect_flags & 0x04);
+    hdr->connect.d_conn_flags.clean_session = !!(hdr->connect.connect_flags & 0x02);
+    hdr->connect.d_conn_flags.reserved = !!(hdr->connect.connect_flags & 0x01);
+}
+
 static netos_status_t netos_mqtt_decode_connect(netos_mqtt_hdr_t *hdr,
                                                 pkt_buffer_t *pkt_buf)
 {
     pkt_buffer_decode_2_bytes(pkt_buf,
                               &hdr->connect.protocol_name.protocol_name_len);
+
+    // protocol name length is over the remaining length
+    if (hdr->connect.protocol_name.protocol_name_len > (pkt_buf->rx_len - pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
     hdr->connect.protocol_name.protocol_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
     pkt_buf->offset += hdr->connect.protocol_name.protocol_name_len;
 
     pkt_buffer_decode_byte(pkt_buf, &hdr->connect.version);
     pkt_buffer_decode_byte(pkt_buf, &hdr->connect.connect_flags);
+    netos_mqtt_decode_connect_flags(hdr);
+
     pkt_buffer_decode_2_bytes(pkt_buf, &hdr->connect.keep_alive);
     pkt_buffer_decode_2_bytes(pkt_buf, &hdr->connect.client_id_len);
+    // client id length is over the remaining length
+    if (hdr->connect.client_id_len > (pkt_buf->rx_len - pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
     hdr->connect.client_id = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
 
     return NETOS_STATUS_SUCCESS;
@@ -38,6 +62,11 @@ static netos_status_t netos_mqtt_decode_sub_req(netos_mqtt_hdr_t *hdr,
     pkt_buffer_decode_2_bytes(pkt_buf, &hdr->sub_req.msg_id);
     pkt_buffer_decode_2_bytes(pkt_buf, &hdr->sub_req.sub_topic.topic_len);
 
+    // topic length is over the remaining length
+    if (hdr->sub_req.sub_topic.topic_len > (pkt_buf->rx_len - pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
     hdr->sub_req.sub_topic.topic_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
     pkt_buf->offset += hdr->sub_req.sub_topic.topic_len;
 
@@ -59,10 +88,19 @@ static netos_status_t netos_mqtt_decode_publish_msg(netos_mqtt_hdr_t *hdr,
                                                     pkt_buffer_t *pkt_buf)
 {
     pkt_buffer_decode_2_bytes(pkt_buf, &hdr->publish.topic.topic_len);
-    hdr->publish.topic.topic_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
-    pkt_buf->offset += hdr->publish.topic.topic_len;
 
-    if (pkt_buf->rx_len > pkt_buf->offset) {
+    // topic length is over remaining length
+    if (hdr->publish.topic.topic_len > (pkt_buf->rx_len - pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    if (hdr->publish.topic.topic_len > 0) {
+        hdr->publish.topic.topic_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+        pkt_buf->offset += hdr->publish.topic.topic_len;
+    }
+
+    // rx len now is shorter than offset so the message length may be overflow
+    if (pkt_buf->rx_len < pkt_buf->offset) {
         return NETOS_STATUS_MQTT_MALFORMED_PKT;
     }
 
