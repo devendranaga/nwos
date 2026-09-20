@@ -5,34 +5,9 @@
 #include "checksum.h"
 #include "event_info.h"
 
-netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
+static netos_status_t netos_tcp_validate_flags(netos_tcp_hdr_t *tcp_hdr,
+                                               pkt_buffer_t *pkt_buf)
 {
-    // short header length check
-    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_TCP_HDR_LEN_DEFAULT)) {
-        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
-                                   NETOS_EVENT_TYPE_DENY,
-                                   NETOS_EVENT_DESC_TCP_SHORT_HDR_LEN);
-        return NETOS_STATUS_TCP_MALFORMED_PKT;
-    }
-
-    pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->src_port);
-    pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->dst_port);
-    pkt_buffer_decode_4_bytes(pkt_buf, &tcp_hdr->seq_no);
-    pkt_buffer_decode_4_bytes(pkt_buf, &tcp_hdr->ack_no);
-
-    tcp_hdr->hdr_len    = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
-    tcp_hdr->flags.ecn  = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
-    pkt_buf->offset ++;
-
-    tcp_hdr->flags.cwr = !!(pkt_buf->buffer[pkt_buf->offset] & 0x80);
-    tcp_hdr->flags.ece = !!(pkt_buf->buffer[pkt_buf->offset] & 0x40);
-    tcp_hdr->flags.urg = !!(pkt_buf->buffer[pkt_buf->offset] & 0x20);
-    tcp_hdr->flags.ack = !!(pkt_buf->buffer[pkt_buf->offset] & 0x10);
-    tcp_hdr->flags.psh = !!(pkt_buf->buffer[pkt_buf->offset] & 0x08);
-    tcp_hdr->flags.rst = !!(pkt_buf->buffer[pkt_buf->offset] & 0x04);
-    tcp_hdr->flags.syn = !!(pkt_buf->buffer[pkt_buf->offset] & 0x02);
-    tcp_hdr->flags.fin = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
-
     if (tcp_hdr->flags.cwr &&
         tcp_hdr->flags.ece &&
         tcp_hdr->flags.urg &&
@@ -59,6 +34,78 @@ netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_TCP_FLAGS_ALL_ZERO);
         return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    if (tcp_hdr->flags.syn && tcp_hdr->flags.fin) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_SYN_FIN_SET);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    if (tcp_hdr->flags.syn && tcp_hdr->flags.psh) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_SYN_PSH_SET);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    if (tcp_hdr->flags.syn && tcp_hdr->flags.rst) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_SYN_RST_SET);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    if (tcp_hdr->flags.psh && tcp_hdr->flags.rst) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_FLAGS_RST_PSH_SET);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
+{
+    netos_status_t ret;
+
+    // short header length check
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_TCP_HDR_LEN_DEFAULT)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_SHORT_HDR_LEN);
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->src_port);
+    pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->dst_port);
+    pkt_buffer_decode_4_bytes(pkt_buf, &tcp_hdr->seq_no);
+    pkt_buffer_decode_4_bytes(pkt_buf, &tcp_hdr->ack_no);
+
+    tcp_hdr->hdr_len    = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
+    // drop malformed TCP header length
+    if ((tcp_hdr->hdr_len * 4) < NETOS_TCP_HDR_LEN_DEFAULT) {
+        return NETOS_STATUS_TCP_MALFORMED_PKT;
+    }
+
+    tcp_hdr->flags.ecn  = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
+    pkt_buf->offset ++;
+
+    tcp_hdr->flags.cwr = !!(pkt_buf->buffer[pkt_buf->offset] & 0x80);
+    tcp_hdr->flags.ece = !!(pkt_buf->buffer[pkt_buf->offset] & 0x40);
+    tcp_hdr->flags.urg = !!(pkt_buf->buffer[pkt_buf->offset] & 0x20);
+    tcp_hdr->flags.ack = !!(pkt_buf->buffer[pkt_buf->offset] & 0x10);
+    tcp_hdr->flags.psh = !!(pkt_buf->buffer[pkt_buf->offset] & 0x08);
+    tcp_hdr->flags.rst = !!(pkt_buf->buffer[pkt_buf->offset] & 0x04);
+    tcp_hdr->flags.syn = !!(pkt_buf->buffer[pkt_buf->offset] & 0x02);
+    tcp_hdr->flags.fin = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
+
+    // validate TCP flags
+    ret = netos_tcp_validate_flags(tcp_hdr, pkt_buf);
+    if (ret != NETOS_STATUS_SUCCESS) {
+        return ret;
     }
 
     pkt_buf->offset ++;
