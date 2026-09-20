@@ -78,6 +78,8 @@ netos_status_t netos_ipv6_initialize(netos_config_t *config)
         }
     }
 
+    netos_log_info("IPv6 initialized\n");
+
     return NETOS_STATUS_SUCCESS;
 }
 

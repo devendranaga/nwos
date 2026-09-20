@@ -7,8 +7,9 @@
 #include "buffer_pool.h"
 
 typedef struct {
-    netos_config_t    *config;
+    netos_config_t      *config;
     netos_buffer_pool_t *icmp6_pool;
+    void                *ndp_ctx;
 } netos_icmp6_ctx_t;
 
 void *netos_icmp6_init(netos_config_t *config);

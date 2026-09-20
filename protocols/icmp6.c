@@ -6,6 +6,7 @@
 #include "icmp6_hdr.h"
 #include "egress_controller.h"
 #include "icmp6.h"
+#include "ndp.h"
 #include "checksum_l4.h"
 #include "event_info.h"
 
@@ -18,8 +19,15 @@ void *netos_icmp6_init(netos_config_t *config)
         return NULL;
     }
 
+    icmp6_ctx->config = config;
+
     icmp6_ctx->icmp6_pool = netos_buffer_pool_alloc(32);
     if (!icmp6_ctx->icmp6_pool) {
+        goto err;
+    }
+
+    icmp6_ctx->ndp_ctx = netos_ndp_init(config);
+    if (!icmp6_ctx->ndp_ctx) {
         goto err;
     }
 
@@ -27,6 +35,9 @@ void *netos_icmp6_init(netos_config_t *config)
 
 err:
     if (icmp6_ctx) {
+        if (icmp6_ctx->icmp6_pool) {
+            netos_buffer_pool_free(icmp6_ctx->icmp6_pool);
+        }
         free(icmp6_ctx);
     }
 
