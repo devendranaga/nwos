@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
 #include <sys/signalfd.h>
@@ -16,6 +17,8 @@
 netos_gcd_ctx_t *netos_gcd_ctx_init()
 {
     netos_gcd_ctx_t *gcd_ctx;
+    sigset_t mask;
+    int ret;
 
     gcd_ctx = calloc(1, sizeof(netos_gcd_ctx_t));
     if (!gcd_ctx) {
@@ -26,13 +29,50 @@ netos_gcd_ctx_t *netos_gcd_ctx_init()
     if (gcd_ctx->epoll_fd < 0) {
         goto err;
     }
+
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTERM);
+
+    ret = sigprocmask(SIG_BLOCK, &mask, NULL);
+    if (ret != 0) {
+        goto err;
+    }
+
+    gcd_ctx->signal_ctx.fd = signalfd(-1, &mask, 0);
+    if (gcd_ctx->signal_ctx.fd < 0) {
+        goto err;
+    }
+
+    struct epoll_event ev;
+
+    ev.events = EPOLLIN;
+    ev.data.fd = gcd_ctx->signal_ctx.fd;
+
+    ret = epoll_ctl(gcd_ctx->epoll_fd, EPOLL_CTL_ADD, gcd_ctx->signal_ctx.fd, &ev);
+    if (ret != 0) {
+        goto err;
+    }
+
     gcd_ctx->socket_ctx.sockets = NULL;
     gcd_ctx->timer_ctx.timers = NULL;
+    gcd_ctx->signal_ctx.signal_cb = NULL;
 
     return gcd_ctx;
 
 err:
     if (gcd_ctx) {
+        if (gcd_ctx->signal_ctx.fd > 0) {
+            close(gcd_ctx->signal_ctx.fd);
+        }
+
+        if (sigismember(&mask, SIGINT) || sigismember(&mask, SIGTERM)) {
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+        }
+
+        if (gcd_ctx->epoll_fd > 0) {
+            close(gcd_ctx->epoll_fd);
+        }
         free(gcd_ctx);
     }
 
@@ -68,7 +108,7 @@ netos_status_t netos_gcd_socket_set_callback(netos_gcd_ctx_t *gcd_ctx,
     ev.data.fd = fd;
 
     int ret = epoll_ctl(gcd_ctx->epoll_fd, EPOLL_CTL_ADD, fd, &ev);
-    if (ret < 0) {
+    if (ret != 0) {
         free(sock);
         return NETOS_STATUS_GCD_SOCK_REG_FAILED;
     }
@@ -148,6 +188,16 @@ err:
     return ret;
 }
 
+void netos_gcd_register_term_signal(netos_gcd_ctx_t *ctx,
+                                    netos_signal_callback signal_cb,
+                                    void *user_data)
+{
+    netos_gcd_signal_ctx_t *signal_ctx = &ctx->signal_ctx;
+
+    signal_ctx->ctx = user_data;
+    signal_ctx->signal_cb = signal_cb;
+}
+
 static netos_status_t netos_gcd_run_timers(netos_gcd_ctx_t *gcd_ctx, struct epoll_event *event)
 {
     netos_gcd_timer_ctx_t *timer_ctx = &gcd_ctx->timer_ctx;
@@ -213,6 +263,8 @@ void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx)
                 ret = netos_gcd_run_timers(gcd_ctx, &events[i]);
                 if (ret != NETOS_STATUS_SUCCESS) {
                     ret = netos_gcd_run_sockets(gcd_ctx, &events[i]);
+                }
+                if (ret != NETOS_STATUS_SUCCESS) {
                 }
             }
         }

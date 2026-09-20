@@ -123,6 +123,9 @@ set(TOOL_PGEN_SRC
     ./tools/pgen/pgen.c
     ./tools/pgen/pgen_arp_ops.c)
 
+set(TOOL_NETCTL_SRC
+    ./tools/netctl/netctl.c)
+
 set(TEST_PCAPNG
     ./tests/test_pcapng.c)
 
@@ -171,6 +174,9 @@ add_library(netos_crypto STATIC ${CRYPTO_SRC})
 
 add_executable(netos_pgen ${TOOL_PGEN_SRC})
 target_link_libraries(netos_pgen PRIVATE netos netos_crypto ${CRYPTO_LINKER_FLAGS} readline tinfo ncurses pthread)
+
+add_executable(netctl ${TOOL_NETCTL_SRC})
+target_link_libraries(netctl PRIVATE netos netos_crypto ${CRYPTO_LINKER_FLAGS} readline tinfo ncurses pthread)
 
 add_executable(netosd ${NETOS_SRC})
 

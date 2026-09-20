@@ -102,7 +102,10 @@ err:
     return NULL;
 }
 
-netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy, uint8_t an, uint64_t pn, netos_crypto_key_t *sak)
+netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy,
+                                        uint8_t an,
+                                        uint64_t pn,
+                                        netos_crypto_key_t *sak)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
@@ -120,7 +123,8 @@ netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy, uint8_t an, u
         return NETOS_STATUS_CRYPTO_CTX_INIT_FAILURE;
     }
 
-    secy->txsc->txsa[an].gcm_ctx = netos_crypto_init_gcm(secy->txsc->txsa[an].crypto_ctx);
+    secy->txsc->txsa[an].gcm_ctx = netos_crypto_init_gcm(
+                                        secy->txsc->txsa[an].crypto_ctx);
     if (!secy->txsc->txsa[an].gcm_ctx) {
         ret = NETOS_STATUS_CRYPTO_GCM_INIT_FAILURE;
         goto err;
@@ -138,7 +142,10 @@ err:
     return ret;
 }
 
-netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy, uint8_t an, uint64_t pn, netos_crypto_key_t *sak)
+netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy,
+                                        uint8_t an,
+                                        uint64_t pn,
+                                        netos_crypto_key_t *sak)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
@@ -156,7 +163,8 @@ netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy, uint8_t an, u
         return NETOS_STATUS_CRYPTO_CTX_INIT_FAILURE;
     }
 
-    secy->rxsc->rxsa[an].gcm_ctx = netos_crypto_init_gcm(secy->rxsc->rxsa[an].crypto_ctx);
+    secy->rxsc->rxsa[an].gcm_ctx = netos_crypto_init_gcm(
+                                        secy->rxsc->rxsa[an].crypto_ctx);
     if (!secy->rxsc->rxsa[an].gcm_ctx) {
         ret = NETOS_STATUS_CRYPTO_GCM_INIT_FAILURE;
         goto err;

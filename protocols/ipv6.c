@@ -9,7 +9,7 @@
 #include "ipv6.h"
 #include "udp.h"
 #include "tcp.h"
-#include "icmp.h"
+#include "icmp6.h"
 #include "netos_log.h"
 
 static struct {
@@ -34,10 +34,10 @@ static struct {
         NETOS_PROTOCOL_ICMP,
         "ICMP",
         NULL,
-        netos_icmp_init,
-        netos_icmp_rx,
-        netos_icmp_tx,
-        netos_icmp_deinit
+        netos_icmp6_init,
+        netos_icmp6_rx,
+        netos_icmp6_tx,
+        netos_icmp6_deinit
     },
     {
         true,

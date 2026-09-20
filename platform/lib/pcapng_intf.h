@@ -41,8 +41,10 @@ typedef struct {
     (__data).ipaddr_str = NULL;\
 } while (0)
 
-typedef void (*netos_pcapng_parse_cb)(void *ctx, netos_pcapng_frame_t *frame);
-typedef void (*netos_pcapng_dns_lookup_cb)(void *ctx, netos_pcapng_dns_lookup_data_t *dns_data);
+typedef void (*netos_pcapng_parse_cb)(void *ctx,
+                                      netos_pcapng_frame_t *frame);
+typedef void (*netos_pcapng_dns_lookup_cb)(void *ctx,
+                                           netos_pcapng_dns_lookup_data_t *dns_data);
 
 typedef struct {
     netos_pcapng_parse_cb       parse_cb;

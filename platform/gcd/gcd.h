@@ -5,6 +5,7 @@
 
 typedef void (*netos_timer_callback)(void *ctx);
 typedef void (*netos_socket_callback)(int fd, void *ctx);
+typedef void (*netos_signal_callback)(int sig, void *ctx);
 
 typedef struct netos_gcd_timer {
     uint64_t                sec;
@@ -32,6 +33,8 @@ typedef struct {
 
 typedef struct {
     int                     fd;
+    void                    *ctx;
+    netos_signal_callback   signal_cb;
 } netos_gcd_signal_ctx_t;
 
 typedef struct {

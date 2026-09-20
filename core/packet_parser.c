@@ -2,6 +2,7 @@
 #include "protocols.h"
 #include "arp.h"
 #include "ipv4.h"
+#include "ipv6.h"
 #include "packet_parser.h"
 #include "parser_thread_ctx.h"
 #include "ethertypes.h"
@@ -11,37 +12,6 @@
 #include "checksum.h"
 #include "checksum_l4.h"
 #include "event_info.h"
-
-netos_status_t netos_parse_l4(pkt_buffer_t *pkt_buf,
-                              netos_packet_parser_t *parsed_data)
-{
-    netos_status_t ret = NETOS_STATUS_SUCCESS;
-    uint16_t start_off;
-    uint16_t remaining_len;
-
-    start_off       = pkt_buf->offset;
-    remaining_len   = pkt_buffer_remaining_rx_len(pkt_buf);
-
-    switch (parsed_data->protocol) {
-        case NETOS_PROTOCOL_ICMP6:
-            ret = netos_icmp6_decode(&parsed_data->l4.icmp6_hdr, pkt_buf);
-            if (ret == NETOS_STATUS_SUCCESS) {
-                ret = netos_do_checksum_l4(start_off,
-                                           remaining_len,
-                                           parsed_data,
-                                           pkt_buf);
-                if (ret != NETOS_STATUS_SUCCESS) {
-                    NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
-                                               NETOS_EVENT_TYPE_DENY,
-                                               NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED);
-                    return ret;
-                }
-            }
-        break;
-    }
-
-    return ret;
-}
 
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
                                  netos_packet_parser_t *parsed_data)
@@ -127,10 +97,8 @@ check_ethertype:
             return ret;
         }
         parsed_data->protocol = parsed_data->l3.ipv6_hdr.nh;
-    }
 
-    if (parsed_data->protocol != 0) {
-        ret = netos_parse_l4(pkt_buf, parsed_data);
+        ret = netos_ipv6_rx_process(pkt_buf, parsed_data);
     }
 
     return ret;
