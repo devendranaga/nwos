@@ -7,8 +7,7 @@
 #include "ethertypes.h"
 #include "arp.h"
 #include "macsec.h"
-#include "ipv4.h"
-#include "ipv6.h"
+#include "ip.h"
 #include "netos_log.h"
 #include "rules_config.h"
 #include "netos_config.h"
@@ -323,18 +322,11 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
 
     netos_log_info("ARP Initialized\n");
 
-    // initialize the IPv4 protocol
-    ret = netos_ipv4_initialize(config);
+    // initialize the IP protocol
+    ret = netos_ip_initialize(config);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
-
-    ret = netos_ipv6_initialize(config);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        return ret;
-    }
-
-    netos_log_info("IPv4 Initialized\n");
 
     return NETOS_STATUS_SUCCESS;
 }

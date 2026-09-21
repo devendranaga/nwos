@@ -97,8 +97,6 @@ void *netos_tcp_initialize(netos_config_t *config)
         }
     }
 
-    netos_log_info("TCP Initialized\n");
-
     return tcp_ctx;
 
 err:

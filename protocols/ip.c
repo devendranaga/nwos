@@ -6,10 +6,11 @@
 #include "packet_parser.h"
 #include "common.h"
 #include "protocols.h"
-#include "ipv4.h"
+#include "ip.h"
 #include "udp.h"
 #include "tcp.h"
 #include "icmp.h"
+#include "icmp6.h"
 #include "netos_log.h"
 
 static struct {
@@ -58,10 +59,20 @@ static struct {
         netos_udp_rx,
         netos_udp_tx,
         netos_udp_deinit
-    }
+    },
+    {
+        true,
+        NETOS_PROTOCOL_ICMP,
+        "ICMP6",
+        NULL,
+        netos_icmp6_init,
+        netos_icmp6_rx,
+        netos_icmp6_tx,
+        netos_icmp6_deinit
+    },
 };
 
-netos_status_t netos_ipv4_initialize(netos_config_t *config)
+netos_status_t netos_ip_initialize(netos_config_t *config)
 {
     uint32_t i;
 
@@ -78,10 +89,29 @@ netos_status_t netos_ipv4_initialize(netos_config_t *config)
         }
     }
 
+    netos_log_info("IP initialized\n");
+
     return NETOS_STATUS_SUCCESS;
 }
 
 netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
+                                     netos_packet_parser_t *pkt_parser)
+{
+    uint8_t protocol = pkt_parser->protocol;
+    uint32_t i;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_table); i ++) {
+        if (protocol_table[i].rx && (protocol_table[i].protocol == protocol)) {
+            protocol_table[i].rx(protocol_table[i].protocol_ctx,
+                                 pkt_parser,
+                                 pkt_buf);
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
                                      netos_packet_parser_t *pkt_parser)
 {
     uint8_t protocol = pkt_parser->protocol;

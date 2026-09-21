@@ -100,8 +100,7 @@ SET(NETOS_SRC
     ./protocols/macsec.c
     ./protocols/icmp.c
     ./protocols/icmp6.c
-    ./protocols/ipv4.c
-    ./protocols/ipv6.c
+    ./protocols/ip.c
     ./protocols/mka.c
     ./protocols/ripng.c
     ./protocols/lldp.c
