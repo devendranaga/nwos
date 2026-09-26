@@ -1,0 +1,797 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 19  of event 'cycles:P'
+# Event count (approx.): 5315076
+#
+# Children      Self  Command  Shared Object      Symbol                                   
+# ........  ........  .......  .................  .........................................
+#
+    81.57%     0.00%  netosd   [kernel.kallsyms]  [k] entry_SYSCALL_64_after_hwframe
+            |
+            ---entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               |          
+                --81.38%--x64_sys_call
+                          |          
+                          |--49.18%--__x64_sys_futex
+                          |          do_futex
+                          |          |          
+                          |           --48.85%--futex_wait
+                          |                     __futex_wait
+                          |                     futex_do_wait
+                          |                     schedule
+                          |                     __schedule
+                          |                     |          
+                          |                      --48.83%--try_to_block_task.constprop.0.isra.0
+                          |                                dequeue_task
+                          |                                dequeue_task_fair
+                          |                                dequeue_entities
+                          |                                |          
+                          |                                 --48.61%--srso_safe_ret
+                          |          
+                           --32.18%--__x64_sys_recvfrom
+                                     __sys_recvfrom
+                                     sock_recvmsg
+                                     packet_recvmsg
+                                     |          
+                                      --31.92%--skb_copy_datagram_iter
+                                                __skb_datagram_iter
+
+    81.57%     0.00%  netosd   [kernel.kallsyms]  [k] do_syscall_64
+            |
+            ---do_syscall_64
+               |          
+                --81.38%--x64_sys_call
+                          |          
+                          |--49.18%--__x64_sys_futex
+                          |          do_futex
+                          |          |          
+                          |           --48.85%--futex_wait
+                          |                     __futex_wait
+                          |                     futex_do_wait
+                          |                     schedule
+                          |                     __schedule
+                          |                     |          
+                          |                      --48.83%--try_to_block_task.constprop.0.isra.0
+                          |                                dequeue_task
+                          |                                dequeue_task_fair
+                          |                                dequeue_entities
+                          |                                |          
+                          |                                 --48.61%--srso_safe_ret
+                          |          
+                           --32.18%--__x64_sys_recvfrom
+                                     __sys_recvfrom
+                                     sock_recvmsg
+                                     packet_recvmsg
+                                     |          
+                                      --31.92%--skb_copy_datagram_iter
+                                                __skb_datagram_iter
+
+    81.38%     0.00%  netosd   [kernel.kallsyms]  [k] x64_sys_call
+            |
+            ---x64_sys_call
+               |          
+               |--49.18%--__x64_sys_futex
+               |          do_futex
+               |          |          
+               |           --48.85%--futex_wait
+               |                     __futex_wait
+               |                     futex_do_wait
+               |                     schedule
+               |                     __schedule
+               |                     |          
+               |                      --48.83%--try_to_block_task.constprop.0.isra.0
+               |                                dequeue_task
+               |                                dequeue_task_fair
+               |                                dequeue_entities
+               |                                |          
+               |                                 --48.61%--srso_safe_ret
+               |          
+                --32.18%--__x64_sys_recvfrom
+                          __sys_recvfrom
+                          sock_recvmsg
+                          packet_recvmsg
+                          |          
+                           --31.92%--skb_copy_datagram_iter
+                                     __skb_datagram_iter
+
+    81.34%     0.00%  netosd   netosd             [.] __syscall_cancel_arch_end
+            |
+            ---__syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               |          
+                --81.16%--x64_sys_call
+                          |          
+                          |--48.96%--__x64_sys_futex
+                          |          do_futex
+                          |          |          
+                          |           --48.63%--futex_wait
+                          |                     __futex_wait
+                          |                     futex_do_wait
+                          |                     schedule
+                          |                     __schedule
+                          |                     |          
+                          |                      --48.61%--try_to_block_task.constprop.0.isra.0
+                          |                                dequeue_task
+                          |                                dequeue_task_fair
+                          |                                dequeue_entities
+                          |                                srso_safe_ret
+                          |          
+                           --32.18%--__x64_sys_recvfrom
+                                     __sys_recvfrom
+                                     sock_recvmsg
+                                     packet_recvmsg
+                                     |          
+                                      --31.92%--skb_copy_datagram_iter
+                                                __skb_datagram_iter
+
+    49.18%     0.00%  netosd   netosd             [.] __pthread_cond_wait
+            |
+            ---__pthread_cond_wait
+               |          
+                --48.96%--__futex_abstimed_wait_cancelable64
+                          __syscall_cancel_arch_end
+                          entry_SYSCALL_64_after_hwframe
+                          do_syscall_64
+                          x64_sys_call
+                          __x64_sys_futex
+                          do_futex
+                          |          
+                           --48.63%--futex_wait
+                                     __futex_wait
+                                     futex_do_wait
+                                     schedule
+                                     __schedule
+                                     |          
+                                      --48.61%--try_to_block_task.constprop.0.isra.0
+                                                dequeue_task
+                                                dequeue_task_fair
+                                                dequeue_entities
+                                                srso_safe_ret
+
+    49.18%     0.00%  netosd   [kernel.kallsyms]  [k] __x64_sys_futex
+            |
+            ---__x64_sys_futex
+               do_futex
+               |          
+                --48.85%--futex_wait
+                          __futex_wait
+                          futex_do_wait
+                          schedule
+                          __schedule
+                          |          
+                           --48.83%--try_to_block_task.constprop.0.isra.0
+                                     dequeue_task
+                                     dequeue_task_fair
+                                     dequeue_entities
+                                     |          
+                                      --48.61%--srso_safe_ret
+
+    49.18%     0.00%  netosd   [kernel.kallsyms]  [k] do_futex
+            |
+            ---do_futex
+               |          
+                --48.85%--futex_wait
+                          __futex_wait
+                          futex_do_wait
+                          schedule
+                          __schedule
+                          |          
+                           --48.83%--try_to_block_task.constprop.0.isra.0
+                                     dequeue_task
+                                     dequeue_task_fair
+                                     dequeue_entities
+                                     |          
+                                      --48.61%--srso_safe_ret
+
+    48.96%     0.00%  netosd   netosd             [.] __futex_abstimed_wait_cancelable64
+            |
+            ---__futex_abstimed_wait_cancelable64
+               __syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               x64_sys_call
+               __x64_sys_futex
+               do_futex
+               |          
+                --48.63%--futex_wait
+                          __futex_wait
+                          futex_do_wait
+                          schedule
+                          __schedule
+                          |          
+                           --48.61%--try_to_block_task.constprop.0.isra.0
+                                     dequeue_task
+                                     dequeue_task_fair
+                                     dequeue_entities
+                                     srso_safe_ret
+
+    48.95%     0.00%  netosd   netosd             [.] netos_intf_parse_callback
+            |
+            ---netos_intf_parse_callback
+               __pthread_cond_wait
+               __futex_abstimed_wait_cancelable64
+               __syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               x64_sys_call
+               __x64_sys_futex
+               do_futex
+               |          
+                --48.62%--futex_wait
+                          __futex_wait
+                          futex_do_wait
+                          schedule
+                          __schedule
+                          |          
+                           --48.61%--try_to_block_task.constprop.0.isra.0
+                                     dequeue_task
+                                     dequeue_task_fair
+                                     dequeue_entities
+                                     srso_safe_ret
+
+    48.95%     0.00%  netosd   [unknown]          [.] 0xb8450008b298dfb1
+            |
+            ---0xb8450008b298dfb1
+               netos_intf_parse_callback
+               __pthread_cond_wait
+               __futex_abstimed_wait_cancelable64
+               __syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               x64_sys_call
+               __x64_sys_futex
+               do_futex
+               |          
+                --48.61%--futex_wait
+                          __futex_wait
+                          futex_do_wait
+                          schedule
+                          __schedule
+                          try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          srso_safe_ret
+
+    48.87%     0.00%  netosd   [kernel.kallsyms]  [k] schedule
+            |
+            ---schedule
+               __schedule
+               |          
+                --48.83%--try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          |          
+                           --48.61%--srso_safe_ret
+
+    48.87%     0.00%  netosd   [kernel.kallsyms]  [k] __schedule
+            |
+            ---__schedule
+               |          
+                --48.83%--try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          |          
+                           --48.61%--srso_safe_ret
+
+    48.85%     0.00%  netosd   [kernel.kallsyms]  [k] futex_wait
+            |
+            ---futex_wait
+               __futex_wait
+               futex_do_wait
+               schedule
+               __schedule
+               |          
+                --48.83%--try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          |          
+                           --48.61%--srso_safe_ret
+
+    48.85%     0.00%  netosd   [kernel.kallsyms]  [k] __futex_wait
+            |
+            ---__futex_wait
+               futex_do_wait
+               schedule
+               __schedule
+               |          
+                --48.83%--try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          |          
+                           --48.61%--srso_safe_ret
+
+    48.85%     0.00%  netosd   [kernel.kallsyms]  [k] futex_do_wait
+            |
+            ---futex_do_wait
+               schedule
+               __schedule
+               |          
+                --48.83%--try_to_block_task.constprop.0.isra.0
+                          dequeue_task
+                          dequeue_task_fair
+                          dequeue_entities
+                          |          
+                           --48.61%--srso_safe_ret
+
+    48.83%     0.00%  netosd   [kernel.kallsyms]  [k] try_to_block_task.constprop.0.isra.0
+            |
+            ---try_to_block_task.constprop.0.isra.0
+               dequeue_task
+               dequeue_task_fair
+               dequeue_entities
+               |          
+                --48.61%--srso_safe_ret
+
+    48.83%     0.00%  netosd   [kernel.kallsyms]  [k] dequeue_task
+            |
+            ---dequeue_task
+               dequeue_task_fair
+               dequeue_entities
+               |          
+                --48.61%--srso_safe_ret
+
+    48.83%     0.00%  netosd   [kernel.kallsyms]  [k] dequeue_task_fair
+            |
+            ---dequeue_task_fair
+               dequeue_entities
+               |          
+                --48.61%--srso_safe_ret
+
+    48.83%     0.00%  netosd   [kernel.kallsyms]  [k] dequeue_entities
+            |
+            ---dequeue_entities
+               |          
+                --48.61%--srso_safe_ret
+
+    48.80%     0.00%  netosd   [kernel.kallsyms]  [k] srso_safe_ret
+            |
+            ---srso_safe_ret
+
+    48.62%    48.62%  netosd   [kernel.kallsyms]  [k] srso_return_thunk
+            |          
+             --48.61%--0xb8450008b298dfb1
+                       netos_intf_parse_callback
+                       __pthread_cond_wait
+                       __futex_abstimed_wait_cancelable64
+                       __syscall_cancel_arch_end
+                       entry_SYSCALL_64_after_hwframe
+                       do_syscall_64
+                       x64_sys_call
+                       __x64_sys_futex
+                       do_futex
+                       futex_wait
+                       __futex_wait
+                       futex_do_wait
+                       schedule
+                       __schedule
+                       try_to_block_task.constprop.0.isra.0
+                       dequeue_task
+                       dequeue_task_fair
+                       dequeue_entities
+                       srso_safe_ret
+
+    32.18%     0.00%  netosd   netosd             [.] netos_raw_socket_rx
+            |
+            ---netos_raw_socket_rx
+               __libc_recvfrom
+               __syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               x64_sys_call
+               __x64_sys_recvfrom
+               __sys_recvfrom
+               sock_recvmsg
+               packet_recvmsg
+               |          
+                --31.92%--skb_copy_datagram_iter
+                          __skb_datagram_iter
+
+    32.18%     0.00%  netosd   netosd             [.] __libc_recvfrom
+            |
+            ---__libc_recvfrom
+               __syscall_cancel_arch_end
+               entry_SYSCALL_64_after_hwframe
+               do_syscall_64
+               x64_sys_call
+               __x64_sys_recvfrom
+               __sys_recvfrom
+               sock_recvmsg
+               packet_recvmsg
+               |          
+                --31.92%--skb_copy_datagram_iter
+                          __skb_datagram_iter
+
+    32.18%     0.00%  netosd   [kernel.kallsyms]  [k] __x64_sys_recvfrom
+            |
+            ---__x64_sys_recvfrom
+               __sys_recvfrom
+               sock_recvmsg
+               packet_recvmsg
+               |          
+                --31.92%--skb_copy_datagram_iter
+                          __skb_datagram_iter
+
+    32.18%     0.00%  netosd   [kernel.kallsyms]  [k] __sys_recvfrom
+            |
+            ---__sys_recvfrom
+               sock_recvmsg
+               packet_recvmsg
+               |          
+                --31.92%--skb_copy_datagram_iter
+                          __skb_datagram_iter
+
+    32.18%     0.00%  netosd   [kernel.kallsyms]  [k] sock_recvmsg
+            |
+            ---sock_recvmsg
+               packet_recvmsg
+               |          
+                --31.92%--skb_copy_datagram_iter
+                          __skb_datagram_iter
+
+    32.18%    31.92%  netosd   [kernel.kallsyms]  [k] packet_recvmsg
+            |          
+             --31.92%--netos_raw_socket_rx
+                       __libc_recvfrom
+                       __syscall_cancel_arch_end
+                       entry_SYSCALL_64_after_hwframe
+                       do_syscall_64
+                       x64_sys_call
+                       __x64_sys_recvfrom
+                       __sys_recvfrom
+                       sock_recvmsg
+                       packet_recvmsg
+                       skb_copy_datagram_iter
+                       __skb_datagram_iter
+
+    31.92%     0.00%  netosd   [kernel.kallsyms]  [k] skb_copy_datagram_iter
+            |
+            ---skb_copy_datagram_iter
+               __skb_datagram_iter
+
+    31.92%     0.00%  netosd   [kernel.kallsyms]  [k] __skb_datagram_iter
+            |
+            ---__skb_datagram_iter
+
+    18.43%    18.43%  netosd   [kernel.kallsyms]  [k] map_id_range_up
+            |
+            ---0x100000000
+               netos_event_mgr_process_timer
+               asm_exc_page_fault
+               exc_page_fault
+               do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [unknown]          [k] 0x0000000100000000
+            |
+            ---0x100000000
+               netos_event_mgr_process_timer
+               asm_exc_page_fault
+               exc_page_fault
+               do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   netosd             [.] netos_event_mgr_process_timer
+            |
+            ---netos_event_mgr_process_timer
+               asm_exc_page_fault
+               exc_page_fault
+               do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] asm_exc_page_fault
+            |
+            ---asm_exc_page_fault
+               exc_page_fault
+               do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] exc_page_fault
+            |
+            ---exc_page_fault
+               do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] do_user_addr_fault
+            |
+            ---do_user_addr_fault
+               handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] handle_mm_fault
+            |
+            ---handle_mm_fault
+               __handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] __handle_mm_fault
+            |
+            ---__handle_mm_fault
+               handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] handle_pte_fault
+            |
+            ---handle_pte_fault
+               do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] do_fault
+            |
+            ---do_fault
+               do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] do_shared_fault
+            |
+            ---do_shared_fault
+               do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] do_page_mkwrite
+            |
+            ---do_page_mkwrite
+               ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] ext4_page_mkwrite
+            |
+            ---ext4_page_mkwrite
+               file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] file_update_time
+            |
+            ---file_update_time
+               generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] generic_update_time
+            |
+            ---generic_update_time
+               __mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] __mark_inode_dirty
+            |
+            ---__mark_inode_dirty
+               ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] ext4_dirty_inode
+            |
+            ---ext4_dirty_inode
+               __ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] __ext4_mark_inode_dirty
+            |
+            ---__ext4_mark_inode_dirty
+               ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] ext4_mark_iloc_dirty
+            |
+            ---ext4_mark_iloc_dirty
+               ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] ext4_do_update_inode.isra.0
+            |
+            ---ext4_do_update_inode.isra.0
+               from_kprojid
+
+    18.43%     0.00%  netosd   [kernel.kallsyms]  [k] from_kprojid
+            |
+            ---from_kprojid
+
+     0.33%     0.33%  netosd   netosd             [.] __pthread_cleanup_push
+     0.25%     0.25%  netosd   [kernel.kallsyms]  [k] consume_skb
+     0.25%     0.00%  netosd   [kernel.kallsyms]  [k] skb_free_datagram
+     0.25%     0.00%  netosd   [kernel.kallsyms]  [k] sock_rfree
+     0.23%     0.00%  netosd   [unknown]          [k] 0x01000608c514b20e
+     0.23%     0.00%  netosd   [unknown]          [k] 0x00007b848eac8bc0
+     0.23%     0.00%  netosd   netosd             [.] netos_egress_sp_tx_queue_thread
+     0.22%     0.22%  netosd   [kernel.kallsyms]  [k] dl_server_update
+     0.22%     0.00%  netosd   netosd             [.] __lll_lock_wait
+     0.22%     0.00%  netosd   [kernel.kallsyms]  [k] dequeue_entity
+     0.20%     0.00%  netosd   [unknown]          [k] 0000000000000000
+     0.20%     0.00%  netosd   netosd             [.] netos_gcd_run
+     0.20%     0.00%  netosd   netosd             [.] epoll_wait
+     0.19%     0.19%  netosd   [kernel.kallsyms]  [k] mutex_unlock
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] finish_task_switch.isra.0
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] __perf_event_task_sched_in
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] perf_event_sched_in
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] ctx_sched_in
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] visit_groups_merge.constprop.0.isra.0
+     0.03%     0.00%  netosd   [kernel.kallsyms]  [k] merge_sched_in
+     0.03%     0.02%  netosd   [kernel.kallsyms]  [k] perf_event_update_userpage
+     0.02%     0.00%  netosd   [kernel.kallsyms]  [k] event_sched_in
+     0.02%     0.00%  netosd   [kernel.kallsyms]  [k] perf_ibs_add
+     0.02%     0.00%  netosd   [kernel.kallsyms]  [k] perf_ibs_start
+     0.01%     0.01%  netosd   [kernel.kallsyms]  [k] __rcu_read_lock
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] __skb_recv_datagram
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] __skb_wait_for_more_packets
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] __x64_sys_epoll_wait
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] do_epoll_wait
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] ep_poll
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] schedule_hrtimeout_range
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] schedule_hrtimeout_range_clock
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] skb_recv_datagram
+     0.01%     0.00%  netosd   [kernel.kallsyms]  [k] schedule_timeout
+     0.01%     0.00%  netosd   [unknown]          [k] 0x12450008c514b20e
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

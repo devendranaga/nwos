@@ -62,6 +62,7 @@ SET(PLATFORM_SRC
     ./platform/gcd/gcd.c
     ./platform/lib/pcap_intf.c
     ./platform/lib/pcapng.c
+    ./platform/lib/virt_intf.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
