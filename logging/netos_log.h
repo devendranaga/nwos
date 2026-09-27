@@ -23,6 +23,14 @@ typedef enum netos_log_level {
 #define NETOS_ANSI_COLOR_CYAN       "\x1b[36m"
 #define NETOS_ANSI_COLOR_RESET      "\x1b[0m"
 
+#define NETOS_ASSERT(__condition) do {\
+    if (__condition) {\
+        fprintf(stderr,\
+                NETOS_ANSI_COLOR_RED "Assertion at %s %u: "\
+                NETOS_ANSI_COLOR_RESET, __func__, __LINE__);\
+    }\
+} while (0)
+
 /**
  * @brief - Panic message and stop program.
  *

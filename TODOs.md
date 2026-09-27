@@ -73,7 +73,6 @@
 - [ ] IP fragmentation and reassembly support
 - [ ] TCP statemachine
 - [ ] UDP Demux and Mux
-- [ ] TCP Demux and Mux
 - [ ] ARP request generation from the IP query to ARP
 - [ ] recvmsg and sendmsg support
 - [ ] PKT_MMAP or PF_RING support to receive and transmit frames
@@ -95,7 +94,6 @@
 - [ ] SFQ: stochastic fair queueing without re-hashing.
 - [ ] Tool ctl: to control or view the insides of the netos
 - [ ] PCAPng file writes
-- [ ] PCAP file writes
 - [ ] Tool: Enable pcap file writes from the regular run commands in pgen
 - [ ] In ICMP reply, check for the device MTU is capable of sending the input frame, if its not capable send a ICMP packet too big message.
 - [ ] ARP Duplicate address detection
@@ -111,7 +109,7 @@
 - [ ] Routing table and forwarding logic
 - [ ] TTL decrement and ICMP time exceeded generation
 - [ ] PMTU discovery support
-- [ ] Extension header chain parsing (Hop-by-Hop, Routing, Fragment, Destination, AH and ESP)
+- [ ] Extension header chain parsing (Routing, Fragment, Destination, AH and ESP)
 - [ ] Fragmentation reassembly
 - [ ] Flow label parsing
 - [ ] NDP support
@@ -188,5 +186,7 @@
 - [x] Expand the Events matching to suricata
 - [x] Tooling: UDP over IPV4
 - [x] MQTT fixed header parsing
+- [x] TCP Demux and Mux
+- [x] PCAP file writes
 
 

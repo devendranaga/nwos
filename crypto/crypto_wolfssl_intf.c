@@ -1,9 +1,9 @@
-#include <assert.h>
 #include "crypto_intf.h"
 #include "crypto_yellow_page.h"
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>
+#include "netos_log.h"
 
 static void *netos_wolfssl_init_gmac()
 {
@@ -32,7 +32,7 @@ static netos_status_t netos_wolfssl_set_gmac_key(void *ctx, netos_crypto_key_t *
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmSetKey(aes, key->key, key->key_len);
     if (ret != 0) {
@@ -47,7 +47,7 @@ static netos_status_t netos_wolfssl_generate_gmac(void *ctx, netos_crypto_aes_gm
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmEncrypt(aes,
                            NULL,
@@ -71,7 +71,7 @@ static netos_status_t netos_wolfssl_verify_gmac(void *ctx, netos_crypto_aes_gmac
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmDecrypt(aes,
                            NULL,
@@ -123,7 +123,7 @@ static netos_status_t netos_wolfssl_set_gcm_key(void *ctx, netos_crypto_key_t *k
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmSetKey(aes, key->key, key->key_len);
     if (ret != 0) {
@@ -138,7 +138,7 @@ static netos_status_t netos_wolfssl_encrypt_gcm(void *ctx, netos_crypto_aes_gcm_
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmEncrypt(aes,
                            params->out_msg,
@@ -165,7 +165,7 @@ static netos_status_t netos_wolfssl_decrypt_gcm(void *ctx, netos_crypto_aes_gcm_
     Aes *aes = ctx;
     int ret;
 
-    assert(aes != NULL);
+    NETOS_ASSERT(aes == NULL);
 
     ret = wc_AesGcmDecrypt(aes,
                            params->out_msg,

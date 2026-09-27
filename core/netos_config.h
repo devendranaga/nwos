@@ -92,6 +92,10 @@ typedef struct netos_event_config {
     char        *storage_file;
 } netos_event_config_t;
 
+typedef struct netos_mirror_config {
+
+} netos_mirror_config_t;
+
 /**
  * @brief - Defines network config.
  */

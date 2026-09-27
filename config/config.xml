@@ -48,6 +48,10 @@
             <min_echo_payload_len>0</min_echo_payload_len>
         </icmp>
     </protocols>
+    <mirror>
+        <mirror_enable>true</mirror_enable>
+        <mirror_ifname>dummy0</mirror_ifname>
+    </mirror>
     <rule_file>../config/rules.rules</rule_file>
     <egress_control>
         <pfifo>

@@ -1,9 +1,12 @@
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
 #include <pthread.h>
-
+#include "netos_status.h"
+#include "common.h"
 #include "netos_log.h"
 
 static pthread_mutex_t lock;
@@ -20,7 +23,7 @@ static inline const char *netos_log_level_str(netos_log_level_t log_level)
 {
     const char *log_level_str = "Uknown";
 
-    if (log_level > (sizeof(log_level_table) / sizeof(log_level_table[0]))) {
+    if (log_level > NETOS_SIZEOF_ARRAY(log_level_table)) {
         return log_level_str;
     }
 

@@ -6,6 +6,10 @@
 
 #include "pkt_buffer.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /**
  * @brief - Defines buffer pool.
  */
@@ -48,6 +52,10 @@ void netos_buffer_pool_put_buffer(netos_buffer_pool_t *pool, pkt_buffer_t *pkt_b
  * @param [in] pool - packet buffer pool.
  */
 void netos_buffer_pool_free(netos_buffer_pool_t *pool);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

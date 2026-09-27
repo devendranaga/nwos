@@ -33,7 +33,7 @@ typedef struct netos_egress_controller_mib {
  */
 typedef struct netos_egress_controller {
     char                            *ifname;
-    netos_config_t                *config;
+    netos_config_t                  *config;
     netos_raw_socket_ctx_t          *raw;
     netos_egress_sp_mgr_t           *sp;
     netos_egress_rr_mgr_t           *rr;
