@@ -1,5 +1,6 @@
 import socket
 from pkt_buffer import *
+from eth import *
 
 ETH_P_ALL = 3
 
@@ -20,4 +21,9 @@ if __name__ == "__main__":
         rx_buf = nr.recv()
         print("rx len: " + str(len(rx_buf)))
 
+        pkt_buf = netos_pkt_buffer()
+        pkt_buf.set_rx_buf(rx_buf)
 
+        eh = netos_eth()
+        eh.parse(pkt_buf)
+        eh.print()
