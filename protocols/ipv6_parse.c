@@ -8,44 +8,85 @@
 #include "protocols.h"
 #include "netos_log.h"
 
-static netos_status_t netos_ipv6_decode_hop_by_hop_opt(netos_ipv6_hdr_t *ipv6_hdr,
-                                                       pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_hop_by_hop_opt(netos_ipv6_hdr_t *ipv6_hdr,
+                                 pkt_buffer_t *pkt_buf)
+{
+    uint8_t opt = 0;
+    uint16_t opt_len = 0;
+    uint16_t pad_bytes = 0;
+    uint16_t remaining_len = 0;
+
+    ipv6_hdr->options.valid_options |= NETOS_IPV6_OPT_HOP_BY_HOP_VALID;
+    pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->nh);
+    pkt_buffer_decode_byte(pkt_buf, &ipv6_hdr->options.hop_by_hop.len);
+
+    remaining_len = pkt_buf->offset + ipv6_hdr->options.hop_by_hop.len;
+
+    while (pkt_buf->offset < remaining_len) {
+        pkt_buffer_decode_byte(pkt_buf, &opt);
+        opt= (opt & 0x1F);
+
+        pkt_buffer_decode_2_bytes(pkt_buf, &opt_len);
+        if (opt_len > ipv6_hdr->options.hop_by_hop.len) {
+            return NETOS_STATUS_IPV6_MALFORMED_PKT;
+        }
+
+        switch (opt) {
+            case NETOS_IPV6_HOP_BY_HOP_OPT_PAD:
+                pkt_buffer_decode_2_bytes(pkt_buf, &pad_bytes);
+            break;
+            case NETOS_IPV6_HOP_BY_HOP_OPT_ROUTER_ALERT:
+                pkt_buffer_decode_2_bytes(pkt_buf,
+                                          &ipv6_hdr->options.hop_by_hop.router_alert.value);
+            break;
+            default:
+                pkt_buf->offset += opt_len;
+            break;
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
+netos_ipv6_decode_ipip(netos_ipv6_hdr_t *ipv6_hdr,
+                       pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_ipv6_decode_ipip(netos_ipv6_hdr_t *ipv6_hdr,
-                                             pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_routing(netos_ipv6_hdr_t *ipv6_hdr,
+                          pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_ipv6_decode_routing(netos_ipv6_hdr_t *ipv6_hdr,
-                                                pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_frag_hdr(netos_ipv6_hdr_t *ipv6_hdr,
+                           pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_ipv6_decode_frag_hdr(netos_ipv6_hdr_t *ipv6_hdr,
-                                                 pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_esp(netos_ipv6_hdr_t *ipv6_hdr,
+                      pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_ipv6_decode_esp(netos_ipv6_hdr_t *ipv6_hdr,
-                                            pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_ah(netos_ipv6_hdr_t *ipv6_hdr,
+                     pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
 
-static netos_status_t netos_ipv6_decode_ah(netos_ipv6_hdr_t *ipv6_hdr,
-                                           pkt_buffer_t *pkt_buf)
-{
-    return NETOS_STATUS_SUCCESS;
-}
-
-static netos_status_t netos_ipv6_decode_dest_opt(netos_ipv6_hdr_t *ipv6_hdr,
-                                                 pkt_buffer_t *pkt_buf)
+static netos_status_t
+netos_ipv6_decode_dest_opt(netos_ipv6_hdr_t *ipv6_hdr,
+                           pkt_buffer_t *pkt_buf)
 {
     return NETOS_STATUS_SUCCESS;
 }
@@ -97,6 +138,8 @@ netos_status_t netos_ipv6_decode(netos_ipv6_hdr_t *ipv6_hdr,
 {
     netos_status_t ret;
     uint16_t val;
+
+    ipv6_hdr->options.valid_options = 0;
 
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_IPV6_HDR_LEN_DEFAULT)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,

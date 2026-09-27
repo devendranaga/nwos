@@ -62,7 +62,7 @@ static struct {
     },
     {
         true,
-        NETOS_PROTOCOL_ICMP,
+        NETOS_PROTOCOL_ICMP6,
         "ICMP6",
         NULL,
         netos_icmp6_init,
@@ -115,6 +115,7 @@ netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
                                      netos_packet_parser_t *pkt_parser)
 {
     uint8_t protocol = pkt_parser->protocol;
+    netos_status_t ret;
     uint32_t i;
 
     for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_table); i ++) {
@@ -123,6 +124,22 @@ netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
                                  pkt_parser,
                                  pkt_buf);
         }
+    }
+
+    switch (protocol) {
+        case NETOS_PROTOCOL_IPIP:
+            ret = netos_ipv4_decode(&pkt_parser->l3.ipv4_hdr, pkt_buf);
+            if (ret != NETOS_STATUS_SUCCESS) {
+                return ret;
+            }
+
+            ret = netos_ipv4_rx_process(pkt_buf, pkt_parser);
+            if (ret != NETOS_STATUS_SUCCESS) {
+                return ret;
+            }
+        break;
+        default:
+            return NETOS_STATUS_INVAL_PROTOCOL;
     }
 
     return NETOS_STATUS_SUCCESS;

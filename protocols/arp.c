@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "protocol_const.h"
 #include "netos_status.h"
@@ -68,23 +67,13 @@ static netos_status_t netos_arp_rx_process_request(pkt_buffer_t *pkt_buf,
     return NETOS_STATUS_SUCCESS;
 }
 
-void netos_arp_mib_in_arp_ok()
-{
-    arp_protocol.mib.in_arp ++;
-}
-
-void netos_arp_mib_in_arp_invalid()
-{
-    arp_protocol.mib.in_arp_invalid ++;
-}
-
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                                     netos_packet_parser_t *pkt_parser)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
-    assert(pkt_buf != NULL);
-    assert(pkt_parser != NULL);
+    NETOS_ASSERT(pkt_buf == NULL);
+    NETOS_ASSERT(pkt_parser == NULL);
 
     pthread_mutex_lock(&arp_protocol.lock);
 

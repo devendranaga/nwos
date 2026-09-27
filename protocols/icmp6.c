@@ -45,14 +45,14 @@ err:
 }
 
 static void netos_icmp6_do_reply(netos_icmp6_ctx_t *icmp6_ctx,
-                                netos_packet_parser_t *parsed_data,
-                                pkt_buffer_t *pkt_buf)
+                                 netos_packet_parser_t *parsed_data,
+                                 pkt_buffer_t *pkt_buf)
 {
 }
 
 void netos_icmp6_rx(void *ctx,
-                   netos_packet_parser_t *parsed_data,
-                   pkt_buffer_t *pkt_buf)
+                    netos_packet_parser_t *parsed_data,
+                    pkt_buffer_t *pkt_buf)
 {
     netos_icmp6_hdr_t *icmp6_h;
     uint16_t start_off;
@@ -86,7 +86,7 @@ void netos_icmp6_rx(void *ctx,
 }
 
 void netos_icmp6_tx(void *ctx,
-                   pkt_buffer_t *pkt_buf)
+                    pkt_buffer_t *pkt_buf)
 {
 }
 

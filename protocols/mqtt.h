@@ -3,9 +3,11 @@
 
 #include "netos_config.h"
 #include "packet_parser.h"
+#include "mqtt_hdr.h"
 
 typedef struct {
-    netos_config_t *config;
+    netos_config_t      *config;
+    netos_mqtt_pdu_t    rx_pdu;
 } netos_mqtt_context_t;
 
 void *netos_mqtt_init(netos_config_t *config);

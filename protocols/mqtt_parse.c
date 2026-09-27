@@ -228,6 +228,10 @@ netos_status_t netos_mqtt_decode(netos_mqtt_pdu_t *pdu,
             return ret;
         }
         index ++;
+
+        if (index >= NETOS_MQTT_PDU_MAX) {
+            return NETOS_STATUS_MQTT_MALFORMED_PKT;
+        }
     }
 
     return NETOS_STATUS_SUCCESS;

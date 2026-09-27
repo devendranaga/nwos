@@ -55,11 +55,13 @@ netos_mmap_file_io_t *netos_mmap_open_file(const char *filename, uint32_t file_s
 
     fileio->memory = mmap(NULL, file_size,
                           PROT_READ | PROT_WRITE,
-                          MAP_SHARED,
+                          MAP_SHARED | MAP_POPULATE,
                           fileio->fd, 0);
     if (fileio->memory == MAP_FAILED) {
         goto err;
     }
+
+    madvise(fileio->memory, file_size, MADV_SEQUENTIAL);
 
     return fileio;
 

@@ -71,11 +71,14 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
     NETOS_ICMP_ECHO_REPLY_DEFAULTS(reply,
                                    icmp_h->u.echo_req.identifier,
                                    icmp_h->u.echo_req.seq_no);
-    reply.gen_checksum = true;
-    reply.type = NETOS_ICMP_TYPE_ECHO_REPLY;
-    reply.code = NETOS_ICMP_CODE_ECHO_REPLY;
-    reply.u.echo_reply.data_len = icmp_h->u.echo_req.data_len;
-    reply.u.echo_reply.data = icmp_h->u.echo_req.data;
+
+    reply.gen_checksum              = true;
+    reply.type                      = NETOS_ICMP_TYPE_ECHO_REPLY;
+    reply.code                      = NETOS_ICMP_CODE_ECHO_REPLY;
+    reply.u.echo_reply.data_len     = icmp_h->u.echo_req.data_len;
+    reply.u.echo_reply.data         = icmp_h->u.echo_req.data;
+    reply.u.echo_reply.identifier   = icmp_h->u.echo_req.identifier;
+    reply.u.echo_reply.seq_no       = icmp_h->u.echo_req.seq_no;
 
     netos_icmp_encode(&reply, tx_buf);
 

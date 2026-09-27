@@ -7,7 +7,7 @@
 typedef struct netos_statistics_ingress {
     _Atomic uint64_t n_rx;
     _Atomic uint64_t n_parse_failed;
-}netos_statistics_ingress_t;
+} netos_statistics_ingress_t;
 
 typedef struct netos_statistics_egress {
     _Atomic uint64_t n_tx;
@@ -24,6 +24,15 @@ typedef struct netos_statistics {
 
     struct netos_statistics     *next;
 } netos_statistics_t;
+
+typedef struct netos_arp_statistics {
+    _Atomic uint64_t n_arp_rx;
+    _Atomic uint64_t n_arp_fail;
+} netos_arp_statistics_t;
+
+typedef struct netos_global_statistics {
+    netos_arp_statistics_t      arp;
+} netos_global_statistics_t;
 
 #endif
 

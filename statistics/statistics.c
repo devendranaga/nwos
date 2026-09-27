@@ -7,6 +7,8 @@
 
 static netos_statistics_context_t *stats_ctx;
 
+static netos_global_statistics_t glob_stats;
+
 netos_status_t netos_statistics_init()
 {
     stats_ctx = calloc(1, sizeof(netos_statistics_context_t));
@@ -77,5 +79,15 @@ void netos_statistics_inc_bfifo_tx(void *stat_ptr)
     netos_statistics_t *stat = stat_ptr;
 
     atomic_fetch_add_explicit(&stat->egress.n_bfifo_tx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_arp_rx()
+{
+    atomic_fetch_add_explicit(&glob_stats.arp.n_arp_rx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_n_arp_fail()
+{
+    atomic_fetch_add_explicit(&glob_stats.arp.n_arp_fail, 1, memory_order_relaxed);
 }
 

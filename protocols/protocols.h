@@ -6,6 +6,7 @@
  */
 typedef enum {
     NETOS_PROTOCOL_ICMP     = 1,
+    NETOS_PROTOCOL_IPIP     = 4,
     NETOS_PROTOCOL_TCP      = 6,
     NETOS_PROTOCOL_UDP      = 17,
     NETOS_PROTOCOL_ICMP6    = 58,

@@ -17,6 +17,20 @@ extern "C" {
 #define NETOS_IPV6_NH_AH            51
 #define NETOS_IPV6_NH_DEST_OPT      60
 
+#define NETOS_IPV6_OPT_HOP_BY_HOP_VALID 0x0001
+
+#define NETOS_IPV6_HOP_BY_HOP_OPT_PAD           0x01
+#define NETOS_IPV6_HOP_BY_HOP_OPT_ROUTER_ALERT  0x05
+
+typedef struct {
+    uint8_t len;
+    union {
+        struct {
+            uint16_t value;
+        } router_alert;
+    };
+} netos_ipv6_hop_by_hop_opt_t;
+
 /**
  *
  * |--4 bits-|---6 bits---|--2 bits--|----20 bits--------|
@@ -39,6 +53,11 @@ typedef struct {
     uint8_t     hop_limit;
     uint8_t     src_ipaddr[NETOS_IPV6_ADDR_LEN];
     uint8_t     dst_ipaddr[NETOS_IPV6_ADDR_LEN];
+
+    struct {
+        uint32_t                    valid_options;
+        netos_ipv6_hop_by_hop_opt_t hop_by_hop;
+    } options;
 } netos_ipv6_hdr_t;
 
 /**

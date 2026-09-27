@@ -20,12 +20,6 @@ extern "C" {
 #include "packet_parser.h"
 #include "hash_tables.h"
 
-typedef struct netos_arp_mib {
-    uint64_t    in_arp;
-    uint64_t    in_arp_invalid;
-    uint64_t    in_arp_valid;
-} netos_arp_mib_t;
-
 typedef struct netos_arp_entry {
     uint8_t                 mac[NETOS_MACADDR_LEN];
     netos_raw_socket_ctx_t  *in_intf; // where this entry reside on
@@ -34,11 +28,10 @@ typedef struct netos_arp_entry {
 } netos_arp_entry_t;
 
 typedef struct netos_arp_protocol {
-    netos_config_t *config;
-    netos_arp_mib_t mib;
-    netos_hash_table_t *arp_cache;
-    pthread_mutex_t lock;
-    netos_buffer_pool_t *pool;
+    netos_config_t          *config;
+    netos_hash_table_t      *arp_cache;
+    pthread_mutex_t         lock;
+    netos_buffer_pool_t     *pool;
 } netos_arp_protocol_t;
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
