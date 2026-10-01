@@ -5,13 +5,20 @@
 
 static void netos_mqtt_decode_connect_flags(netos_mqtt_hdr_t *hdr)
 {
-    hdr->connect.d_conn_flags.username = !!(hdr->connect.connect_flags & 0x80);
-    hdr->connect.d_conn_flags.password = !!(hdr->connect.connect_flags & 0x40);
-    hdr->connect.d_conn_flags.will_retain = !!(hdr->connect.connect_flags & 0x20);
-    hdr->connect.d_conn_flags.qos_level = (hdr->connect.connect_flags & 0x18) >> 3;
-    hdr->connect.d_conn_flags.will_flag = !!(hdr->connect.connect_flags & 0x04);
-    hdr->connect.d_conn_flags.clean_session = !!(hdr->connect.connect_flags & 0x02);
-    hdr->connect.d_conn_flags.reserved = !!(hdr->connect.connect_flags & 0x01);
+    hdr->connect.d_conn_flags.username
+                        = !!(hdr->connect.connect_flags & 0x80);
+    hdr->connect.d_conn_flags.password
+                        = !!(hdr->connect.connect_flags & 0x40);
+    hdr->connect.d_conn_flags.will_retain
+                        = !!(hdr->connect.connect_flags & 0x20);
+    hdr->connect.d_conn_flags.qos_level
+                        = (hdr->connect.connect_flags & 0x18) >> 3;
+    hdr->connect.d_conn_flags.will_flag
+                        = !!(hdr->connect.connect_flags & 0x04);
+    hdr->connect.d_conn_flags.clean_session
+                        = !!(hdr->connect.connect_flags & 0x02);
+    hdr->connect.d_conn_flags.reserved
+                        = !!(hdr->connect.connect_flags & 0x01);
 }
 
 static netos_status_t netos_mqtt_decode_connect(netos_mqtt_hdr_t *hdr,
@@ -20,13 +27,21 @@ static netos_status_t netos_mqtt_decode_connect(netos_mqtt_hdr_t *hdr,
     pkt_buffer_decode_2_bytes(pkt_buf,
                               &hdr->connect.protocol_name.protocol_name_len);
 
-    // protocol name length is over the remaining length
-    if (hdr->connect.protocol_name.protocol_name_len > (pkt_buf->rx_len - pkt_buf->offset)) {
+    if (hdr->connect.protocol_name.protocol_name_len == 0) {
         return NETOS_STATUS_MQTT_MALFORMED_PKT;
     }
 
-    hdr->connect.protocol_name.protocol_name = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
-    pkt_buf->offset += hdr->connect.protocol_name.protocol_name_len;
+    // protocol name length is over the remaining length
+    if (hdr->connect.protocol_name.protocol_name_len >
+        (pkt_buf->rx_len - pkt_buf->offset)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
+    if (hdr->connect.protocol_name.protocol_name_len) {
+        hdr->connect.protocol_name.protocol_name =
+                            (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+        pkt_buf->offset += hdr->connect.protocol_name.protocol_name_len;
+    }
 
     pkt_buffer_decode_byte(pkt_buf, &hdr->connect.version);
     pkt_buffer_decode_byte(pkt_buf, &hdr->connect.connect_flags);
@@ -39,7 +54,10 @@ static netos_status_t netos_mqtt_decode_connect(netos_mqtt_hdr_t *hdr,
         return NETOS_STATUS_MQTT_MALFORMED_PKT;
     }
 
-    hdr->connect.client_id = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+    if (hdr->connect.client_id_len != 0) {
+        hdr->connect.client_id = (uint8_t *)&(pkt_buf->buffer[pkt_buf->offset]);
+        pkt_buf->offset += hdr->connect.client_id_len;
+    }
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -113,6 +131,14 @@ static netos_status_t netos_mqtt_decode_publish_msg(netos_mqtt_hdr_t *hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_mqtt_decode_puback(netos_mqtt_hdr_t *hdr,
+                                               pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->puback.msg_id);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_mqtt_decode_ping_req(netos_mqtt_hdr_t *hdr,
                                                  pkt_buffer_t *pkt_buf)
 {
@@ -177,6 +203,11 @@ static const struct {
         netos_mqtt_decode_publish_msg
     },
     {
+        NETOS_MQTT_PUBACK,
+        NULL,
+        netos_mqtt_decode_puback
+    },
+    {
         NETOS_MQTT_PING_REQ,
         NULL,
         netos_mqtt_decode_ping_req
@@ -229,6 +260,7 @@ netos_status_t netos_mqtt_decode(netos_mqtt_pdu_t *pdu,
         }
         index ++;
 
+        // cannot allocate more pdu buffers manually
         if (index >= NETOS_MQTT_PDU_MAX) {
             return NETOS_STATUS_MQTT_MALFORMED_PKT;
         }

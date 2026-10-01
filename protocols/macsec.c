@@ -109,7 +109,7 @@ netos_status_t netos_macsec_create_txsa(netos_macsec_secy_t *secy,
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
-    if (an > NETOS_MACSEC_TXSA_LEN) {
+    if (an >= NETOS_MACSEC_TXSA_LEN) {
         return NETOS_STATUS_MACSEC_TXSA_AN_INVAL;
     }
 
@@ -149,7 +149,7 @@ netos_status_t netos_macsec_create_rxsa(netos_macsec_secy_t *secy,
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
-    if (an > NETOS_MACSEC_RXSA_LEN) {
+    if (an >= NETOS_MACSEC_RXSA_LEN) {
         return NETOS_STATUS_MACSEC_RXSA_AN_INVAL;
     }
 

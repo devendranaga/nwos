@@ -23,6 +23,11 @@ netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t 
 
     pkt_buffer_decode_byte(pkt_buf, &macsec_hdr->sl);
 
+    if ((macsec_hdr->tci_an.sc) &&
+        (pkt_buffer_remaining_rx_len(pkt_buf) < NETOS_MACSEC_SCI_LEN)) {
+        return NETOS_STATUS_MACSEC_MALFORMED_PKT;
+    }
+
     if (macsec_hdr->tci_an.sc) {
         pkt_buffer_decode_bytes(pkt_buf, macsec_hdr->sci, NETOS_MACSEC_SCI_LEN);
     }
@@ -37,6 +42,10 @@ netos_status_t netos_macsec_decode(netos_macsec_hdr_t *macsec_hdr, pkt_buffer_t 
 
     if ((macsec_hdr->tci_an.e == 0) && (macsec_hdr->tci_an.c == 1)) {
         pkt_buffer_decode_2_bytes(pkt_buf, &macsec_hdr->ethertype);
+    }
+
+    if (pkt_buffer_remaining_rx_len(pkt_buf) < NETOS_MACSEC_ICV_LEN) {
+        return NETOS_STATUS_MACSEC_MALFORMED_PKT;
     }
 
     uint16_t icv_offset = pkt_buf->rx_len - NETOS_MACSEC_ICV_LEN;

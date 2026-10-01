@@ -5,16 +5,24 @@
 #include "netos_status.h"
 #include "pkt_buffer.h"
 
-#define NETOS_MQTT_CONNECT_CMD  0x0001
-#define NETOS_MQTT_CONNECT_ACK  0x0002
-#define NETOS_MQTT_PUBLISH      0x0003
-#define NETOS_MQTT_SUB_REQ      0x0008
-#define NETOS_MQTT_SUB_ACK      0x0009
-#define NETOS_MQTT_PING_REQ     0x000C
-#define NETOS_MQTT_PING_RESP    0x000D
-#define NETOS_MQTT_DISCONNECT   0x000E
+#define NETOS_MQTT_CONNECT_CMD      0x0001
+#define NETOS_MQTT_CONNECT_ACK      0x0002
+#define NETOS_MQTT_PUBLISH          0x0003
+#define NETOS_MQTT_PUBACK           0x0004
+#define NETOS_MQTT_PUBREC           0x0005
+#define NETOS_MQTT_PUBREL           0x0006
+#define NETOS_MQTT_PUBCOMP          0x0007
+#define NETOS_MQTT_SUB_REQ          0x0008
+#define NETOS_MQTT_SUB_ACK          0x0009
+#define NETOS_MQTT_UNSUBSCRIBE      0x000A
+#define NETOS_MQTT_UNSUBACK         0x000B
+#define NETOS_MQTT_PING_REQ         0x000C
+#define NETOS_MQTT_PING_RESP        0x000D
+#define NETOS_MQTT_DISCONNECT       0x000E
+#define NETOS_MQTT_AUTH             0x000F
 
-#define NETOS_MQTT_PDU_MAX      32
+#define NETOS_MQTT_CONNECT_LEN_MAX  8
+#define NETOS_MQTT_PDU_MAX          32
 
 typedef struct {
     uint16_t                        topic_len;
@@ -26,6 +34,10 @@ typedef struct {
     uint16_t                        msg_len;
     uint8_t                         *msg;
 } netos_mqtt_publish_t;
+
+typedef struct {
+    uint16_t                        msg_id;
+} netos_mqtt_puback_t;
 
 typedef struct {
     uint8_t                         dup;
@@ -80,6 +92,7 @@ typedef struct netos_mqtt_hdr {
         netos_mqtt_sub_req_t        sub_req;
         netos_mqtt_sub_ack_t        sub_ack;
         netos_mqtt_publish_t        publish;
+        netos_mqtt_puback_t         puback;
     };
 } netos_mqtt_hdr_t;
 

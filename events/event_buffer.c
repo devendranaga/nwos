@@ -63,13 +63,8 @@ void netos_event_buffer_put(netos_event_buffer_t *pool, netos_event_info_t *evt)
 {
     pthread_mutex_lock(&pool->evt_lock);
 
-    if (!pool->free_buffers) {
-        pool->free_buffers = evt;
-        evt->next = NULL;
-    } else {
-        evt->next = pool->free_buffers;
-        pool->free_buffers = evt;
-    }
+    evt->next = pool->free_buffers;
+    pool->free_buffers = evt;
 
     pthread_mutex_unlock(&pool->evt_lock);
 }
