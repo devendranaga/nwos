@@ -12,11 +12,15 @@ class netos_raw_socket:
     def recv(self):
         return self.fd.recv(65535)
 
+    def send(self, buf):
+        return self.fd.send(buf)
+
     def __exit__(self):
         self.fd.close()
 
 if __name__ == "__main__":
     nr = netos_raw_socket("wlp4s0")
+
     while True:
         rx_buf = nr.recv()
         print("rx len: " + str(len(rx_buf)))

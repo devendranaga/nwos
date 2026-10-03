@@ -43,8 +43,10 @@ netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename)
     ctx->offset = 0;
     ctx->glob_hdr = (netos_pcap_global_header_t *)(ctx->mapped_memory);
 
-    if ((ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_BE) &&
-        (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_LE)) {
+    if ((ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_BE_1) &&
+        (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_BE_2) &&
+        (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_LE_1) &&
+        (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_LE_2)) {
         goto err;
     }
 

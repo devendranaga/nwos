@@ -32,7 +32,7 @@ netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
     ethertype = parsed_data->eh.ethertype;
 
 check_ethertype:
-    if (i > NETOS_MAX_VLAN_TUNNELS) {
+    if (i > (NETOS_MAX_VLAN_TUNNELS - 1)) {
         return NETOS_STATUS_VLAN_MAX_TUNNELS;
     }
 

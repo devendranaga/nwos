@@ -139,6 +139,51 @@ static netos_status_t netos_mqtt_decode_puback(netos_mqtt_hdr_t *hdr,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t netos_mqtt_decode_pubrcvd(netos_mqtt_hdr_t *hdr,
+                                                pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->pubrcvd.msg_id);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_pubrel(netos_mqtt_hdr_t *hdr,
+                                               pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->pubrel.msg_id);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_pubcompl(netos_mqtt_hdr_t *hdr,
+                                                 pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->pubcompl.msg_id);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_unsub_req(netos_mqtt_hdr_t *hdr,
+                                                  pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->unsub_req.msg_id);
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->unsub_req.topic.topic_len);
+
+    if (hdr->unsub_req.topic.topic_len != 0) {
+        hdr->unsub_req.topic.topic_name = (uint8_t *)(pkt_buf->buffer + pkt_buf->offset);
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t netos_mqtt_decode_unsub_ack(netos_mqtt_hdr_t *hdr,
+                                                  pkt_buffer_t *pkt_buf)
+{
+    pkt_buffer_decode_2_bytes(pkt_buf, &hdr->unsub_ack.msg_id);
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static netos_status_t netos_mqtt_decode_ping_req(netos_mqtt_hdr_t *hdr,
                                                  pkt_buffer_t *pkt_buf)
 {
@@ -206,6 +251,31 @@ static const struct {
         NETOS_MQTT_PUBACK,
         NULL,
         netos_mqtt_decode_puback
+    },
+    {
+        NETOS_MQTT_PUBREC,
+        NULL,
+        netos_mqtt_decode_pubrcvd
+    },
+    {
+        NETOS_MQTT_PUBREL,
+        NULL,
+        netos_mqtt_decode_pubrel
+    },
+    {
+        NETOS_MQTT_PUBCOMP,
+        NULL,
+        netos_mqtt_decode_pubcompl
+    },
+    {
+        NETOS_MQTT_UNSUBSCRIBE,
+        NULL,
+        netos_mqtt_decode_unsub_req
+    },
+    {
+        NETOS_MQTT_UNSUBACK,
+        NULL,
+        netos_mqtt_decode_unsub_ack
     },
     {
         NETOS_MQTT_PING_REQ,

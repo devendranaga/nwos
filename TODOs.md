@@ -137,6 +137,7 @@
 - [ ] Convert pcapng to pcap
 - [ ] Convert pcap to pcapng
 - [ ] call `NETOS_PANIC` for all alloc failures
+- [ ] support netctl interface to the statistics
 
 ## Done
 

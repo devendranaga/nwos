@@ -40,6 +40,18 @@ typedef struct {
 } netos_mqtt_puback_t;
 
 typedef struct {
+    uint16_t                        msg_id;
+} netos_mqtt_pubrcvd_t;
+
+typedef struct {
+    uint16_t                        msg_id;
+} netos_mqtt_pubrel_t;
+
+typedef struct {
+    uint16_t                        msg_id;
+} netos_mqtt_pubcompl_t;
+
+typedef struct {
     uint8_t                         dup;
     uint8_t                         qos_level;
     uint8_t                         :8;
@@ -83,6 +95,15 @@ typedef struct {
     uint8_t                         result_code;
 } netos_mqtt_connect_ack_t;
 
+typedef struct {
+    uint16_t                        msg_id;
+    netos_mqtt_topic_t              topic;
+} netos_mqtt_unsub_req_t;
+
+typedef struct {
+    uint16_t                        msg_id;
+} netos_mqtt_unsub_ack_t;
+
 typedef struct netos_mqtt_hdr {
     uint8_t                         hdr_flags;
     uint8_t                         msg_len;
@@ -93,6 +114,11 @@ typedef struct netos_mqtt_hdr {
         netos_mqtt_sub_ack_t        sub_ack;
         netos_mqtt_publish_t        publish;
         netos_mqtt_puback_t         puback;
+        netos_mqtt_pubrcvd_t        pubrcvd;
+        netos_mqtt_pubrel_t         pubrel;
+        netos_mqtt_pubcompl_t       pubcompl;
+        netos_mqtt_unsub_req_t      unsub_req;
+        netos_mqtt_unsub_ack_t      unsub_ack;
     };
 } netos_mqtt_hdr_t;
 
