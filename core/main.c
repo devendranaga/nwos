@@ -11,6 +11,7 @@
 #include "netos_log.h"
 #include "rules_config.h"
 #include "netos_config.h"
+#include "ctrl_intf.h"
 #include "cpu_affinity.h"
 #include "statistics_ctx.h"
 #include "perf_intf.h"
@@ -138,8 +139,6 @@ static void *netos_intf_parse_callback(void *cbdata)
     netos_parser_thread_t *parse_thr = cbdata;
     netos_status_t ret;
 
-    parse_thr->protocol_ctx.parsed_data.this_thread = parse_thr;
-
     netos_log_info("Parse callback started\n");
 
     while (1) {
@@ -160,6 +159,9 @@ static void *netos_intf_parse_callback(void *cbdata)
             if (!pkt) {
                 continue;
             }
+
+            netos_parsed_frame_init(&parse_thr->protocol_ctx.parsed_data);
+            parse_thr->protocol_ctx.parsed_data.this_thread = parse_thr;
 
             // parse the frame
             ret = netos_parse_frame(pkt, &parse_thr->protocol_ctx.parsed_data);
@@ -390,6 +392,7 @@ int main(int argc, char **argv)
         return ret;
     }
 
+    // parse the rules config
     ret = netos_rule_config_parse(ctx->config.rule_file, &ctx->rules);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Rule parse failure error : %x\n", ret);
@@ -419,9 +422,17 @@ int main(int argc, char **argv)
         return ret;
     }
 
+    // initialize statistics context
     ret = netos_statistics_init();
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to initialize statistics\n");
+        return ret;
+    }
+
+    // initialize the control interface
+    ctx->ctrl_intf = netos_ctrl_intf_init("./netos_ctrl.sock", ctx->gcd_ctx);
+    if (!ctx->ctrl_intf) {
+        netos_log_error("failed to initialize the control socket\n");
         return ret;
     }
 

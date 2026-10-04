@@ -49,6 +49,7 @@ typedef struct netos_ctx {
     netos_rules_t       rules;
     netos_intf_t        *interfaces;
     netos_gcd_ctx_t     *gcd_ctx;
+    void                *ctrl_intf;
 } netos_ctx_t;
 
 #endif

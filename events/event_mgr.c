@@ -138,7 +138,7 @@ static void netos_event_mgr_process_timer(void *ctx)
 
     // chain back the used up entries into a new tail pointer
     // do not hog the event list, yield if there are over 100 events
-    while (tail->next && (count < NETOS_EVENT_COUNT_MAX)) {
+    while (tail && tail->next && (count < NETOS_EVENT_COUNT_MAX)) {
         tail = tail->next;
         count ++;
     }

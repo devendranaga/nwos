@@ -21,9 +21,9 @@ extern "C" {
 #define NETOS_ICMP6_NS_OPT_SLL                  1
 #define NETOS_ICMP6_NS_OPT_SLL_LEN              8
 
-#define NETOS_ICMP6_ECHO_LEN                    4
+#define NETOS_ICMP6_ECHO_LEN                    4  // no data pointer
 #define NETOS_ICMP6_NS_LEN                      20 // no options
-#define NETOS_ICMP6_NA_LEN                      20
+#define NETOS_ICMP6_NA_LEN                      20 // no options
 
 #define NETOS_ICMP6_IS_ECHO_REQ(__icmp6_hdr) ((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_ECHO_REQ)
 #define NETOS_ICMP6_IS_NS(__icmp6_hdr) (((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_NS) &&\

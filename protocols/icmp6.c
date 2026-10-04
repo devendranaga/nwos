@@ -82,6 +82,11 @@ void netos_icmp6_rx(void *ctx,
 
     if (NETOS_ICMP6_IS_ECHO_REQ(icmp6_h)) {
         netos_icmp6_do_reply(ctx, parsed_data, pkt_buf);
+    } else if (NETOS_ICMP6_IS_NS(icmp6_h) ||
+               NETOS_ICMP6_IS_NA(icmp6_h)) {
+        netos_icmp6_ctx_t *icmp6_ctx = ctx;
+
+        netos_ndp_rx(icmp6_ctx->ndp_ctx, parsed_data, pkt_buf);
     }
 }
 

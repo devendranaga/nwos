@@ -143,6 +143,7 @@ include_directories(
                 ./core/
                 ./switching/
                 ./crypto/
+                ./intf/
                 /usr/include/libxml2/
                 ./tools/pgen/)
 

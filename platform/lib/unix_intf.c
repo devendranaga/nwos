@@ -16,6 +16,7 @@ int netos_unix_intf_udp_server_socket_init(const char *path)
         return -1;
     }
 
+    unlink(path);
     memset(&serv_info, 0, sizeof(serv_info));
     serv_info.sun_family = AF_UNIX;
     strncpy(serv_info.sun_path, path, sizeof(serv_info.sun_path) - 1);
@@ -35,7 +36,10 @@ err:
     return -1;
 }
 
-int netos_unix_intf_udp_send(int fd, const char *path, const uint8_t *msg, uint32_t msg_len)
+int netos_unix_intf_udp_send(int fd,
+                             const char *path,
+                             const uint8_t *msg,
+                             uint32_t msg_len)
 {
     struct sockaddr_un sender_info;
 
@@ -43,10 +47,14 @@ int netos_unix_intf_udp_send(int fd, const char *path, const uint8_t *msg, uint3
     sender_info.sun_family = AF_UNIX;
     strncpy(sender_info.sun_path, path, sizeof(sender_info.sun_path) - 1);
 
-    return sendto(fd, msg, msg_len, 0, (struct sockaddr *)&sender_info, sizeof(sender_info));
+    return sendto(fd, msg, msg_len, 0,
+                  (struct sockaddr *)&sender_info, sizeof(sender_info));
 }
 
-int netos_unix_intf_udp_recv(int fd, char *path, uint8_t *msg, uint32_t msg_len)
+int netos_unix_intf_udp_recv(int fd,
+                             char *path,
+                             uint8_t *msg,
+                             uint32_t msg_len)
 {
     struct sockaddr_un recv_info;
     socklen_t recv_info_len;
@@ -56,7 +64,8 @@ int netos_unix_intf_udp_recv(int fd, char *path, uint8_t *msg, uint32_t msg_len)
     recv_info.sun_family = AF_UNIX;
     recv_info_len = sizeof(recv_info);
 
-    ret = recvfrom(fd, msg, msg_len, 0, (struct sockaddr *)&recv_info, &recv_info_len);
+    ret = recvfrom(fd, msg, msg_len, 0,
+                   (struct sockaddr *)&recv_info, &recv_info_len);
     if (ret < 0) {
         return -1;
     }
@@ -64,5 +73,15 @@ int netos_unix_intf_udp_recv(int fd, char *path, uint8_t *msg, uint32_t msg_len)
     strcpy(path, recv_info.sun_path);
 
     return ret;
+}
+
+void netos_unix_intf_udp_close(int fd, const char *path)
+{
+    if (fd > 0) {
+        close(fd);
+    }
+    if (path) {
+        unlink(path);
+    }
 }
 

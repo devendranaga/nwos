@@ -20,8 +20,6 @@ netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
     uint16_t ethertype = 0;
     uint32_t i = 0;
 
-    netos_parsed_frame_init(parsed_data);
-
     parsed_data->has_l2_protocol = false;
 
     ret = netos_eth_decode(&parsed_data->eh, pkt_buf);
@@ -74,6 +72,7 @@ check_ethertype:
             // Process ARP frame
             ret = netos_arp_rx_process(pkt_buf, parsed_data);
             if (ret == NETOS_STATUS_SUCCESS) {
+                netos_statistics_inc_arp_ingress(NETOS_GET_STATS_PTR(parsed_data));
                 parsed_data->has_l2_protocol = true;
             }
 
@@ -89,6 +88,8 @@ check_ethertype:
         if (ret != NETOS_STATUS_SUCCESS) {
             return ret;
         }
+
+        netos_statistics_inc_ipv4_ingress(NETOS_GET_STATS_PTR(parsed_data));
         parsed_data->protocol = parsed_data->l3.ipv4_hdr.protocol;
 
         ret = netos_ipv4_rx_process(pkt_buf, parsed_data);
@@ -98,6 +99,8 @@ check_ethertype:
         if (ret != NETOS_STATUS_SUCCESS) {
             return ret;
         }
+
+        netos_statistics_inc_ipv6_ingress(NETOS_GET_STATS_PTR(parsed_data));
         parsed_data->protocol = parsed_data->l3.ipv6_hdr.nh;
 
         ret = netos_ipv6_rx_process(pkt_buf, parsed_data);

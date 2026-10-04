@@ -13,8 +13,8 @@ netos_hash_table_t *netos_hash_table_init(uint32_t n_items, hash_fn hash, cmp_fn
     }
 
     hash_table->n_items = n_items;
-    hash_table->hash = hash;
-    hash_table->cmp = cmp;
+    hash_table->hash    = hash;
+    hash_table->cmp     = cmp;
 
     hash_table->items = calloc(1, sizeof(netos_hash_item_t) * n_items);
     if (!hash_table->items) {

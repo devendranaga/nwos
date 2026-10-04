@@ -21,9 +21,9 @@ static const char *log_level_table[] = {
 
 static inline const char *netos_log_level_str(netos_log_level_t log_level)
 {
-    const char *log_level_str = "Uknown";
+    const char *log_level_str = "Unknown";
 
-    if (log_level > NETOS_SIZEOF_ARRAY(log_level_table)) {
+    if (log_level >= NETOS_SIZEOF_ARRAY(log_level_table)) {
         return log_level_str;
     }
 

@@ -26,6 +26,8 @@ typedef struct netos_parser_thread {
     netos_protocol_context_t    protocol_ctx;
 } netos_parser_thread_t;
 
+#define NETOS_GET_STATS_PTR(__parser) ((((netos_parser_thread_t *)(__parser->this_thread))->raw)->stats_ctx)
+
 #define NETOS_TO_ARP_CTX(__this_ptr) (&(((netos_parser_thread_t *)__this_ptr)->protocol_ctx.arp))
 
 #endif

@@ -6,6 +6,9 @@
 
 typedef struct netos_statistics_ingress {
     _Atomic uint64_t n_rx;
+    _Atomic uint64_t n_arp_rx;
+    _Atomic uint64_t n_ipv4_rx;
+    _Atomic uint64_t n_ipv6_rx;
     _Atomic uint64_t n_parse_failed;
 } netos_statistics_ingress_t;
 
