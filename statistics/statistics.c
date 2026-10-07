@@ -131,6 +131,7 @@ uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len)
         ingress_stats->n_ipv6_rx = atomic_load_explicit(&stat->ingress.n_ipv6_rx, memory_order_relaxed);
         ingress_stats->n_parse_failed = atomic_load_explicit(&stat->ingress.n_parse_failed, memory_order_relaxed);
 
+        off += sizeof(netos_netctl_ingress_statistics_t);
         stat = stat->next;
 
         count ++;

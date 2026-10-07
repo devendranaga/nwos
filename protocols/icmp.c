@@ -104,7 +104,9 @@ void netos_icmp_rx(void *ctx,
 
     icmp_h = &parsed_data->l4.icmp_hdr;
 
-    if (NETOS_ICMP_IS_ECHO_REQ(icmp_h)) {
+    if (NETOS_ICMP_IS_ECHO_REQ(icmp_h) &&
+        NETOS_IS_IPV4_FRAME(parsed_data) &&
+        (parsed_data->l3.ipv4_hdr.dst_ipaddr == pkt_buf->in_intf->ipaddr)) {
         netos_icmp_do_reply(ctx, parsed_data, pkt_buf);
     }
 }

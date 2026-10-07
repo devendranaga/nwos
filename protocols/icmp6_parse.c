@@ -69,7 +69,7 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
 
         switch (type) {
             case NETOS_ICMP6_NS_OPT_SLL: {
-                if (len != NETOS_ICMP6_NS_OPT_SLL_LEN) {
+                if (len != (NETOS_ICMP6_NS_OPT_SLL_LEN / 8)) {
                     return NETOS_STATUS_ICMP6_MALFORMED_PKT;
                 }
 
