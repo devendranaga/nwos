@@ -74,6 +74,11 @@ typedef enum netos_log_level {
 } while (0)
 
 /**
+ * @brief - Initialize logging.
+ */
+void netos_log_init(void);
+
+/**
  * @brief - print info message.
  *
  * @param [in] fmt - format string.

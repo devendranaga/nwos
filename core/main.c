@@ -277,7 +277,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
 
 err:
     if (intf) {
-        if (intf->raw->egress_ctrl) {
+        if (intf->raw && intf->raw->egress_ctrl) {
             netos_egress_controller_deinit(intf->raw->egress_ctrl);
         }
         if (intf->parser_thr) {
@@ -288,6 +288,9 @@ err:
                 free(intf->parser_thr->ifname);
             }
             free(intf->parser_thr);
+        }
+        if (intf->raw) {
+            netos_raw_socket_deinit(intf->raw);
         }
         if (intf->ifname) {
             free(intf->ifname);
@@ -367,6 +370,13 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
     return NETOS_STATUS_SUCCESS;
 }
 
+static void netos_terminate_handler(int sig, void *handle)
+{
+    netos_ctx_t *ctx = handle;
+
+    netos_gcd_terminate(ctx->gcd_ctx);
+}
+
 int main(int argc, char **argv)
 {
     netos_ctx_t *ctx;
@@ -382,6 +392,8 @@ int main(int argc, char **argv)
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
+
+    netos_log_init();
 
     netos_log_info("Parse command line arguments ok\n");
 
@@ -442,6 +454,9 @@ int main(int argc, char **argv)
         netos_log_error("Interface list initialization failed error : %x\n", ret);
         return ret;
     }
+
+    // register terminate signals
+    netos_gcd_register_term_signal(ctx->gcd_ctx, netos_terminate_handler, ctx);
 
     // run the gcd
     netos_gcd_run(ctx->gcd_ctx);

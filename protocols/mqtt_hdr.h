@@ -24,6 +24,8 @@
 #define NETOS_MQTT_CONNECT_LEN_MAX  8
 #define NETOS_MQTT_PDU_MAX          32
 
+#define NETOS_MQTT_HDR_LEN          2
+
 typedef struct {
     uint16_t                        topic_len;
     uint8_t                         *topic_name;

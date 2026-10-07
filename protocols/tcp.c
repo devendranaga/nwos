@@ -132,7 +132,7 @@ static netos_status_t netos_tcp_rx_decode(void *ctx,
         }
     }
 
-    return NETOS_STATUS_SUCCESS;
+    return ret;
 }
 
 void netos_tcp_rx_process(void *ctx,

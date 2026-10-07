@@ -300,6 +300,10 @@ static netos_status_t netos_mqtt_decode_entry(netos_mqtt_hdr_t *hdr,
     netos_status_t ret;
     uint32_t i;
 
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_MQTT_HDR_LEN)) {
+        return NETOS_STATUS_MQTT_MALFORMED_PKT;
+    }
+
     pkt_buffer_decode_byte(pkt_buf, &hdr->hdr_flags);
     pkt_buffer_decode_byte(pkt_buf, &hdr->msg_len);
 

@@ -1,6 +1,7 @@
 #ifndef NETOS_GCD_H
 #define NETOS_GCD_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef void (*netos_timer_callback)(void *ctx);
@@ -39,6 +40,7 @@ typedef struct {
 
 typedef struct {
     int                     epoll_fd;
+    bool                    terminate;
     netos_gcd_timer_ctx_t   timer_ctx;
     netos_gcd_socket_ctx_t  socket_ctx;
     netos_gcd_signal_ctx_t  signal_ctx;
@@ -57,7 +59,13 @@ netos_status_t netos_gcd_timer_set_callback(netos_gcd_ctx_t *gcd_ctx,
                                             void *timer_ctx,
                                             netos_timer_callback callback);
 
+void netos_gcd_register_term_signal(netos_gcd_ctx_t *ctx,
+                                    netos_signal_callback signal_cb,
+                                    void *user_data);
+
 void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx);
+
+void netos_gcd_terminate(netos_gcd_ctx_t *gcd_ctx);
 
 #endif
 

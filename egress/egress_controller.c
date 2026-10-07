@@ -6,6 +6,7 @@
 #include "egress_sp.h"
 #include "egress_rr.h"
 #include "egress_controller.h"
+#include "buffer_pool.h"
 #include "netos_log.h"
 
 static netos_status_t netos_egress_alg_sp_init(netos_egress_controller_t *egress_ctrl)
@@ -203,6 +204,7 @@ void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
     // invalid egress algorithm
     if ((alg < NETOS_EGRESS_ALG_SP) || (alg > NETOS_EGRESS_ALG_BFIFO)) {
         egress_ctrl->mib.drops_inval_alg ++;
+        netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
         return;
     }
 

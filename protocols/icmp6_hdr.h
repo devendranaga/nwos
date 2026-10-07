@@ -27,9 +27,9 @@ extern "C" {
 
 #define NETOS_ICMP6_IS_ECHO_REQ(__icmp6_hdr) ((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_ECHO_REQ)
 #define NETOS_ICMP6_IS_NS(__icmp6_hdr) (((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_NS) &&\
-                                        ((__icmp6_hdr)->type == NETOS_ICMP6_CODE_NS))
+                                        ((__icmp6_hdr)->code == NETOS_ICMP6_CODE_NS))
 #define NETOS_ICMP6_IS_NA(__icmp6_hdr) (((__icmp6_hdr)->type == NETOS_ICMP6_TYPE_NA) &&\
-                                        ((__icmp6_hdr)->type == NETOS_ICMP6_CODE_NA))
+                                        ((__icmp6_hdr)->code == NETOS_ICMP6_CODE_NA))
 
 /**
  * @brief - Defines ICMP6 echo request.
