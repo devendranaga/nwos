@@ -7,6 +7,7 @@
 
 #include "netos_status.h"
 #include "netos_config.h"
+#include "netos_log.h"
 #include "common.h"
 
 static netos_status_t netos_config_parse_interface_config(netos_config_t *config,
@@ -20,6 +21,12 @@ static netos_status_t netos_config_parse_interface_config(netos_config_t *config
             (strcmp((char *)iter->name, "interface") == 0)) {
             xmlChar *val = xmlNodeListGetString(doc, iter->children, 1);
             if (!val) {
+                return NETOS_STATUS_CONFIG_INVAL_XML;
+            }
+
+            // validate if index > MAX and return error / unsupported
+            if (index >= NETOS_IFLIST_MAX) {
+                netos_log_error("Too many interfaces > %d", NETOS_IFLIST_MAX);
                 return NETOS_STATUS_CONFIG_INVAL_XML;
             }
 
@@ -44,6 +51,7 @@ static netos_status_t netos_config_get_string(char **str_ptr,
 
     *str_ptr = strdup((char *)val);
 
+    xmlFree(val);
     return NETOS_STATUS_SUCCESS;
 }
 
@@ -293,8 +301,7 @@ netos_config_parse_pfifo_config(netos_config_t *config,
     netos_status_t ret;
 
     for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
-        for (uint32_t i = 0; i < sizeof(protocol_config_callbacks) /
-                                 sizeof(protocol_config_callbacks[0]); i ++) {
+        for (uint32_t i = 0; i < NETOS_SIZEOF_ARRAY(pfifo_config_callbacks); i ++) {
             if ((node_ptr->type == XML_ELEMENT_NODE) &&
                 (strcmp((const char *)node_ptr->name, pfifo_config_callbacks[i].name) == 0)) {
                 ret = pfifo_config_callbacks[i].callback_fn(config, doc, node_ptr);
@@ -552,8 +559,13 @@ netos_config_parse_config_callbacks(netos_config_t *config,
 netos_status_t netos_config_parse(netos_config_t *config, const char *config_path)
 {
     netos_status_t ret;
-    xmlDocPtr doc = xmlReadFile(config_path, NULL, 0);
+    xmlDocPtr doc;
 
+    if (!config || !config_path) {
+        return NETOS_STATUS_CONFIG_INVAL_XML;
+    }
+
+    doc = xmlReadFile(config_path, NULL, 0);
     if (!doc) {
         return NETOS_STATUS_CONFIG_INVAL_XML;
     }

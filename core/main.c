@@ -26,6 +26,8 @@ static netos_status_t netos_parse_cmdargs(int argc, char **argv, netos_cmdargs_t
 {
     int ret;
 
+    cmdargs->config_file = NULL;
+
     while ((ret = getopt(argc, argv, "f:")) != -1) {
         switch (ret) {
             case 'f':
@@ -445,7 +447,7 @@ int main(int argc, char **argv)
     ctx->ctrl_intf = netos_ctrl_intf_init("./netos_ctrl.sock", ctx->gcd_ctx);
     if (!ctx->ctrl_intf) {
         netos_log_error("failed to initialize the control socket\n");
-        return ret;
+        return -1;
     }
 
     // initialize netos interfaces

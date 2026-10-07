@@ -37,6 +37,7 @@ static void *netos_egress_bfifo_tx_queue_thread(void *ctx)
                                         pkt_buf->buffer,
                                         pkt_buf->tx_len);
                     netos_statistics_inc_bfifo_tx(pkt_buf->out_intf->stats_ctx);
+                    netos_statistics_inc_tx(pkt_buf->out_intf->stats_ctx);
                 }
 
                 tx_bytes += pkt_buf->tx_len;

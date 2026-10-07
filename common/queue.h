@@ -20,7 +20,7 @@ typedef struct netos_queue_impl {
     uint32_t        length;
 } netos_queue_impl_t;
 
-netos_queue_impl_t *netos_queue_init();
+netos_queue_impl_t *netos_queue_init(void);
 
 void netos_queue_push(netos_queue_impl_t *impl, void *item);
 

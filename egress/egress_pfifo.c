@@ -37,6 +37,7 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
                                         pkt_buf->buffer,
                                         pkt_buf->tx_len);
                     netos_statistics_inc_pfifo_tx(pkt_buf->out_intf->stats_ctx);
+                    netos_statistics_inc_tx(pkt_buf->out_intf->stats_ctx);
                 }
 
                 netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);

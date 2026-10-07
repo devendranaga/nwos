@@ -50,7 +50,7 @@ static uint32_t netos_rule_tokenize(const char *buf)
     uint32_t j = 0;
     uint32_t i = 0;
 
-    while (buf[i] != '\0') {
+    while ((buf[i] != '\0') {
         if (buf[i] == ',') {
             tokens[count].token[j] = '\0';
             j = 0;

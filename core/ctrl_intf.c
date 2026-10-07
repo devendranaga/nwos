@@ -9,6 +9,22 @@
 #include "netctl_intf.h"
 #include "netos_log.h"
 
+static inline void netos_ctrl_intf_send_error_resp(netos_netctl_intf_t *intf_msg,
+                                                   int fd,
+                                                   uint32_t status_code,
+                                                   const char *path,
+                                                   uint8_t *buf)
+{
+    NETOS_NETCTL_INTF_INIT(intf_msg, NETOS_NETCTL_STATUS);
+    netos_netctl_status_t *status = (netos_netctl_status_t *)(intf_msg->val);
+    uint32_t total_send_len;
+
+    status->status_code = status_code;
+    total_send_len = sizeof(netos_netctl_intf_t) + sizeof(netos_netctl_status_t);
+
+    netos_unix_intf_udp_send(fd, path, buf, total_send_len);
+}
+
 static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
 {
     netos_netctl_intf_t *intf_msg;
@@ -20,6 +36,15 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
 
     intf_msg = (netos_netctl_intf_t *)buf;
 
+    if (intf_msg->version != NETOS_NETCTL_VERSION) {
+        netos_ctrl_intf_send_error_resp(intf_msg,
+                                        fd,
+                                        NETOS_NETCTL_INVAL_VERSION,
+                                        path,
+                                        buf);
+        return;
+    }
+
     ret = netos_unix_intf_udp_recv(fd, path, buf, sizeof(buf));
     if (ret < 0) {
         return;
@@ -27,26 +52,38 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
 
     switch (intf_msg->type) {
         case NETOS_NETCTL_GET_INGRESS_STATS: {
-            netos_netctl_ingress_statistics_t *ingress_stats;
             uint32_t count;
             uint32_t total_send_len;
 
             count = netos_statistics_get_ingress_stats(buf + sizeof(netos_netctl_intf_t),
                                                        sizeof(buf) - sizeof(netos_netctl_intf_t));
 
+#if defined(NETOS_DEBUG)
             if (count != 0) {
-                ingress_stats = (netos_netctl_ingress_statistics_t *)(buf + sizeof(netos_netctl_intf_t));
-                netos_log_info("n_rx %lu\n", ingress_stats->n_rx);
-                netos_log_info("n_arp_rx %lu\n", ingress_stats->n_arp_rx);
-                netos_log_info("n_ipv4_rx %lu\n", ingress_stats->n_ipv4_rx);
-                netos_log_info("n_ipv5_rx %lu\n", ingress_stats->n_ipv6_rx);
-            }
+                netos_netctl_ingress_statistics_t *ingress_stats;
 
+                ingress_stats = (netos_netctl_ingress_statistics_t *)(buf + sizeof(netos_netctl_intf_t));
+                netos_log_info("n_rx        %lu\n", ingress_stats->n_rx);
+                netos_log_info("n_arp_rx    %lu\n", ingress_stats->n_arp_rx);
+                netos_log_info("n_ipv4_rx   %lu\n", ingress_stats->n_ipv4_rx);
+                netos_log_info("n_ipv6_rx   %lu\n", ingress_stats->n_ipv6_rx);
+            }
+#endif
+
+            // even if count is 0, we send a response back but the netctl would
+            // simply check that there are simply no statistics for the GET_INGRESS_STATS
             total_send_len = sizeof(netos_netctl_intf_t) + sizeof(netos_netctl_ingress_statistics_t) * count;
 
             netos_unix_intf_udp_send(fd, path, buf, total_send_len);
 
         } break;
+        default:
+            netos_ctrl_intf_send_error_resp(intf_msg,
+                                            fd,
+                                            NETOS_NETCTL_UNKNOWN_TYPE,
+                                            path,
+                                            buf);
+        break;
     }
 }
 

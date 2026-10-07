@@ -78,8 +78,8 @@ void pkt_buffer_decode_4_bytes(pkt_buffer_t *pkt_buf, uint32_t *u32)
     uint8_t *buf = pkt_buf->buffer;
     uint32_t offset = pkt_buf->offset;
 
-    *u32 = (buf[offset] << 24) | (buf[offset + 1] << 16) |
-           (buf[offset + 2] << 8) | (buf[offset + 3]);
+    *u32 = ((uint32_t)(buf[offset]) << 24) | ((uint32_t)(buf[offset + 1]) << 16) |
+           ((uint32_t)(buf[offset + 2]) << 8) | (uint32_t)(buf[offset + 3]);
     pkt_buf->offset += 4u;
 }
 

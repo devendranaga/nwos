@@ -26,7 +26,7 @@ typedef struct netos_dll_impl {
  *
  * @return returns valid pointer if success and NULL otherwise.
  */
-netos_dll_impl_t *netos_dll_init();
+netos_dll_impl_t *netos_dll_init(void);
 
 /**
  * @brief - Add an item to the doubly linked lists.

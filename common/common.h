@@ -1,7 +1,11 @@
 #ifndef NETOS_COMMON_H
 #define NETOS_COMMON_H
 
+#include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
+
+#include "netos_status.h"
 
 #define NETOS_SIZEOF_ARRAY(__a) ((sizeof(__a)) / (sizeof(__a[0])))
 #define NETOS_FOR_EACH_LIST(__item, __type, __head) for(__type *__item = __head; __item; __item = __item->next)

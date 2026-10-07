@@ -7,6 +7,10 @@
 
 netos_status_t netos_ring_init(netos_ring_t *ring, uint32_t size)
 {
+    if (!ring || !size) {
+        return NETOS_STATUS_RING_INVAL_ARGS;
+    }
+
     ring->items = calloc(1, sizeof(void *) * size);
     if (!ring->items) {
         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
@@ -46,6 +50,10 @@ void *netos_ring_remove(netos_ring_t *ring)
 
 void netos_ring_deinit(netos_ring_t *ring)
 {
+    if (!ring) {
+        return;
+    }
+
     if (ring->items) {
         free(ring->items);
     }
