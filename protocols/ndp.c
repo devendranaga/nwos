@@ -60,3 +60,15 @@ void netos_ndp_rx(void *ctx,
 {
 }
 
+void netos_ndp_deinit(void *ctx)
+{
+    netos_ndp_ctx_t *ndp_ctx = ctx;
+
+    if (ndp_ctx) {
+        if (ndp_ctx->ndp_cache) {
+            netos_hash_table_deinit(ndp_ctx->ndp_cache, netos_ndp_del_fn);
+        }
+        free(ndp_ctx);
+    }
+}
+

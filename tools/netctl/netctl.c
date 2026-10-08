@@ -61,7 +61,7 @@ static void netos_netctl_rx_show_ingress_stats(netos_netctl_t *ctl, uint32_t com
     uint8_t *start_data;
     int ret;
 
-    ret = netos_unix_intf_udp_recv(ctl->fd, path, rx_msg, sizeof(rx_msg));
+    ret = netos_unix_intf_udp_recv(ctl->fd, path, sizeof(path), rx_msg, sizeof(rx_msg));
     if (ret < 0) {
         NETOS_PRINT_STD_ERROR_COLOR("failed to read response fom the netosd\n");
         return;

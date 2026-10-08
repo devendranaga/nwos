@@ -122,6 +122,9 @@ void netos_icmp_deinit(void *ctx)
 
     icmp_ctx = ctx;
     if (icmp_ctx) {
+        if (icmp_ctx->icmp_pool) {
+            netos_buffer_pool_free(icmp_ctx->icmp_pool);
+        }
         free(icmp_ctx);
     }
 }

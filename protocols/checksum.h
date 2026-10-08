@@ -1,6 +1,7 @@
 #ifndef NETOS_CHECKSUM_H
 #define NETOS_CHECKSUM_H
 
+#include <stdint.h>
 #include <stdbool.h>
 
 /**

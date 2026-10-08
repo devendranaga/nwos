@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 #include "netos_status.h"
 #include "hash_tables.h"
@@ -23,6 +24,19 @@ bool for_each_print(void *ctx, void *key, void *val)
 
     printf("key: %s val: %s\n", a, b);
 
+    return true;
+}
+
+bool compare_fn(void *key1, void *key2)
+{
+    char *a1 = key1;
+    char *a2 = key2;
+
+    return strcmp(a1, a2) == 0;
+}
+
+bool test_hash_tbl_del_fn(void *key, void *val)
+{
     return true;
 }
 
@@ -51,12 +65,18 @@ int main()
     uint32_t i;
     netos_hash_table_t *hash_table;
 
-    hash_table = netos_hash_table_init(8, hash_val, NULL);
+    hash_table = netos_hash_table_init(8, hash_val, compare_fn);
+    if (!hash_table) {
+        return -1;
+    }
+
     for (i = 0; i < sizeof(kv_list) / sizeof(kv_list[0]); i ++) {
         netos_hash_item_add(hash_table, kv_list[i].key, kv_list[i].val);
     }
 
     netos_hash_item_for_each(hash_table, NULL, for_each_print);
+
+    netos_hash_table_deinit(hash_table, test_hash_tbl_del_fn);
 
     return 0;
 }

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -29,7 +30,7 @@ int netos_unix_intf_udp_server_socket_init(const char *path)
     return fd;
 
 err:
-    if (fd > 0) {
+    if (fd >= 0) {
         close(fd);
     }
 
@@ -53,12 +54,18 @@ int netos_unix_intf_udp_send(int fd,
 
 int netos_unix_intf_udp_recv(int fd,
                              char *path,
+                             uint32_t path_len,
                              uint8_t *msg,
                              uint32_t msg_len)
 {
     struct sockaddr_un recv_info;
     socklen_t recv_info_len;
+    size_t n = 0;
     int ret;
+
+    if (!path || (path_len == 0)) {
+        return -1;
+    }
 
     memset(&recv_info, 0, sizeof(recv_info));
     recv_info.sun_family = AF_UNIX;
@@ -70,14 +77,23 @@ int netos_unix_intf_udp_recv(int fd,
         return -1;
     }
 
-    strcpy(path, recv_info.sun_path);
+    if (recv_info_len > offsetof(struct sockaddr_un, sun_path)) {
+        n = recv_info_len - offsetof(struct sockaddr_un, sun_path);
+    }
+    n = strnlen(recv_info.sun_path, n);
+    if (n > (size_t)path_len - 1) {
+        n = path_len - 1;
+    }
+
+    memcpy(path, recv_info.sun_path, n);
+    path[n] = '\0';
 
     return ret;
 }
 
 void netos_unix_intf_udp_close(int fd, const char *path)
 {
-    if (fd > 0) {
+    if (fd >= 0) {
         close(fd);
     }
     if (path) {

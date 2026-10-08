@@ -10,6 +10,7 @@ int netos_unix_intf_udp_send(int fd,
 
 int netos_unix_intf_udp_recv(int fd,
                              char *path,
+                             uint32_t path_len,
                              uint8_t *msg,
                              uint32_t msg_len);
 

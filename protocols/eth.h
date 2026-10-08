@@ -12,7 +12,7 @@ extern "C" {
 
 #define NETOS_ETH_HDR_LEN 14
 
-#define NETOS_IS_MULTICAST(__mac) !!(__mac[0] & 0x01)
+#define NETOS_IS_MULTICAST(__mac) !!((__mac)[0] & 0x01)
 
 /**
  * @brief - Defines ethernet header.
@@ -34,7 +34,7 @@ typedef struct netos_eth_hdr {
 #define NETOS_ETH_DEFAULTS(__eh, __dst, __src, __ethertype) do {\
     memcpy((__eh).dst, (__dst), NETOS_MACADDR_LEN);\
     memcpy((__eh).src, (__src), NETOS_MACADDR_LEN);\
-    __eh.ethertype = __ethertype;\
+    (__eh).ethertype = __ethertype;\
 } while (0)
 
 /**

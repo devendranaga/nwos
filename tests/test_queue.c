@@ -25,5 +25,7 @@ int main()
         printf("item %d\n", *item);
     }
 
+    netos_queue_deinit(q);
+
     return 0;
 }

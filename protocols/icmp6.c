@@ -86,6 +86,12 @@ void netos_icmp6_rx(void *ctx,
                NETOS_ICMP6_IS_NA(icmp6_h)) {
         netos_icmp6_ctx_t *icmp6_ctx = ctx;
 
+        // For NS and NA the hoplimit must be 255.
+        // This proves that all the local nodes have sent the NDP and not forwarded these frames by anyone else.
+        if (parsed_data->l3.ipv6_hdr.hop_limit != 255) {
+            return;
+        }
+
         netos_ndp_rx(icmp6_ctx->ndp_ctx, parsed_data, pkt_buf);
     }
 }
@@ -101,6 +107,9 @@ void netos_icmp6_deinit(void *ctx)
 
     icmp6_ctx = ctx;
     if (icmp6_ctx) {
+        if (icmp6_ctx->ndp_ctx) {
+            netos_ndp_deinit(icmp6_ctx->ndp_ctx);
+        }
         free(icmp6_ctx);
     }
 }

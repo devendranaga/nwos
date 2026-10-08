@@ -83,7 +83,7 @@ netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
 
 err:
     if (raw) {
-        if (raw->fd > 0) {
+        if (raw->fd >= 0) {
             close(raw->fd);
         }
         if (raw->ifname) {
@@ -98,7 +98,7 @@ err:
 void netos_raw_socket_deinit(netos_raw_socket_ctx_t *raw)
 {
     if (raw) {
-        if (raw->fd > 0) {
+        if (raw->fd >= 0) {
             netos_ioctl_clear_promisc_fd(raw->fd, raw->ifname);
             close(raw->fd);
         }

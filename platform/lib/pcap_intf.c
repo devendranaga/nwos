@@ -109,7 +109,7 @@ netos_pcap_context_t *netos_pcap_open_file_to_write(const char *filename, uint32
 
 err:
     if (ctx) {
-        if (ctx->fd > 0) {
+        if (ctx->fd >= 0) {
             close(ctx->fd);
         }
         free(ctx);

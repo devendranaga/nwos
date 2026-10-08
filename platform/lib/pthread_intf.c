@@ -29,11 +29,11 @@ netos_status_t netos_pthread_create_detached(pthread_t *tid, int cpu_id, void *(
         goto err;
     }
 
-    res = netos_attach_thread_to_cpu(cpu_id, tid);
-    if (res != NETOS_STATUS_SUCCESS) {
+    ret = netos_attach_thread_to_cpu(cpu_id, tid);
+    if (ret != NETOS_STATUS_SUCCESS) {
         // cannot attach the thread to a specific CPU
         // let the OS decide here what it needs to do with the thread scheduling
-        ret = NETOS_STATUS_SUCCESS;
+        res = NETOS_STATUS_SUCCESS;
     }
 
     return res;

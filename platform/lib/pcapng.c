@@ -850,7 +850,7 @@ netos_status_t netos_pcapng_ctx_parse(const char *filename,
 
 err:
     if (ctx) {
-        if (ctx->fd > 0) {
+        if (ctx->fd >= 0) {
             close(ctx->fd);
         }
         if (ctx->mapped_memory) {

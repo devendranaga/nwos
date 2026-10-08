@@ -327,37 +327,43 @@ netos_status_t netos_icmp_encode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_b
 
     start_off = pkt_buf->offset;
 
+    /**
+     * match type and code and call the encode callback.
+     */
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(netos_icmp_callbacks); i ++) {
+        if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
+            (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
+            (netos_icmp_callbacks[i].encode)) {
+            break;
+        }
+    }
+
+    if (i == NETOS_SIZEOF_ARRAY(netos_icmp_callbacks)) {
+        return NETOS_STATUS_ICMP_UNSUPPORTED_TYPE_CODE;
+    }
+
     pkt_buffer_encode_byte(pkt_buf, icmp_hdr->type);
     pkt_buffer_encode_byte(pkt_buf, icmp_hdr->code);
 
     checksum_off = pkt_buf->offset;
     pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->checksum);
 
-    /**
-     * match type and code and call the encode callback.
-     */
-    for (i = 0; i < sizeof(netos_icmp_callbacks) / sizeof(netos_icmp_callbacks[0]); i ++) {
-        if ((icmp_hdr->type == netos_icmp_callbacks[i].type) &&
-            (icmp_hdr->code == netos_icmp_callbacks[i].code) &&
-            (netos_icmp_callbacks[i].encode)) {
-            ret = netos_icmp_callbacks[i].encode(icmp_hdr, pkt_buf);
-            if (ret != NETOS_STATUS_SUCCESS) {
-                return NETOS_STATUS_ICMP_MALFORMED_PKT;
-            }
+    if (netos_icmp_callbacks[i].encode) {
+        ret = netos_icmp_callbacks[i].encode(icmp_hdr, pkt_buf);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            return NETOS_STATUS_ICMP_MALFORMED_PKT;
+        }
 
-            if (icmp_hdr->gen_checksum) {
-                uint32_t checksum;
-                netos_checksum_t chksum_info = {
-                    .buffer     = &(pkt_buf->buffer[start_off]),
-                    .len        = pkt_buf->offset - start_off,
-                };
+        if (icmp_hdr->gen_checksum) {
+            uint32_t checksum;
+            netos_checksum_t chksum_info = {
+                .buffer     = &(pkt_buf->buffer[start_off]),
+                .len        = pkt_buf->offset - start_off,
+            };
 
-                checksum                            = netos_icmp_checksum(&chksum_info);
-                pkt_buf->buffer[checksum_off]       = (checksum & 0xFF00) >> 8;
-                pkt_buf->buffer[checksum_off + 1]   = (checksum & 0x00FF);
-            }
-
-            break;
+            checksum                            = netos_icmp_checksum(&chksum_info);
+            pkt_buf->buffer[checksum_off]       = (checksum & 0xFF00) >> 8;
+            pkt_buf->buffer[checksum_off + 1]   = (checksum & 0x00FF);
         }
     }
 
