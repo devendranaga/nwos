@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include <signal.h>
@@ -64,7 +65,7 @@ netos_gcd_ctx_t *netos_gcd_ctx_init()
 
 err:
     if (gcd_ctx) {
-        if (gcd_ctx->signal_ctx.fd > 0) {
+        if (gcd_ctx->signal_ctx.fd >= 0) {
             close(gcd_ctx->signal_ctx.fd);
         }
 
@@ -72,7 +73,7 @@ err:
             sigprocmask(SIG_UNBLOCK, &mask, NULL);
         }
 
-        if (gcd_ctx->epoll_fd > 0) {
+        if (gcd_ctx->epoll_fd >= 0) {
             close(gcd_ctx->epoll_fd);
         }
         free(gcd_ctx);
@@ -181,7 +182,7 @@ netos_status_t netos_gcd_timer_set_callback(netos_gcd_ctx_t *gcd_ctx,
 
 err:
     if (timer) {
-        if (timer->fd > 0) {
+        if (timer->fd >= 0) {
             close(timer->fd);
         }
         free(timer);
@@ -249,8 +250,9 @@ static void netos_gcd_check_signal(netos_gcd_ctx_t *gcd_ctx, struct epoll_event 
     if (event->data.fd == signal_ctx->fd) {
         struct signalfd_siginfo siginfo;
 
+        memset(&siginfo, 0, sizeof(siginfo));
         ret = read(signal_ctx->fd, &siginfo, sizeof(siginfo));
-        if ((ret == sizeof(siginfo)) || signal_ctx->signal_cb) {
+        if ((ret == sizeof(siginfo)) && signal_ctx->signal_cb) {
             signal_ctx->signal_cb((int)siginfo.ssi_signo, signal_ctx->ctx);
         }
     }
