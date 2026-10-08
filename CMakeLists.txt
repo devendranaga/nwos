@@ -4,6 +4,8 @@ project(netos
         LANGUAGES C
         VERSION 0.8.0)
 
+enable_testing()
+
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(LINK_SEARCH_START_STATIC ON)
 set(LINK_SEARCH_END_STATIC ON)
@@ -64,6 +66,7 @@ SET(PLATFORM_SRC
     ./platform/lib/pcapng.c
     ./platform/lib/virt_intf.c
     ./platform/lib/unix_intf.c
+    ./platform/lib/unix_util.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
@@ -161,15 +164,24 @@ set(TEST_HASH_TABLE_SRC
 add_executable(netos_test_dll ${TEST_DLL_SRC})
 target_link_libraries(netos_test_dll PRIVATE netos)
 
+add_test(NAME dll COMMAND netos_test_dll)
+set_tests_properties(dll PROPERTIES TIMEOUT 10)
+
 add_executable(netos_test_queue ${TEST_QUEUE_SRC})
 target_link_libraries(netos_test_queue PRIVATE netos)
+
+add_test(NAME queue COMMAND netos_test_queue)
+set_tests_properties(queue PROPERTIES TIMEOUT 10)
 
 add_executable(netos_test_hash_table ${TEST_HASH_TABLE_SRC})
 target_link_libraries(netos_test_hash_table PRIVATE netos)
 
+add_test(NAME hash_table COMMAND netos_test_hash_table)
+set_tests_properties(hash_table PROPERTIES TIMEOUT 10)
+
 if(STATIC_BUILD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-else()
+elseif(DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=bounds")
 endif()
 
@@ -214,6 +226,12 @@ add_custom_target(pktdump_rust ALL
 add_custom_target(linux_abs ALL
     COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
     COMMENT "Build rust Linux abstraction")
+
+add_custom_target(run_tests ALL
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS netos_test_hash_table netos_test_dll netos_test_queue
+    COMMENT "Running tests")
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
     ${CMAKE_SOURCE_DIR}/rust/pcapng/target
