@@ -59,3 +59,11 @@ void *netos_queue_pop(netos_queue_impl_t *impl)
 
     return item;
 }
+
+void netos_queue_deinit(netos_queue_impl_t *impl)
+{
+    if (impl) {
+        free(impl);
+    }
+}
+

@@ -20,7 +20,7 @@ netos_hash_table_t *netos_hash_table_init(uint32_t n_items, hash_fn hash, cmp_fn
     hash_table->hash    = hash;
     hash_table->cmp     = cmp;
 
-    hash_table->items = calloc(1, sizeof(netos_hash_table_t) * n_items);
+    hash_table->items = calloc(n_items, sizeof(netos_hash_item_t));
     if (!hash_table->items) {
         goto err;
     }

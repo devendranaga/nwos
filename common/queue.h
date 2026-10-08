@@ -26,4 +26,6 @@ void netos_queue_push(netos_queue_impl_t *impl, void *item);
 
 void *netos_queue_pop(netos_queue_impl_t *impl);
 
+void netos_queue_deinit(netos_queue_impl_t *impl);
+
 #endif
