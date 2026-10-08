@@ -3,6 +3,7 @@
 #include "netos_status.h"
 #include "gcd.h"
 #include "unix_intf.h"
+#include "unix_util.h"
 #include "statistics_ctx.h"
 #include "ctrl_intf.h"
 #include "intf_statistics.h"
@@ -32,9 +33,12 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
     char path[128];
     int ret;
 
-    netos_log_info("rx ctrl sock called\n");
-
     intf_msg = (netos_netctl_intf_t *)buf;
+
+    ret = netos_unix_intf_udp_recv(fd, path, sizeof(path), buf, sizeof(buf));
+    if (ret < 0) {
+        return;
+    }
 
     if (intf_msg->version != NETOS_NETCTL_VERSION) {
         netos_ctrl_intf_send_error_resp(intf_msg,
@@ -45,10 +49,6 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
         return;
     }
 
-    ret = netos_unix_intf_udp_recv(fd, path, buf, sizeof(buf));
-    if (ret < 0) {
-        return;
-    }
 
     switch (intf_msg->type) {
         case NETOS_NETCTL_GET_INGRESS_STATS: {
@@ -92,12 +92,20 @@ void *netos_ctrl_intf_init(const char *path,
 {
     netos_ctrl_intf_ctx_t *ctx;
 
+    if (netos_is_unix_socket_active(path)) {
+        return NULL;
+    }
+
     ctx = calloc(1, sizeof(netos_ctrl_intf_ctx_t));
     if (!ctx) {
         return NULL;
     }
 
     ctx->path = strdup(path);
+    if (!ctx->path) {
+        goto err;
+    }
+
     ctx->fd = netos_unix_intf_udp_server_socket_init(path);
     if (ctx->fd < 0) {
         goto err;
@@ -114,7 +122,7 @@ void *netos_ctrl_intf_init(const char *path,
 
 err:
     if (ctx) {
-        if (ctx->fd > 0) {
+        if (ctx->fd >= 0) {
             netos_unix_intf_udp_close(ctx->fd, ctx->path);
         }
         if (ctx->path) {
