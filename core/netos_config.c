@@ -586,16 +586,20 @@ netos_status_t netos_config_parse(netos_config_t *config, const char *config_pat
         goto end;
     }
 
-    xmlFree(root);
+    xmlFreeDoc(doc);
+
+    xmlCleanupParser();
 
     netos_config_print(config);
 
     return ret;
 
 end:
-    if (root) {
-        xmlFree(root);
+    if (doc) {
+        xmlFreeDoc(doc);
     }
+
+    xmlCleanupParser();
 
     return NETOS_STATUS_CONFIG_INVAL_XML;
 }

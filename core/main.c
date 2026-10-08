@@ -446,7 +446,7 @@ int main(int argc, char **argv)
     // initialize the control interface
     ctx->ctrl_intf = netos_ctrl_intf_init("./netos_ctrl.sock", ctx->gcd_ctx);
     if (!ctx->ctrl_intf) {
-        netos_log_error("failed to initialize the control socket\n");
+        netos_log_error("failed to initialize the control socket.. already active?\n");
         return -1;
     }
 
