@@ -42,6 +42,24 @@ int netos_dll_add_item(netos_dll_impl_t *impl, void *item)
     return 0;
 }
 
+void netos_dll_free(netos_dll_impl_t *impl)
+{
+    if (impl) {
+        netos_dll_t *item;
+        netos_dll_t *prev;
+
+        item = impl->head;
+
+        do {
+            prev = item;
+            item = item->next;
+            free(prev);
+        } while (item != impl->head);
+
+        free(impl);
+    }
+}
+
 void netos_dll_for_each(netos_dll_impl_t *impl, void (*for_each_cb)(void *item))
 {
     netos_dll_t *dll = impl->head;

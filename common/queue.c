@@ -63,6 +63,7 @@ void *netos_queue_pop(netos_queue_impl_t *impl)
 void netos_queue_deinit(netos_queue_impl_t *impl)
 {
     if (impl) {
+        while (netos_queue_pop(impl));
         free(impl);
     }
 }

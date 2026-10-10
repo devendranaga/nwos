@@ -25,7 +25,13 @@ netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
         return NULL;
     }
 
+    raw->fd = -1;
+
     raw->ifname = strdup(ifname);
+    if (!raw->ifname) {
+        goto err;
+    }
+
     raw->fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (raw->fd < 0) {
         goto err;

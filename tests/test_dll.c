@@ -25,5 +25,7 @@ int main()
 
     netos_dll_for_each(impl, for_each_cb);
 
+    netos_dll_free(impl);
+
     return 0;
 }

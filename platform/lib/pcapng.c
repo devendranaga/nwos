@@ -805,6 +805,8 @@ netos_status_t netos_pcapng_ctx_parse(const char *filename,
         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
     }
 
+    ctx->fd = -1;
+
     ctx->parse_cb_data = parse_cb;
 
     ctx->fd = open(filename, O_RDONLY);

@@ -26,6 +26,8 @@ netos_gcd_ctx_t *netos_gcd_ctx_init()
         return NULL;
     }
 
+    gcd_ctx->signal_ctx.fd = -1;
+
     gcd_ctx->epoll_fd = epoll_create1(0);
     if (gcd_ctx->epoll_fd < 0) {
         goto err;
@@ -71,6 +73,7 @@ err:
 
         if (sigismember(&mask, SIGINT) || sigismember(&mask, SIGTERM)) {
             sigprocmask(SIG_UNBLOCK, &mask, NULL);
+            sigemptyset(&mask);
         }
 
         if (gcd_ctx->epoll_fd >= 0) {

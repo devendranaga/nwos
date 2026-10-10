@@ -35,6 +35,8 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
 
     intf_msg = (netos_netctl_intf_t *)buf;
 
+    memset(buf, 0, sizeof(buf));
+
     ret = netos_unix_intf_udp_recv(fd, path, sizeof(path), buf, sizeof(buf));
     if (ret < 0) {
         return;
@@ -54,6 +56,15 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
         case NETOS_NETCTL_GET_INGRESS_STATS: {
             uint32_t count;
             uint32_t total_send_len;
+
+            if (ret != sizeof(netos_netctl_intf_t)) {
+                netos_ctrl_intf_send_error_resp(intf_msg,
+                                                fd,
+                                                NETOS_NETCTL_INVAL_LEN,
+                                                path,
+                                                buf);
+                return;
+            }
 
             count = netos_statistics_get_ingress_stats(buf + sizeof(netos_netctl_intf_t),
                                                        sizeof(buf) - sizeof(netos_netctl_intf_t));
@@ -101,6 +112,8 @@ void *netos_ctrl_intf_init(const char *path,
         return NULL;
     }
 
+    ctx->fd = -1;
+
     ctx->path = strdup(path);
     if (!ctx->path) {
         goto err;
@@ -131,5 +144,13 @@ err:
     }
 
     return NULL;
+}
+
+void netos_ctrl_intf_deinit(netos_ctrl_intf_ctx_t *ctx)
+{
+    if ((ctx->fd > 0) && ctx->path) {
+        netos_unix_intf_udp_close(ctx->fd, ctx->path);
+        free(ctx->path);
+    }
 }
 

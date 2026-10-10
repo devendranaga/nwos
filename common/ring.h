@@ -1,6 +1,10 @@
 #ifndef NETOS_RING_H
 #define NETOS_RING_H
 
+#include <stdint.h>
+
+#include "netos_status.h"
+
 typedef struct {
     void        **items;
     uint32_t    wr_index;

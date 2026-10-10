@@ -1,6 +1,7 @@
 #ifndef NETOS_RULES_CONFIG_H
 #define NETOS_RULES_CONFIG_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "protocol_const.h"
 

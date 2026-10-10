@@ -9,7 +9,8 @@
 #define NETOS_NETCTL_STATUS                 0xa0a0a0a0
 
 #define NETOS_NETCTL_INVAL_VERSION          1
-#define NETOS_NETCTL_UNKNOWN_TYPE           2
+#define NETOS_NETCTL_INVAL_LEN              2
+#define NETOS_NETCTL_UNKNOWN_TYPE           3
 
 typedef struct __attribute__ ((__packed__)) {
     uint32_t status_code;

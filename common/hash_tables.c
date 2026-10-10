@@ -89,7 +89,7 @@ void netos_hash_item_for_each(netos_hash_table_t *hash_table, void *ctx, for_eac
 
         for (item = hash_table->items[i]; item != NULL; item = item->next) {
             if (for_each(ctx, item->key, item->val)) {
-                break;
+                return;
             }
         }
     }

@@ -57,5 +57,12 @@ void netos_dll_for_each(netos_dll_impl_t *impl,
  */
 bool netos_dll_delete_item(netos_dll_impl_t *impl, void *item);
 
+/**
+ * @brief - Free the entire list.
+ *
+ * @param [in] impl - DLL context.
+ */
+void netos_dll_free(netos_dll_impl_t *impl);
+
 #endif
 

@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "netos_status.h"
+
 typedef uint32_t (*hash_fn)(void *key);
 typedef bool     (*for_each_fn)(void *ctx, void *key, void *val);
 typedef bool     (*del_fn)(void *key, void *val);

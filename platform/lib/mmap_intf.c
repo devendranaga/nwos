@@ -128,7 +128,9 @@ void netos_mmap_close_file(netos_mmap_file_io_t *fileio, uint32_t written_bytes)
     if (fileio) {
         msync(fileio->memory, written_bytes, MS_SYNC);
         munmap(fileio->memory, written_bytes);
-        close(fileio->fd);
+        if (fileio->fd >= 0) {
+            close(fileio->fd);
+        }
         free(fileio);
     }
 }
