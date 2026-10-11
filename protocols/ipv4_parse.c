@@ -98,6 +98,12 @@ netos_status_t netos_ipv4_decode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
         return NETOS_STATUS_IPV4_MALFORMED_PKT;
     }
 
+    // if there are options, skip them and reach the checksum
+    if (ipv4_hdr->header_len > 5) {
+        pkt_buf->offset = pkt_buf->ipv4_offset;
+        pkt_buf->offset += (ipv4_hdr->header_len * 4);
+    }
+
     ipv4_hdr_len = pkt_buf->offset - pkt_buf->ipv4_offset;
 
     netos_checksum_t chksum = {

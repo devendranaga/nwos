@@ -218,7 +218,7 @@ netos_status_t netos_ipv6_encode(netos_ipv6_hdr_t *ipv6_hdr,
 
     pkt_buf->buffer[pkt_buf->offset] = (ipv6_hdr->version << 4);
 
-    tc = ((ipv6_hdr->dscp & 0xFC) << 2) | ipv6_hdr->ecn;
+    tc = ((ipv6_hdr->dscp & 0x3F) << 2) | ipv6_hdr->ecn;
     pkt_buf->buffer[pkt_buf->offset] |= ((tc & 0xF0) >> 4);
     pkt_buf->offset ++;
 
