@@ -141,6 +141,8 @@ static void *netos_intf_parse_callback(void *cbdata)
     netos_parser_thread_t *parse_thr = cbdata;
     netos_status_t ret;
 
+    parse_thr->term_signalled = false;
+
     netos_log_info("Parse callback started\n");
 
     while (1) {
@@ -178,6 +180,10 @@ static void *netos_intf_parse_callback(void *cbdata)
             pthread_cond_wait(&parse_thr->parse_q_cond, &parse_thr->parse_q_lock);
             pthread_mutex_unlock(&parse_thr->parse_q_lock);
         }
+        if (parse_thr->term_signalled) {
+            netos_log_info("parse_callback: terminate signal received\n");
+            break;
+        }
     }
 
     return NULL;
@@ -196,6 +202,9 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     }
 
     intf->ifname = strdup(intf_config->ifname);
+    if (!intf->ifname) {
+        goto err;
+    }
 
     // initialize the raw socket.. probably doing raw socket is
     // not a  bright idea, but could do better interface someday.
@@ -258,7 +267,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     intf->next = NULL;
 
     // create parse thread
-    ret = netos_pthread_create_detached(&intf->parser_thr->tid, 1, netos_intf_parse_callback, intf->parser_thr);
+    ret = netos_pthread_create(&intf->parser_thr->tid, 1, netos_intf_parse_callback, intf->parser_thr);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to create rx parse thread\n");
         goto err;
@@ -267,7 +276,7 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
     netos_log_info("Created rx parse thread\n");
 
     // create receive thread
-    ret = netos_pthread_create_detached(&intf->rx_thread, 0, netos_intf_rx_callback, intf);
+    ret = netos_pthread_create(&intf->rx_thread, 0, netos_intf_rx_callback, intf);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("failed to create rx thread on [%s]\n", intf->ifname);
         goto err;
@@ -301,6 +310,38 @@ err:
     }
 
     return NULL;
+}
+
+static void netos_deinitialize_interface(netos_intf_t *intf,
+                                         netos_gcd_ctx_t *gcd_ctx)
+{
+    if (intf) {
+        if (intf->parser_thr) {
+            if (intf->parser_thr->rx_pool) {
+                pthread_mutex_lock(&intf->parser_thr->parse_q_lock);
+                intf->parser_thr->term_signalled = true;
+                pthread_cond_signal(&intf->parser_thr->parse_q_cond);
+                pthread_mutex_unlock(&intf->parser_thr->parse_q_lock);
+                pthread_join(intf->parser_thr->tid, NULL);
+                netos_buffer_pool_free(intf->parser_thr->rx_pool);
+            }
+            if (intf->parser_thr->ifname) {
+                free(intf->parser_thr->ifname);
+            }
+            free(intf->parser_thr);
+        }
+        if (intf->raw) {
+            if (intf->raw->egress_ctrl) {
+                netos_log_info("deinit egress controller\n");
+                netos_egress_controller_deinit(intf->raw->egress_ctrl);
+            }
+            netos_raw_socket_deinit(intf->raw);
+        }
+        if (intf->ifname) {
+            free(intf->ifname);
+        }
+        free(intf);
+    }
 }
 
 /**
@@ -338,6 +379,11 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+static void netos_deinitialize_protocols(netos_gcd_ctx_t *gcd_ctx)
+{
+    netos_ip_deinitialize();
+}
+
 /**
  * @brief - initialize network interfaces.
  *
@@ -370,6 +416,21 @@ static netos_status_t netos_initialize_interfaces(netos_ctx_t *ctx)
     }
 
     return NETOS_STATUS_SUCCESS;
+}
+
+static void netos_deinitialize_interfaces(netos_ctx_t *ctx)
+{
+    netos_intf_t *intf;
+    netos_intf_t *prev;
+
+    intf = prev = ctx->interfaces;
+
+    while (intf) {
+        prev = intf;
+        netos_log_info("%s %u\n", __func__, __LINE__);
+        netos_deinitialize_interface(prev, ctx->gcd_ctx);
+        intf = intf->next;
+    }
 }
 
 static void netos_terminate_handler(int sig, void *handle)
@@ -462,6 +523,15 @@ int main(int argc, char **argv)
 
     // run the gcd
     netos_gcd_run(ctx->gcd_ctx);
+
+    // deinitialize protocols
+    netos_deinitialize_protocols(ctx->gcd_ctx);
+
+        netos_log_info("%s %u\n", __func__, __LINE__);
+    // deinitialize all the interfaces
+    netos_deinitialize_interfaces(ctx);
+
+    netos_gcd_deinit(ctx->gcd_ctx);
 
     return ret;
 }

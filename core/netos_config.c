@@ -242,6 +242,46 @@ netos_config_parse_macsec_config(netos_config_t *config,
     return ret;
 }
 
+static netos_status_t netos_config_get_udp_checksum(netos_config_t *config,
+                                                    xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_bool(&config->protocol_config.udp_config.allow_zero_checksum,
+                                 doc,
+                                 node);
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(netos_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} udp_config_callbacks[] = {
+    { "allow_zero_checksum", netos_config_get_udp_checksum },
+};
+
+static netos_status_t
+netos_config_parse_udp_config(netos_config_t *config,
+                              xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *iter;
+    netos_status_t ret = NETOS_STATUS_CONFIG_INVAL_XML;
+
+    for (iter = node->children; iter; iter = iter->next) {
+        if (iter->type == XML_ELEMENT_NODE) {
+            for (uint32_t i = 0; i < NETOS_SIZEOF_ARRAY(udp_config_callbacks); i ++) {
+                if (strcmp((const char *)iter->name,
+                           udp_config_callbacks[i].name) == 0) {
+                    ret = udp_config_callbacks[i].callback_fn(config, doc, iter);
+                    if (ret != NETOS_STATUS_SUCCESS) {
+                        return ret;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(netos_config_t *config,
@@ -250,7 +290,8 @@ static const struct {
     { "arp",    netos_config_parse_arp_config },
     { "ipv4",   netos_config_parse_ipv4_config },
     { "icmp",   netos_config_parse_icmp_config },
-    { "macsec", netos_config_parse_macsec_config }
+    { "macsec", netos_config_parse_macsec_config },
+    { "udp",    netos_config_parse_udp_config }
 };
 
 static netos_status_t

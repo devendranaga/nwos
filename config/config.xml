@@ -47,6 +47,9 @@
         <icmp>
             <min_echo_payload_len>0</min_echo_payload_len>
         </icmp>
+        <udp>
+            <allow_zero_checksum>true</allow_zero_checksum>
+        </udp>
     </protocols>
     <mirror>
         <mirror_enable>true</mirror_enable>
