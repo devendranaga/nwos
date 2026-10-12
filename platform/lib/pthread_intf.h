@@ -12,8 +12,8 @@
  *
  * @return NETOS_STATUS_SUCCESS on success and error code on failure.
  */
-netos_status_t netos_pthread_create_detached(pthread_t *tid,
-                                             int cpu_id,
-                                             void *(*thread_cb)(void *), void *cbdata);
+netos_status_t netos_pthread_create(pthread_t *tid,
+                                    int cpu_id,
+                                    void *(*thread_cb)(void *), void *cbdata);
 
 #endif

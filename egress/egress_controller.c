@@ -237,14 +237,24 @@ void netos_egress_enque(netos_egress_controller_t *egress_ctrl,
 
 void netos_egress_controller_deinit(netos_egress_controller_t *egress_ctrl)
 {
-    if (egress_ctrl->sp) {
-        netos_egress_sp_deinit(egress_ctrl->sp);
-    }
-    if (egress_ctrl->rr) {
-        netos_egress_rr_deinit(egress_ctrl->rr);
-    }
-    if (egress_ctrl->pfifo) {
-        netos_egress_pfifo_deinit(egress_ctrl->pfifo);
+    if (egress_ctrl) {
+        if (egress_ctrl->bfifo) {
+            netos_egress_bfifo_deinit(egress_ctrl->bfifo);
+            free(egress_ctrl->bfifo);
+        }
+        if (egress_ctrl->pfifo) {
+            netos_egress_pfifo_deinit(egress_ctrl->pfifo);
+            free(egress_ctrl->pfifo);
+        }
+        if (egress_ctrl->rr) {
+            netos_egress_rr_deinit(egress_ctrl->rr);
+            free(egress_ctrl->rr);
+        }
+        if (egress_ctrl->sp) {
+            netos_egress_sp_deinit(egress_ctrl->sp);
+            free(egress_ctrl->sp);
+        }
+        free(egress_ctrl);
     }
 }
 

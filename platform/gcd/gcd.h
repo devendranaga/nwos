@@ -67,5 +67,7 @@ void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx);
 
 void netos_gcd_terminate(netos_gcd_ctx_t *gcd_ctx);
 
+void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx);
+
 #endif
 

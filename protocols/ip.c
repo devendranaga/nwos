@@ -76,7 +76,7 @@ netos_status_t netos_ip_initialize(netos_config_t *config)
 {
     uint32_t i;
 
-    for (i = 0; i < sizeof(protocol_table) / sizeof(protocol_table[0]); i ++) {
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_table); i ++) {
         if (protocol_table[i].valid &&
             protocol_table[i].init) {
             protocol_table[i].protocol_ctx = protocol_table[i].init(config);
@@ -145,3 +145,13 @@ netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
     return NETOS_STATUS_SUCCESS;
 }
 
+void netos_ip_deinitialize()
+{
+    uint32_t i;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(protocol_table); i ++) {
+        if (protocol_table[i].deinit) {
+            protocol_table[i].deinit(protocol_table[i].protocol_ctx);
+        }
+    }
+}

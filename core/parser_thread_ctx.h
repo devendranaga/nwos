@@ -15,6 +15,7 @@ typedef struct netos_protocol_context {
 } netos_protocol_context_t;
 
 typedef struct netos_parser_thread {
+    bool                        term_signalled;
     char                        *ifname;
     netos_raw_socket_ctx_t      *__counted_by(1) raw;
     pthread_t                   tid;

@@ -25,7 +25,7 @@ bool netos_is_unix_socket_active(const char *socket_path)
         return false;
     }
 
-
+    memset(line, 0, sizeof(line));
     while (fgets(line, sizeof(line), fp)) {
         line[strcspn(line, "\r\n")] = 0;
 
@@ -36,6 +36,7 @@ bool netos_is_unix_socket_active(const char *socket_path)
                 break;
             }
         }
+        memset(line, 0, sizeof(line));
     }
 
     fclose(fp);

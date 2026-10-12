@@ -1,6 +1,7 @@
 #include "buffer_pool.h"
 #include "statistics_ctx.h"
 #include "egress_pfifo.h"
+#include "netos_log.h"
 
 static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
 {
@@ -21,6 +22,7 @@ static void *netos_egress_pfifo_tx_queue_thread(void *ctx)
 
         if (pfifo->terminate_signal) {
             pthread_mutex_unlock(&pfifo->pfifo_lock);
+            netos_log_info("pfifo: terminate signal received\n");
             break;
         }
 
@@ -67,10 +69,10 @@ netos_egress_pfifo_init(netos_egress_pfifo_mgr_t *pfifo,
     pthread_mutex_init(&pfifo->pfifo_lock, NULL);
     pthread_cond_init(&pfifo->pfifo_cond, NULL);
 
-    ret = netos_pthread_create_detached(&pfifo->pfifo_tid,
-                                        1,
-                                        netos_egress_pfifo_tx_queue_thread,
-                                        pfifo);
+    ret = netos_pthread_create(&pfifo->pfifo_tid,
+                               1,
+                               netos_egress_pfifo_tx_queue_thread,
+                               pfifo);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
@@ -119,5 +121,6 @@ void netos_egress_pfifo_deinit(netos_egress_pfifo_mgr_t *pfifo)
     pfifo->terminate_signal = true;
     pthread_cond_signal(&pfifo->pfifo_cond);
     pthread_mutex_unlock(&pfifo->pfifo_lock);
+    pthread_join(pfifo->pfifo_tid, NULL);
 }
 

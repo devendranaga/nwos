@@ -1,3 +1,4 @@
+#include "netos_status.h"
 #include "udp_hdr.h"
 
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
@@ -11,7 +12,7 @@ netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->dst_port);
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->length);
     if (udp_hdr->length == 0) {
-        return NETOS_STATUS_UDP_MALFORMED_PKT;
+        return NETOS_STATUS_ZERO_UDP_LENGTH;
     }
 
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->checksum);

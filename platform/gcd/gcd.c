@@ -302,3 +302,13 @@ void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx)
     }
 }
 
+void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx)
+{
+    if (gcd_ctx) {
+        if (gcd_ctx->signal_ctx.fd >= 0) {
+            close(gcd_ctx->signal_ctx.fd);
+        }
+        free(gcd_ctx);
+    }
+}
+

@@ -28,6 +28,7 @@ void *netos_egress_sp_tx_queue_thread(void *ctx)
 
         // manager thread signalled terminate, stop this thread
         if (sp->terminate_signal) {
+            netos_log_info("sp thread signalled\n");
             pthread_mutex_unlock(&sp->sp_lock);
             break;
         }
@@ -75,7 +76,7 @@ netos_status_t netos_egress_sp_init(netos_egress_sp_mgr_t *sp)
     pthread_cond_init(&sp->sp_cond, NULL);
 
     // create sp tx thread for the 8 queues
-    ret = netos_pthread_create_detached(&sp->sp_tid, 1, netos_egress_sp_tx_queue_thread, sp);
+    ret = netos_pthread_create(&sp->sp_tid, 1, netos_egress_sp_tx_queue_thread, sp);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
@@ -99,6 +100,7 @@ void netos_egress_sp_deinit(netos_egress_sp_mgr_t *sp)
     sp->terminate_signal = true;
     pthread_cond_signal(&sp->sp_cond);
     pthread_mutex_unlock(&sp->sp_lock);
+    pthread_join(sp->sp_tid, NULL);
 }
 
 void netos_egress_sp_enque(void *ctx,

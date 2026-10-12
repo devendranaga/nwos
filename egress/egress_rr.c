@@ -7,6 +7,7 @@
 #include "statistics_ctx.h"
 #include "egress_rr.h"
 #include "buffer_pool.h"
+#include "netos_log.h"
 
 void *netos_egress_rr_tx_queue_thread(void *ctx)
 {
@@ -25,6 +26,7 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
         }
         // manager thread signalled terminate, stop this thread
         if (rr->terminate_signal) {
+            netos_log_info("rr: terminate signal received\n");
             pthread_mutex_unlock(&rr->rr_lock);
             break;
         }
@@ -84,7 +86,7 @@ netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *rr)
     pthread_cond_init(&rr->rr_cond, NULL);
 
     // create rr tx thread for the 8 queues
-    ret = netos_pthread_create_detached(&rr->rr_tid, 1, netos_egress_rr_tx_queue_thread, rr);
+    ret = netos_pthread_create(&rr->rr_tid, 1, netos_egress_rr_tx_queue_thread, rr);
     if (ret != NETOS_STATUS_SUCCESS) {
         return ret;
     }
@@ -108,6 +110,7 @@ void netos_egress_rr_deinit(netos_egress_rr_mgr_t *rr)
     rr->terminate_signal = true;
     pthread_cond_signal(&rr->rr_cond);
     pthread_mutex_unlock(&rr->rr_lock);
+    pthread_join(rr->rr_tid, NULL);
 }
 
 void netos_egress_rr_enque(void *ctx,

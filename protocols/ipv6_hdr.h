@@ -1,7 +1,7 @@
 #ifndef PROTOCOLS_IPV6_H
 #define PROTOCOLS_IPV6_H
 
-#if defined(__cpluscplus)
+#if defined(__cplusplus)
 extern "C" {
 #endif
 

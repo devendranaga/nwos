@@ -21,6 +21,8 @@ void *netos_udp_init(netos_config_t *config)
         return NULL;
     }
 
+    udp_ctx->config = config;
+
     udp_ctx->udp_pool = netos_buffer_pool_alloc(NETOS_UDP_POOL_LEN);
     if (!udp_ctx->udp_pool) {
         NETOS_PANIC("failed to allocate udp_pool\n");
@@ -41,6 +43,7 @@ void netos_udp_rx(void *ctx,
                   netos_packet_parser_t *parsed_data,
                   pkt_buffer_t *pkt_buf)
 {
+    netos_udp_ctx_t *udp_ctx = ctx;
     netos_status_t ret;
     uint16_t start_off;
     uint16_t remaining_len;
@@ -51,7 +54,11 @@ void netos_udp_rx(void *ctx,
     /* The checksum for udp already verified in the decode. */
     ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
     if (ret != NETOS_STATUS_SUCCESS) {
-        return;
+        // do not drop if the udp checksum is 0 and its allowed in the config
+        if ((ret == NETOS_STATUS_ZERO_UDP_LENGTH) &&
+            (!udp_ctx->config->protocol_config.udp_config.allow_zero_checksum)) {
+            return;
+        }
     }
 
     ret = netos_do_checksum_l4(start_off,
@@ -77,6 +84,9 @@ void netos_udp_deinit(void *ctx)
 
     udp_ctx = ctx;
     if (udp_ctx) {
+        if (udp_ctx->udp_pool) {
+            netos_buffer_pool_free(udp_ctx->udp_pool);
+        }
         free(udp_ctx);
     }
 }
