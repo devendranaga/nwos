@@ -16,7 +16,6 @@
 - [ ] CMAC PRF
 - [ ] Store the received packets in a PCAP
 - [ ] Tooling: ARP spoofing
-- [ ] Skip the IPv4 options if we cannot parse them
 - [ ] Tools: Multilevel VLAN generation.
 - [ ] Tools: Missing error handling in pgen.
 - [ ] GRE: decode GRE protocol.
@@ -92,7 +91,6 @@
 - [ ] NTP: Parse NTP
 - [ ] pfifo_fast: with 3 queues mapped from vlan priorities 7-0.
 - [ ] SFQ: stochastic fair queueing without re-hashing.
-- [ ] Tool ctl: to control or view the insides of the netos
 - [ ] PCAPng file writes
 - [ ] Tool: Enable pcap file writes from the regular run commands in pgen
 - [ ] In ICMP reply, check for the device MTU is capable of sending the input frame, if its not capable send a ICMP packet too big message.
@@ -116,7 +114,6 @@
 - [ ] MLD
 - [ ] IPv6 encode functionality
 - [ ] TCP options parsing
-- [ ] TCP flag validation
 - [ ] TCP RST generation for refused connection
 - [ ] TCP state tracking
 - [ ] Sequence number tracking for stateful inspection
@@ -137,7 +134,6 @@
 - [ ] Convert pcapng to pcap
 - [ ] Convert pcap to pcapng
 - [ ] call `NETOS_PANIC` for all alloc failures
-- [ ] support netctl interface to the statistics
 
 ## Done
 
@@ -189,5 +185,9 @@
 - [x] MQTT fixed header parsing
 - [x] TCP Demux and Mux
 - [x] PCAP file writes
+- [x] Skip the IPv4 options if we cannot parse them
+- [x] Tool ctl: to control or view the insides of the netos
+- [x] TCP flag validation
+- [x] support netctl interface to the statistics
 
 
