@@ -31,19 +31,20 @@ Static build does not work in Github CI. Not sure.
 | S.No | option | description |
 |------|--------|-------------|
 | 1 | `NETOS_PERF` | Performance measurement interface. |
+| 2 | `NETOS_DEBUG` | Enable print based debugging. |
 
 ### Build configuration
 
 **1. GCC Static Build**
 
 ```bash
-cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DSTATIC_BUILD=on
+cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DSTATIC_BUILD=on -DWITH_WOLFSSL=on
 ```
 
 **2. Clang Build**
 
 ```bash
-cmake .. -DCOMPILER_CLANG=on -DDEBUG=on
+cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on
 ```
 
 **3. ARM Build**
@@ -55,6 +56,8 @@ cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 ## Setting up
 
 **1. Running netosd**
+
+netosd does not require the super user permissions if set the permissions via the setcap utility.
 
 ```bash
 sudo setcap cap_net_admin,cap_net_raw+ep ./netosd
@@ -68,12 +71,20 @@ sudo setcap cap_net_admin,cap_net_raw+ep ./netos_pgen
 ./netos_pgen
 ```
 
+3. Running netctl
+
+`netctl` is used to get the statistical information about the netosd internal state.
+
+```bash
+sudo ./netctl -p ./netctl.sock -s ./netos_ctrl.sock
+```
+
 ### Generating interfaces
 
 Run the script `gen_interfaces.py` on Linux.
 
 ```bash
-bash gen_interfaces.py create dummy 10
+python3 gen_interfaces.py create dummy 10
 ```
 
 Would create 10 interfaces on Linux.
