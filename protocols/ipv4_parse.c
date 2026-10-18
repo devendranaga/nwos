@@ -157,6 +157,7 @@ netos_status_t netos_ipv4_encode(netos_ipv4_hdr_t *ipv4_hdr, pkt_buffer_t *pkt_b
     pkt_buffer_encode_4_bytes(pkt_buf, ipv4_hdr->src_ipaddr);
     pkt_buffer_encode_4_bytes(pkt_buf, ipv4_hdr->dst_ipaddr);
 
+    // user controlled.
     if (ipv4_hdr->gen_checksum) {
         netos_checksum_t chksum = {
             .buffer = &pkt_buf->buffer[start_off],

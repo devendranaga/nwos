@@ -269,5 +269,6 @@ void netos_ipv6_print(netos_ipv6_hdr_t *ipv6_hdr)
                         ipv6_hdr->dst_ipaddr[10], ipv6_hdr->dst_ipaddr[11],
                         ipv6_hdr->dst_ipaddr[12], ipv6_hdr->dst_ipaddr[13],
                         ipv6_hdr->dst_ipaddr[14], ipv6_hdr->dst_ipaddr[15]);
+    netos_log_debug("}\n");
 }
 

@@ -25,6 +25,20 @@ typedef struct __attribute__ ((__packed__)) {
 
 /**
  * @brief - Defines IPv4 header.
+ *
+ * |--------------------------------------------------|
+ * | version | IHL | Type of Service |   total length |
+ * |--------------------------------------------------|
+ * |            Identification  | Flags | Frag offset |
+ * |--------------------------------------------------|
+ * |   TTL |  Protocol |       Header checksum        |
+ * |--------------------------------------------------|
+ * |                src ipaddr                        |
+ * |--------------------------------------------------|
+ * |                dst ipaddr                        |
+ * |--------------------------------------------------|<---  20 bytes without options
+ * |                options (until 60 bytes total)    |
+ * |--------------------------------------------------|
  */
 typedef struct netos_ipv4_hdr {
     uint8_t             version         :4;
