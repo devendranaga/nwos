@@ -11,27 +11,34 @@ extern "C" {
 #include "compiler_def.h"
 
 // List of ICMP types
-#define NETOS_ICMP_TYPE_DEST_UNREACH    3
-#define NETOS_ICMP_TYPE_ECHO_REQ        8
-#define NETOS_ICMP_TYPE_ECHO_REPLY      0
-#define NETOS_ICMP_TYPE_TIMESTAMP_REQ   13
-#define NETOS_ICMP_TYPE_TIMESTAMP_REPLY 14
+#define NETOS_ICMP_TYPE_DEST_UNREACH                3
+#define NETOS_ICMP_TYPE_SOURCE_QUENCH               4
+#define NETOS_ICMP_TYPE_ECHO_REQ                    8
+#define NETOS_ICMP_TYPE_ECHO_REPLY                  0
+#define NETOS_ICMP_TYPE_TIME_EXCEEDED               11
+#define NETOS_ICMP_TYPE_TIMESTAMP_REQ               13
+#define NETOS_ICMP_TYPE_TIMESTAMP_REPLY             14
 
 // List of ICMP codes
-#define NETOS_ICMP_CODE_NW_UNREACH      0
-#define NETOS_ICMP_CODE_HOST_UNREACH    1
-#define NETOS_ICMP_CODE_PROT_UNREACH    2
-#define NETOS_ICMP_CODE_ECHO_REQ        0
-#define NETOS_ICMP_CODE_ECHO_REPLY      0
-#define NETOS_ICMP_CODE_TIMESTAMP_REQ   0
-#define NETOS_ICMP_CODE_TIMESTAMP_REPLY 0
+#define NETOS_ICMP_CODE_NW_UNREACH                  0
+#define NETOS_ICMP_CODE_HOST_UNREACH                1
+#define NETOS_ICMP_CODE_PROT_UNREACH                2
+#define NETOS_ICMP_CODE_ECHO_REQ                    0
+#define NETOS_ICMP_CODE_ECHO_REPLY                  0
+#define NETOS_ICMP_CODE_TIMESTAMP_REQ               0
+#define NETOS_ICMP_CODE_TIMESTAMP_REPLY             0
+#define NETOS_ICMP_CODE_TTL_EXCEEDED_IN_TRANSIT     0
+#define NETOS_ICMP_CODE_FRAG_REASM_TIME_EXCEEDED    1
+#define NETOS_ICMP_CODE_SOURCE_QUENCH               0
 
 // ICMP Macro defines
-#define NETOS_ICMP_HDR_LEN              4
-#define NETOS_ICMP_ECHO_REQ_LEN         4
-#define NETOS_ICMP_ECHO_REPLY_LEN       4
-#define NETOS_ICMP_TIMESTAMP_LEN        16
-#define NETOS_ICMP_DEST_UNREACH_LEN     4
+#define NETOS_ICMP_HDR_LEN                          4
+#define NETOS_ICMP_ECHO_REQ_LEN                     4
+#define NETOS_ICMP_ECHO_REPLY_LEN                   4
+#define NETOS_ICMP_TIMESTAMP_LEN                    16
+#define NETOS_ICMP_DEST_UNREACH_LEN                 4
+#define NETOS_ICMP_TIME_EXCEEDED_LEN                4
+#define NETOS_ICMP_SOURCE_QUENCH_LEN                4
 
 #define NETOS_ICMP_IS_ECHO_REQ(__icmp) (((__icmp)->type == NETOS_ICMP_TYPE_ECHO_REQ) &&\
                                         ((__icmp)->code == NETOS_ICMP_CODE_ECHO_REQ))
@@ -63,6 +70,18 @@ typedef struct {
     uint32_t    transmit_ts;
 } netos_icmp_timestamp_t;
 
+typedef struct {
+    uint32_t    unused;
+    uint8_t     *data;
+    uint32_t    data_len;
+} netos_icmp_time_exceeded_t;
+
+typedef struct {
+    uint32_t    unused;
+    uint8_t     *data;
+    uint32_t    data_len;
+} netos_icmp_source_quench_t;
+
 /**
  * @brief - Defines ICMP protocol.
  */
@@ -78,7 +97,9 @@ typedef struct {
         netos_icmp_echo_t           echo_reply;
         netos_icmp_timestamp_t      ts_req;
         netos_icmp_timestamp_t      ts_reply;
-    } u;
+        netos_icmp_time_exceeded_t  time_exceeded;
+        netos_icmp_source_quench_t  source_quench;
+    };
 } netos_icmp_hdr_t;
 
 /**
@@ -93,8 +114,8 @@ typedef struct {
     (__icmp_hdr).type                   = NETOS_ICMP_TYPE_ECHO_REQ;\
     (__icmp_hdr).code                   = NETOS_ICMP_CODE_ECHO_REQ;\
     (__icmp_hdr).checksum               = 0;\
-    (__icmp_hdr).u.echo_req.identifier  = __id;\
-    (__icmp_hdr).u.echo_req.seq_no      = __seq_no;\
+    (__icmp_hdr).echo_req.identifier    = __id;\
+    (__icmp_hdr).echo_req.seq_no        = __seq_no;\
 } while (0)
 
 /**
@@ -109,8 +130,8 @@ typedef struct {
     (__icmp_hdr).type                       = NETOS_ICMP_TYPE_ECHO_REPLY;\
     (__icmp_hdr).code                       = NETOS_ICMP_CODE_ECHO_REPLY;\
     (__icmp_hdr).checksum                   = 0;\
-    (__icmp_hdr).u.echo_reply.identifier    = __id;\
-    (__icmp_hdr).u.echo_reply.seq_no        = __seq_no;\
+    (__icmp_hdr).echo_reply.identifier      = __id;\
+    (__icmp_hdr).echo_reply.seq_no          = __seq_no;\
 } while (0)
 
 /**

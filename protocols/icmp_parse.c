@@ -26,13 +26,13 @@ netos_icmp_decode_echo_request(netos_icmp_hdr_t *icmp_hdr,
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.echo_req.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.echo_req.seq_no);
-    icmp_hdr->u.echo_req.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->echo_req.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->echo_req.seq_no);
+    icmp_hdr->echo_req.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
 
     // if there is more data in the icmp request, set the data pointer.
-    if (icmp_hdr->u.echo_req.data_len != 0) {
-        icmp_hdr->u.echo_req.data = &pkt_buf->buffer[pkt_buf->offset];
+    if (icmp_hdr->echo_req.data_len != 0) {
+        icmp_hdr->echo_req.data = &pkt_buf->buffer[pkt_buf->offset];
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -58,13 +58,13 @@ netos_icmp_decode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.echo_reply.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.echo_reply.seq_no);
-    icmp_hdr->u.echo_reply.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->echo_reply.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->echo_reply.seq_no);
+    icmp_hdr->echo_reply.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
 
     // if there is more data in the icmp reply, set the data pointer.
-    if (icmp_hdr->u.echo_reply.data_len != 0) {
-        icmp_hdr->u.echo_reply.data = &pkt_buf->buffer[pkt_buf->offset];
+    if (icmp_hdr->echo_reply.data_len != 0) {
+        icmp_hdr->echo_reply.data = &pkt_buf->buffer[pkt_buf->offset];
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -75,14 +75,18 @@ netos_icmp_decode_dest_unreachable_common(netos_icmp_hdr_t *icmp_hdr,
                                           pkt_buffer_t *pkt_buf)
 {
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_DEST_UNREACH_LEN)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ICMP_SHORT_DEST_UNREACH);
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.dest_unreach.unused);
-    icmp_hdr->u.dest_unreach.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->dest_unreach.unused);
+    icmp_hdr->dest_unreach.data_len = pkt_buffer_remaining_rx_len(pkt_buf);
 
-    if (icmp_hdr->u.dest_unreach.data_len != 0) {
-        icmp_hdr->u.dest_unreach.data = &pkt_buf->buffer[pkt_buf->offset];
+    // set the pointer ip header + 64 bits of datagram
+    if (icmp_hdr->dest_unreach.data_len != 0) {
+        icmp_hdr->dest_unreach.data = &pkt_buf->buffer[pkt_buf->offset];
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -100,11 +104,11 @@ static netos_status_t
 netos_icmp_encode_timestamp_req(netos_icmp_hdr_t *icmp_hdr,
                                 pkt_buffer_t *pkt_buf)
 {
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_req.identifier);
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_req.seq_no);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.originate_ts);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.receive_ts);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_req.transmit_ts);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->ts_req.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->ts_req.seq_no);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_req.originate_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_req.receive_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_req.transmit_ts);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -121,11 +125,11 @@ netos_icmp_decode_timestamp_req(netos_icmp_hdr_t *icmp_hdr,
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.ts_req.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.ts_req.seq_no);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_req.originate_ts);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_req.receive_ts);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_req.transmit_ts);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->ts_req.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->ts_req.seq_no);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_req.originate_ts);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_req.receive_ts);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_req.transmit_ts);
 
     // generally will not contain extra length, if it has, drop the frame.
     uint16_t remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
@@ -150,14 +154,17 @@ netos_icmp_decode_timestamp_reply(netos_icmp_hdr_t *icmp_hdr,
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.ts_reply.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->u.ts_reply.seq_no);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_reply.originate_ts);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_reply.receive_ts);
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->u.ts_reply.transmit_ts);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->ts_reply.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp_hdr->ts_reply.seq_no);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_reply.originate_ts);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_reply.receive_ts);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->ts_reply.transmit_ts);
 
     uint16_t remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
     if (remaining_len != 0) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ICMP_TS_REPLY_CONTAINS_DATA);
         return NETOS_STATUS_ICMP_MALFORMED_PKT;
     }
 
@@ -168,11 +175,11 @@ static netos_status_t
 netos_icmp_encode_timestamp_reply(netos_icmp_hdr_t *icmp_hdr,
                                   pkt_buffer_t *pkt_buf)
 {
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_reply.identifier);
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.ts_reply.seq_no);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.originate_ts);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.receive_ts);
-    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->u.ts_reply.transmit_ts);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->ts_reply.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->ts_reply.seq_no);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_reply.originate_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_reply.receive_ts);
+    pkt_buffer_encode_4_bytes(pkt_buf, icmp_hdr->ts_reply.transmit_ts);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -181,12 +188,12 @@ static netos_status_t
 netos_icmp_encode_echo_request(netos_icmp_hdr_t *icmp_hdr,
                                pkt_buffer_t *pkt_buf)
 {
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_req.identifier);
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_req.seq_no);
-    if (icmp_hdr->u.echo_req.data_len != 0) {
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->echo_req.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->echo_req.seq_no);
+    if (icmp_hdr->echo_req.data_len != 0) {
         pkt_buffer_encode_bytes(pkt_buf,
-                                icmp_hdr->u.echo_req.data,
-                                icmp_hdr->u.echo_req.data_len);
+                                icmp_hdr->echo_req.data,
+                                icmp_hdr->echo_req.data_len);
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -196,12 +203,60 @@ static netos_status_t
 netos_icmp_encode_echo_reply(netos_icmp_hdr_t *icmp_hdr,
                              pkt_buffer_t *pkt_buf)
 {
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_reply.identifier);
-    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->u.echo_reply.seq_no);
-    if (icmp_hdr->u.echo_reply.data_len != 0) {
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->echo_reply.identifier);
+    pkt_buffer_encode_2_bytes(pkt_buf, icmp_hdr->echo_reply.seq_no);
+    if (icmp_hdr->echo_reply.data_len != 0) {
         pkt_buffer_encode_bytes(pkt_buf,
-                                icmp_hdr->u.echo_reply.data,
-                                icmp_hdr->u.echo_reply.data_len);
+                                icmp_hdr->echo_reply.data,
+                                icmp_hdr->echo_reply.data_len);
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
+netos_icmp_decode_time_exceeded(netos_icmp_hdr_t *icmp_hdr,
+                                pkt_buffer_t *pkt_buf)
+{
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_TIME_EXCEEDED_LEN)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ICMP_SHORT_TIME_EXCEEDED);
+        return NETOS_STATUS_ICMP_MALFORMED_PKT;
+    }
+
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->time_exceeded.unused);
+
+    if (pkt_buf->offset > pkt_buf->rx_len) {
+        icmp_hdr->time_exceeded.data = &pkt_buf->buffer[pkt_buf->offset];
+        icmp_hdr->time_exceeded.data_len = (pkt_buf->rx_len - pkt_buf->offset);
+    } else {
+        icmp_hdr->time_exceeded.data        = NULL;
+        icmp_hdr->time_exceeded.data_len    = 0;
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static netos_status_t
+netos_icmp_decode_source_quench(netos_icmp_hdr_t *icmp_hdr,
+                                pkt_buffer_t *pkt_buf)
+{
+    if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_ICMP_SOURCE_QUENCH_LEN)) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ICMP_SHORT_SOURCE_QUENCH);
+        return NETOS_STATUS_ICMP_MALFORMED_PKT;
+    }
+
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->source_quench.unused);
+
+    if (pkt_buf->offset > pkt_buf->rx_len) {
+        icmp_hdr->source_quench.data = &pkt_buf->buffer[pkt_buf->offset];
+        icmp_hdr->source_quench.data_len = (pkt_buf->rx_len - pkt_buf->offset);
+    } else {
+        icmp_hdr->source_quench.data        = NULL;
+        icmp_hdr->source_quench.data_len    = 0;
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -250,6 +305,24 @@ static const struct {
         netos_icmp_decode_echo_reply
     },
     {
+        NETOS_ICMP_TYPE_TIME_EXCEEDED,
+        NETOS_ICMP_CODE_TTL_EXCEEDED_IN_TRANSIT,
+        NULL,
+        netos_icmp_decode_time_exceeded
+    },
+    {
+        NETOS_ICMP_TYPE_TIME_EXCEEDED,
+        NETOS_ICMP_CODE_FRAG_REASM_TIME_EXCEEDED,
+        NULL,
+        netos_icmp_decode_time_exceeded
+    },
+    {
+        NETOS_ICMP_TYPE_SOURCE_QUENCH,
+        NETOS_ICMP_CODE_SOURCE_QUENCH,
+        NULL,
+        netos_icmp_decode_source_quench
+    },
+    {
         NETOS_ICMP_TYPE_TIMESTAMP_REQ,
         NETOS_ICMP_CODE_TIMESTAMP_REQ,
         netos_icmp_encode_timestamp_req,
@@ -260,7 +333,7 @@ static const struct {
         NETOS_ICMP_CODE_TIMESTAMP_REPLY,
         netos_icmp_encode_timestamp_reply,
         netos_icmp_decode_timestamp_reply
-    }
+    },
 };
 
 netos_status_t netos_icmp_decode(netos_icmp_hdr_t *icmp_hdr, pkt_buffer_t *pkt_buf)

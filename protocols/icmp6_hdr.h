@@ -91,7 +91,7 @@ typedef struct {
         netos_icmp6_echo_reply_t    echo_reply;
         netos_icmp6_ns_t            ns;
         netos_icmp6_na_t            na;
-    } u;
+    };
 } netos_icmp6_hdr_t;
 
 /**

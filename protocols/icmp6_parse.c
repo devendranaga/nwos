@@ -11,15 +11,15 @@ static netos_status_t netos_icmp6_decode_echo_req(netos_icmp6_hdr_t *icmp6_hdr,
         return NETOS_STATUS_ICMP6_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_req.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_req.seq_no);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->echo_req.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->echo_req.seq_no);
 
     remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
-    icmp6_hdr->u.echo_req.data_len = remaining_len;
+    icmp6_hdr->echo_req.data_len = remaining_len;
     if (remaining_len != 0) {
-        icmp6_hdr->u.echo_req.data = &pkt_buf->buffer[pkt_buf->offset];
+        icmp6_hdr->echo_req.data = &pkt_buf->buffer[pkt_buf->offset];
     } else {
-        icmp6_hdr->u.echo_req.data = NULL;
+        icmp6_hdr->echo_req.data = NULL;
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -34,15 +34,15 @@ static netos_status_t netos_icmp6_decode_echo_reply(netos_icmp6_hdr_t *icmp6_hdr
         return NETOS_STATUS_ICMP6_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_reply.identifier);
-    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->u.echo_reply.seq_no);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->echo_reply.identifier);
+    pkt_buffer_decode_2_bytes(pkt_buf, &icmp6_hdr->echo_reply.seq_no);
 
     remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
-    icmp6_hdr->u.echo_reply.data_len = remaining_len;
+    icmp6_hdr->echo_reply.data_len = remaining_len;
     if (remaining_len != 0) {
-        icmp6_hdr->u.echo_reply.data = &pkt_buf->buffer[pkt_buf->offset];
+        icmp6_hdr->echo_reply.data = &pkt_buf->buffer[pkt_buf->offset];
     } else {
-        icmp6_hdr->u.echo_reply.data = NULL;
+        icmp6_hdr->echo_reply.data = NULL;
     }
 
     return NETOS_STATUS_SUCCESS;
@@ -61,7 +61,7 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
     pkt_buf->offset += 4;
 
     pkt_buffer_decode_bytes(pkt_buf,
-                            icmp6_hdr->u.ns.target_addr,
+                            icmp6_hdr->ns.target_addr,
                             NETOS_IPV6_ADDR_LEN);
     while (pkt_buf->offset < pkt_buf->rx_len) {
         pkt_buffer_decode_byte(pkt_buf, &type);
@@ -74,7 +74,7 @@ static netos_status_t netos_icmp6_decode_ns(netos_icmp6_hdr_t *icmp6_hdr,
                 }
 
                 pkt_buffer_decode_bytes(pkt_buf,
-                                        icmp6_hdr->u.ns.u.sll_addr.sll_addr,
+                                        icmp6_hdr->ns.u.sll_addr.sll_addr,
                                         NETOS_MACADDR_LEN);
             } break;
             default:
@@ -100,9 +100,9 @@ static netos_status_t netos_icmp6_decode_na(netos_icmp6_hdr_t *icmp6_hdr,
         return NETOS_STATUS_ICMP6_MALFORMED_PKT;
     }
 
-    pkt_buffer_decode_4_bytes(pkt_buf, &icmp6_hdr->u.na.flags);
+    pkt_buffer_decode_4_bytes(pkt_buf, &icmp6_hdr->na.flags);
     pkt_buffer_decode_bytes(pkt_buf,
-                            icmp6_hdr->u.na.target_addr,
+                            icmp6_hdr->na.target_addr,
                             NETOS_IPV6_ADDR_LEN);
 
     return NETOS_STATUS_SUCCESS;
