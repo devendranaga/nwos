@@ -92,6 +92,7 @@ void netos_egress_pfifo_enque(void *ctx,
     netos_egress_pfifo_mgr_t *pfifo = ctx;
 
     if (pfifo->in_pkts > pfifo->n_pkts) {
+        netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
         return;
     }
 
