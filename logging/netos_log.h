@@ -4,6 +4,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "netos_config.h"
+
 /**
  * @brief - Defines Logging level.
  */
@@ -76,7 +78,7 @@ typedef enum netos_log_level {
 /**
  * @brief - Initialize logging.
  */
-void netos_log_init(void);
+void netos_log_init(netos_config_t *config);
 
 /**
  * @brief - print info message.
