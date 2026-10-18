@@ -28,6 +28,20 @@ typedef struct {
 
 /**
  * @brief - TCP header.
+ *
+ * |-------------------------------------------------|
+ * |    source port          |     destination port  |
+ * |-------------------------|-----------------------|
+ * |                 sequence number                 |
+ * |-------------------------------------------------|
+ * |            acknowledgement number               |
+ * |-------------------------------------------------|
+ * | data offset | reserved | flags | window size    |
+ * |-------------------------------------------------|
+ * |       checksum          |      urgent pointer   |
+ * |-------------------------------------------------| <-- 20 bytes
+ * |                options (upto 60 bytes)          |
+ * |-------------------------------------------------|
  */
 typedef struct {
     uint16_t            src_port;
@@ -51,6 +65,11 @@ typedef struct {
  */
 netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf);
 
+/**
+ * @brief - Print the TCP header.
+ *
+ * @param [in] tcp_hdr - TCP header.
+ */
 void netos_tcp_print(netos_tcp_hdr_t *tcp_hdr);
 
 #if defined(__cplusplus)

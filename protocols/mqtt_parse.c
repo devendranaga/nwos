@@ -297,7 +297,7 @@ static const struct {
 static netos_status_t netos_mqtt_decode_entry(netos_mqtt_hdr_t *hdr,
                                               pkt_buffer_t *pkt_buf)
 {
-    netos_status_t ret;
+    netos_status_t ret = NETOS_STATUS_MQTT_MALFORMED_PKT;
     uint32_t i;
 
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_MQTT_HDR_LEN)) {
@@ -318,7 +318,7 @@ static netos_status_t netos_mqtt_decode_entry(netos_mqtt_hdr_t *hdr,
         }
     }
 
-    return NETOS_STATUS_SUCCESS;
+    return ret;
 }
 
 netos_status_t netos_mqtt_decode(netos_mqtt_pdu_t *pdu,

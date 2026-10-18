@@ -39,6 +39,10 @@ void netos_mqtt_tx(void *ctx, pkt_buffer_t *pkt_buf)
 
 void netos_mqtt_deinit(void *ctx)
 {
+    netos_mqtt_context_t *mqtt_ctx = ctx;
 
+    if (mqtt_ctx) {
+        free(mqtt_ctx);
+    }
 }
 

@@ -90,6 +90,7 @@ netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
         return NETOS_STATUS_TCP_MALFORMED_PKT;
     }
 
+    // parse TCP flags
     tcp_hdr->flags.ecn  = !!(pkt_buf->buffer[pkt_buf->offset] & 0x01);
     pkt_buf->offset ++;
 
@@ -115,6 +116,12 @@ netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
     pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->chksum);
     pkt_buffer_decode_2_bytes(pkt_buf, &tcp_hdr->urg);
 
+    uint32_t total_len = tcp_hdr->hdr_len * 4;
+    // skip the tcp options
+    if (total_len > NETOS_TCP_HDR_LEN_DEFAULT) {
+        pkt_buf->offset += (total_len - NETOS_TCP_HDR_LEN_DEFAULT);
+    }
+
     return NETOS_STATUS_SUCCESS;
 }
 
@@ -136,5 +143,8 @@ void netos_tcp_print(netos_tcp_hdr_t *tcp_hdr)
     netos_log_debug("\t\t rst: %d\n", tcp_hdr->flags.rst);
     netos_log_debug("\t\t syn: %d\n", tcp_hdr->flags.syn);
     netos_log_debug("\t\t fin: %d\n", tcp_hdr->flags.fin);
+    netos_log_debug("\t window: %d\n", tcp_hdr->window);
+    netos_log_debug("\t checksum: %04x\n", tcp_hdr->chksum);
+    netos_log_debug("\t urg_ptr: %d\n", tcp_hdr->urg);
 }
 

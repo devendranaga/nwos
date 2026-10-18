@@ -70,6 +70,11 @@ static bool netos_tcp_compare(void *key1, void *key2)
     return true;
 }
 
+static bool netos_tcp_del_conn_cb(void *key, void *val)
+{
+    return true;
+}
+
 void *netos_tcp_initialize(netos_config_t *config)
 {
     netos_tcp_context_t *tcp_ctx;
@@ -167,6 +172,21 @@ void netos_tcp_tx_process(void *ctx, pkt_buffer_t *pkt_buf)
 
 void netos_tcp_deinit(void *ctx)
 {
+    netos_tcp_context_t *tcp_ctx = ctx;
+    uint32_t i;
 
+    if (tcp_ctx) {
+        for (i = 0; i < NETOS_SIZEOF_ARRAY(application_callbacks); i ++) {
+            if (application_callbacks[i].valid &&
+                application_callbacks[i].deinit) {
+                application_callbacks[i].deinit(application_callbacks[i].protocol_ctx);
+            }
+        }
+        if (tcp_ctx->conn_list) {
+            netos_hash_table_deinit(tcp_ctx->conn_list,
+                                    netos_tcp_del_conn_cb);
+        }
+        free(tcp_ctx);
+    }
 }
 
