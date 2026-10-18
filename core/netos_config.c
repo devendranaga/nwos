@@ -554,6 +554,45 @@ netos_config_parse_vlan_table(netos_config_t *config,
     return NETOS_STATUS_SUCCESS;
 }
 
+static netos_status_t
+netos_config_logging_parse_enable_syslog(netos_config_t *config,
+                                         xmlDocPtr doc, xmlNode *node)
+{
+    return netos_config_get_bool(&config->log_config.enable_syslog,
+                                 doc, node);
+}
+
+static const struct {
+    const char      *name;
+    netos_status_t  (*callback_fn)(netos_config_t *config,
+                                   xmlDocPtr doc, xmlNode *node);
+} logging_metadata[] = {
+    { "enable_syslog", netos_config_logging_parse_enable_syslog },
+};
+
+static netos_status_t netos_config_parse_logging(netos_config_t *config,
+                                                 xmlDocPtr doc, xmlNode *node)
+{
+    xmlNode *node_ptr;
+    uint32_t i;
+    netos_status_t ret;
+
+    for (node_ptr = node->children; node_ptr; node_ptr = node_ptr->next) {
+        for (i = 0; i < NETOS_SIZEOF_ARRAY(logging_metadata); i ++) {
+            if (node_ptr->type == XML_ELEMENT_NODE) {
+                if (!strcmp((const char *)(node_ptr->name), logging_metadata[i].name)) {
+                    ret = logging_metadata[i].callback_fn(config, doc, node_ptr);
+                    if (ret != NETOS_STATUS_SUCCESS) {
+                        return ret;
+                    }
+                }
+            }
+        }
+    }
+
+    return NETOS_STATUS_SUCCESS;
+}
+
 static const struct {
     const char      *name;
     netos_status_t  (*callback_fn)(netos_config_t *config,
@@ -566,6 +605,7 @@ static const struct {
     { "events",                 netos_config_parse_event_config },
     { "rule_file",              netos_config_parse_rule_file },
     { "vlan_table",             netos_config_parse_vlan_table },
+    { "logging",                netos_config_parse_logging },
 };
 
 static netos_status_t
@@ -692,6 +732,11 @@ void netos_config_print(const netos_config_t *config)
                     config->egress_ctrl.pfifo.max_pkts);
     fprintf(stderr, "        }\n");
     fprintf(stderr, "    }\n");
+    fprintf(stderr, "    logging: {\n");
+    fprintf(stderr, "        enable_syslog: %s\n",
+                    config->log_config.enable_syslog ? "True": "False");
+    fprintf(stderr, "    }\n");
+    fprintf(stderr, " }\n");
     if (config->rule_file) {
         fprintf(stderr, "    rule_file: %s\n", config->rule_file);
     }

@@ -101,6 +101,10 @@ typedef struct netos_mirror_config {
 
 } netos_mirror_config_t;
 
+typedef struct netos_logging_config {
+    bool        enable_syslog;
+} netos_logging_config_t;
+
 /**
  * @brief - Defines network config.
  */
@@ -113,6 +117,7 @@ typedef struct netos_config {
     netos_vlan_table_config_t   vlan_table_config;
     netos_macsec_secy_config_t  secy_config;
     netos_event_config_t        event_config;
+    netos_logging_config_t      log_config;
     char                        *rule_file;
 } netos_config_t;
 
