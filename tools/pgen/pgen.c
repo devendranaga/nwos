@@ -660,7 +660,7 @@ static void set_icmp_id(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.identifier);
+    ret = netos_get_u16_hex_from_str(tokens[1].name, &pgen.icmp_hdr.echo_req.identifier);
     if (ret != NETOS_STATUS_SUCCESS) {
         NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP identifier value <%s>\n", tokens[1].name);
         return;
@@ -671,7 +671,7 @@ static void set_icmp_seq(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    ret = netos_get_u16_from_str(tokens[1].name, &pgen.icmp_hdr.u.echo_req.seq_no);
+    ret = netos_get_u16_from_str(tokens[1].name, &pgen.icmp_hdr.echo_req.seq_no);
     if (ret != NETOS_STATUS_SUCCESS) {
         NETOS_PRINT_STD_ERROR_COLOR("invalid ICMP seq_no value <%s>\n", tokens[1].name);
         return;
@@ -1282,12 +1282,12 @@ static void pgen_icmp_run()
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
     if (pgen.len == 0) {
-        pgen.icmp_hdr.u.echo_req.data = NULL;
-        pgen.icmp_hdr.u.echo_req.data_len = 0;
+        pgen.icmp_hdr.echo_req.data = NULL;
+        pgen.icmp_hdr.echo_req.data_len = 0;
     } else {
-        pgen.icmp_hdr.u.echo_req.data = data_buf;
+        pgen.icmp_hdr.echo_req.data = data_buf;
         pgen.len = pgen.data_bytes_len;
-        pgen.icmp_hdr.u.echo_req.data_len = pgen.len;
+        pgen.icmp_hdr.echo_req.data_len = pgen.len;
     }
 
     if (pgen.icmp_hdr.checksum == 0) {
