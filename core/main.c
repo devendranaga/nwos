@@ -456,16 +456,14 @@ int main(int argc, char **argv)
         return ret;
     }
 
-    netos_log_init();
-
-    netos_log_info("Parse command line arguments ok\n");
-
     // parse config file
     ret = netos_config_parse(&ctx->config, ctx->cmdargs.config_file);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Config parse failure error : %x\n", ret);
         return ret;
     }
+
+    netos_log_init(&ctx->config);
 
     // parse the rules config
     ret = netos_rule_config_parse(ctx->config.rule_file, &ctx->rules);
@@ -531,7 +529,10 @@ int main(int argc, char **argv)
     // deinitialize all the interfaces
     netos_deinitialize_interfaces(ctx);
 
+    // deinitialize the GCD
     netos_gcd_deinit(ctx->gcd_ctx);
+
+    free(ctx);
 
     return ret;
 }

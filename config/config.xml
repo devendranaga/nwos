@@ -61,4 +61,7 @@
             <max_packets>100</max_packets>
         </pfifo>
     </egress_control>
+    <logging>
+        <enable_syslog>false</enable_syslog>
+    </logging>
 </configuration>

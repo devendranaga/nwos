@@ -148,9 +148,12 @@ err:
 
 void netos_ctrl_intf_deinit(netos_ctrl_intf_ctx_t *ctx)
 {
-    if ((ctx->fd > 0) && ctx->path) {
-        netos_unix_intf_udp_close(ctx->fd, ctx->path);
-        free(ctx->path);
+    if (ctx) {
+        if ((ctx->fd >= 0) && ctx->path) {
+            netos_unix_intf_udp_close(ctx->fd, ctx->path);
+            free(ctx->path);
+        }
+        free(ctx);
     }
 }
 
