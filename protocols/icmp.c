@@ -6,6 +6,7 @@
 #include "icmp_hdr.h"
 #include "egress_controller.h"
 #include "icmp.h"
+#include "event_info.h"
 
 void *netos_icmp_init(netos_config_t *config)
 {
@@ -69,16 +70,16 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
     icmp_h = &parsed_data->l4.icmp_hdr;
 
     NETOS_ICMP_ECHO_REPLY_DEFAULTS(reply,
-                                   icmp_h->u.echo_req.identifier,
-                                   icmp_h->u.echo_req.seq_no);
+                                   icmp_h->echo_req.identifier,
+                                   icmp_h->echo_req.seq_no);
 
     reply.gen_checksum              = true;
     reply.type                      = NETOS_ICMP_TYPE_ECHO_REPLY;
     reply.code                      = NETOS_ICMP_CODE_ECHO_REPLY;
-    reply.u.echo_reply.data_len     = icmp_h->u.echo_req.data_len;
-    reply.u.echo_reply.data         = icmp_h->u.echo_req.data;
-    reply.u.echo_reply.identifier   = icmp_h->u.echo_req.identifier;
-    reply.u.echo_reply.seq_no       = icmp_h->u.echo_req.seq_no;
+    reply.echo_reply.data_len     = icmp_h->echo_req.data_len;
+    reply.echo_reply.data         = icmp_h->echo_req.data;
+    reply.echo_reply.identifier   = icmp_h->echo_req.identifier;
+    reply.echo_reply.seq_no       = icmp_h->echo_req.seq_no;
 
     netos_icmp_encode(&reply, tx_buf);
 
@@ -93,6 +94,7 @@ void netos_icmp_rx(void *ctx,
                    netos_packet_parser_t *parsed_data,
                    pkt_buffer_t *pkt_buf)
 {
+    netos_icmp_ctx_t *icmp_ctx = ctx;
     netos_icmp_hdr_t *icmp_h;
     netos_status_t ret;
 
@@ -103,6 +105,14 @@ void netos_icmp_rx(void *ctx,
     }
 
     icmp_h = &parsed_data->l4.icmp_hdr;
+
+    if (icmp_h->echo_req.data_len >
+        icmp_ctx->config->protocol_config.icmp_config.echo_payload_len) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_ICMP_ECHO_DATA_LEN_INVAL);
+        return;
+    }
 
     if (NETOS_ICMP_IS_ECHO_REQ(icmp_h) &&
         NETOS_IS_IPV4_FRAME(parsed_data) &&
