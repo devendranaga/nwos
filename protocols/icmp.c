@@ -106,8 +106,12 @@ void netos_icmp_rx(void *ctx,
 
     icmp_h = &parsed_data->l4.icmp_hdr;
 
-    if (icmp_h->echo_req.data_len >
-        icmp_ctx->config->protocol_config.icmp_config.echo_payload_len) {
+    // if its an ipv4 icmp echo request
+    // validate against the minimum data length of the echo request payload length
+    if (NETOS_ICMP_IS_ECHO_REQ(icmp_h) &&
+        NETOS_IS_IPV4_FRAME(parsed_data) &&
+        (icmp_h->echo_req.data_len >
+         icmp_ctx->config->protocol_config.icmp_config.echo_payload_len)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_ICMP_ECHO_DATA_LEN_INVAL);
