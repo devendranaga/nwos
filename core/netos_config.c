@@ -116,6 +116,8 @@ netos_config_get_arp_cache_size(netos_config_t *config,
         (config->protocol_config.arp_config.arp_cache_size == 0)) {
         ret = NETOS_STATUS_CONFIG_ARP_CACHE_SIZE_TOO_SMALL;
     }
+
+    return ret;
 }
 
 static const struct {
