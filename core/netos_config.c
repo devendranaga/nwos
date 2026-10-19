@@ -108,8 +108,14 @@ static netos_status_t
 netos_config_get_arp_cache_size(netos_config_t *config,
                                 xmlDocPtr doc, xmlNode *node)
 {
-    return netos_config_get_u32(&config->protocol_config.arp_config.arp_cache_size,
-                                doc, node);
+    netos_status_t ret;
+
+    ret = netos_config_get_u32(&config->protocol_config.arp_config.arp_cache_size,
+                               doc, node);
+    if ((ret == NETOS_STATUS_SUCCESS) &&
+        (config->protocol_config.arp_config.arp_cache_size == 0)) {
+        ret = NETOS_STATUS_CONFIG_ARP_CACHE_SIZE_TOO_SMALL;
+    }
 }
 
 static const struct {

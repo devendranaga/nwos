@@ -17,6 +17,8 @@ void *netos_icmp_init(netos_config_t *config)
         return NULL;
     }
 
+    icmp_ctx->config = config;
+
     icmp_ctx->icmp_pool = netos_buffer_pool_alloc(32);
     if (!icmp_ctx->icmp_pool) {
         goto err;

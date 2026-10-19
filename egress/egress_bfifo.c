@@ -31,23 +31,19 @@ static void *netos_egress_bfifo_tx_queue_thread(void *ctx)
         pkt_buffer_t *pkt_buf = bfifo->queue.pkt_buf;
 
         for (tx_bytes = 0; pkt_buf && (tx_bytes < bfifo->in_bytes);) {
-            if (pkt_buf && pkt_buf->out_intf) {
-                pkt_buffer_t *next = pkt_buf->next;
+            pkt_buffer_t *next = pkt_buf->next;
 
-                if (pkt_buf->out_intf) {
-                    netos_raw_socket_tx(pkt_buf->out_intf,
-                                        pkt_buf->buffer,
-                                        pkt_buf->tx_len);
-                    netos_statistics_inc_bfifo_tx(pkt_buf->out_intf->stats_ctx);
-                    netos_statistics_inc_tx(pkt_buf->out_intf->stats_ctx);
-                }
-
-                tx_bytes += pkt_buf->tx_len;
-
-                netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
-
-                pkt_buf = next;
+            if (pkt_buf->out_intf) {
+                netos_raw_socket_tx(pkt_buf->out_intf,
+                                    pkt_buf->buffer,
+                                    pkt_buf->tx_len);
+                netos_statistics_inc_bfifo_tx(pkt_buf->out_intf->stats_ctx);
+                netos_statistics_inc_tx(pkt_buf->out_intf->stats_ctx);
             }
+
+            tx_bytes += pkt_buf->tx_len;
+            netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
+            pkt_buf = next;
         }
 
         bfifo->in_bytes -= tx_bytes;

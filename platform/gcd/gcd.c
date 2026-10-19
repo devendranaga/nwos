@@ -308,6 +308,9 @@ void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx)
         if (gcd_ctx->signal_ctx.fd >= 0) {
             close(gcd_ctx->signal_ctx.fd);
         }
+        if (gcd_ctx->epoll_fd >= 0) {
+            close(gcd_ctx->epoll_fd);
+        }
         free(gcd_ctx);
     }
 }

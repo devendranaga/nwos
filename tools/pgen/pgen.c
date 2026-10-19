@@ -202,6 +202,8 @@ static netos_status_t pgen_set_defaults()
         goto err;
     }
 
+    return NETOS_STATUS_SUCCESS;
+
 err:
     if (pgen.crypto_ctx) {
         free(pgen.crypto_ctx);
@@ -1393,6 +1395,10 @@ static void pgen_pcap_run()
                 NETOS_PRINT_STD_ERROR_COLOR("invalid pcap record\n");
             }
             break;
+        }
+
+        if (pkt_hdr->incl_len > sizeof(pkt_buf.buffer)) {
+            continue;
         }
 
         memcpy(pkt_buf.buffer, buffer, pkt_hdr->incl_len);

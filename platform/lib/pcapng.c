@@ -137,6 +137,7 @@ typedef struct {
 typedef struct {
     int                             fd;
     void                            *mapped_memory;
+    uint32_t                        file_size;
     void                            *user_ctx;
     uint32_t                        offset;
     netos_pcapng_file_record_t      rec;
@@ -781,7 +782,7 @@ static netos_status_t netos_pcapng_parse_blocks(netos_pcapng_ctx_t *ctx)
                                 __func__, block_type, block_total_len);
                 return -1;
         }
-    } while (1);
+    } while (ctx->offset < ctx->file_size);
 
     return NETOS_STATUS_SUCCESS;
 }
@@ -805,6 +806,7 @@ netos_status_t netos_pcapng_ctx_parse(const char *filename,
         return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
     }
 
+    ctx->file_size = st.st_size;
     ctx->fd = -1;
 
     ctx->parse_cb_data = parse_cb;

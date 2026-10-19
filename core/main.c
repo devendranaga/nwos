@@ -427,9 +427,8 @@ static void netos_deinitialize_interfaces(netos_ctx_t *ctx)
 
     while (intf) {
         prev = intf;
-        netos_log_info("%s %u\n", __func__, __LINE__);
-        netos_deinitialize_interface(prev, ctx->gcd_ctx);
         intf = intf->next;
+        netos_deinitialize_interface(prev, ctx->gcd_ctx);
     }
 }
 
