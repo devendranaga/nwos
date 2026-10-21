@@ -48,19 +48,22 @@ void netos_udp_rx(void *ctx,
     uint16_t start_off;
     uint16_t remaining_len;
 
-    start_off = pkt_buf->offset;
-    remaining_len = pkt_buffer_remaining_rx_len(pkt_buf);
+    start_off       = pkt_buf->offset;
+    remaining_len   = pkt_buffer_remaining_rx_len(pkt_buf);
 
-    /* The checksum for udp already verified in the decode. */
     ret = netos_udp_decode(&parsed_data->l4.udp_hdr, pkt_buf);
     if (ret != NETOS_STATUS_SUCCESS) {
         // do not drop if the udp checksum is 0 and its allowed in the config
         if ((ret == NETOS_STATUS_ZERO_UDP_LENGTH) &&
             (!udp_ctx->config->protocol_config.udp_config.allow_zero_checksum)) {
+            NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                       NETOS_EVENT_TYPE_DENY,
+                                       NETOS_EVENT_DESC_UDP_ZERO_CHECKSUM_DENIED_POLICY);
             return;
         }
     }
 
+    // verify the udp checksum
     ret = netos_do_checksum_l4(start_off,
                                remaining_len,
                                parsed_data,

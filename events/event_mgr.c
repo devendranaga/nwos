@@ -199,6 +199,13 @@ netos_status_t netos_event_mgr_init(netos_gcd_ctx_t *gcd_ctx,
     return NETOS_STATUS_SUCCESS;
 }
 
+void netos_event_mgr_deinit()
+{
+    if (evt_mgr.evt_buf) {
+        netos_event_buffer_free(evt_mgr.evt_buf);
+    }
+}
+
 void netos_event_mgr_add_event(netos_event_info_t *evt_info)
 {
     pthread_mutex_lock(&evt_mgr.evt_lock);

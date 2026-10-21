@@ -508,7 +508,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // initialize netos interfaces
+    // initialize netos control interfaces
     ret = netos_initialize_interfaces(ctx);
     if (ret != NETOS_STATUS_SUCCESS) {
         netos_log_error("Interface list initialization failed error : %x\n", ret);
@@ -521,12 +521,17 @@ int main(int argc, char **argv)
     // run the gcd
     netos_gcd_run(ctx->gcd_ctx);
 
+    // deinitialize netos control interface
+    netos_ctrl_intf_deinit(ctx->ctrl_intf);
+
     // deinitialize protocols
     netos_deinitialize_protocols(ctx->gcd_ctx);
 
-        netos_log_info("%s %u\n", __func__, __LINE__);
     // deinitialize all the interfaces
     netos_deinitialize_interfaces(ctx);
+
+    // deinitialize the event manager
+    netos_event_mgr_deinit();
 
     // deinitialize the GCD
     netos_gcd_deinit(ctx->gcd_ctx);

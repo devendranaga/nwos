@@ -6,6 +6,7 @@
 netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
                                 pkt_buffer_t *pkt_buf)
 {
+    // short header length
     if (pkt_buffer_has_short_rx_len(pkt_buf, NETOS_UDP_HDR_LEN)) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
@@ -16,6 +17,8 @@ netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->src_port);
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->dst_port);
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->length);
+
+    // invalid length
     if (udp_hdr->length == 0) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,

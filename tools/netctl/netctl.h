@@ -5,6 +5,7 @@ typedef struct {
     int fd;
     char *path;
     char *serv_path;
+    bool exit_netctl;
 } netos_netctl_t;
 
 #endif

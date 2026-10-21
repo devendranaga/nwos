@@ -49,7 +49,9 @@ SET(PROTOCOL_SRC
     ./protocols/dns_parse.c
     ./protocols/ieee_8021qbb_parse.c
     ./protocols/ripng_parse.c
-    ./protocols/lldp_parse.c)
+    ./protocols/lldp_parse.c
+    ./protocols/tftp_parse.c
+    ./protocols/ntp_parse.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c
@@ -114,6 +116,7 @@ SET(NETOS_SRC
     ./protocols/mqtt.c
     ./protocols/tcp.c
     ./protocols/ndp.c
+    ./protocols/tftp.c
     ./egress/egress_controller.c
     ./egress/egress_sp.c
     ./egress/egress_rr.c

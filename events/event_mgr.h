@@ -29,5 +29,7 @@ void netos_event_mgr_add_event(netos_event_info_t *evt_info);
 
 netos_event_info_t *netos_event_mgr_get_evt_buf();
 
+void netos_event_mgr_deinit();
+
 #endif
 

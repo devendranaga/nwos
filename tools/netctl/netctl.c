@@ -85,13 +85,16 @@ static void netos_netctl_rx_show_ingress_stats(netos_netctl_t *ctl, uint32_t com
     netos_log_info("Ingress_Stats:\n");
 
     while (remaining_len < ret) {
-        netos_netctl_ingress_statistics_t *ingress_stats = (netos_netctl_ingress_statistics_t *)(start_data + remaining_len);
+        netos_netctl_ingress_statistics_t *ingress_stats =
+                    (netos_netctl_ingress_statistics_t *)(start_data + remaining_len);
 
+        fprintf(stderr, "------------------------------------------------------------\n");
         netos_log_info("\t interface : %s\n", ingress_stats->ifname);
         netos_log_info("\t n_rx      : %d\n", ingress_stats->n_rx);
         netos_log_info("\t n_arp_rx  : %d\n", ingress_stats->n_arp_rx);
         netos_log_info("\t n_ipv4_rx : %d\n", ingress_stats->n_ipv4_rx);
         netos_log_info("\t n_ipv6_rx : %d\n", ingress_stats->n_ipv6_rx);
+        fprintf(stderr, "------------------------------------------------------------\n");
 
         remaining_len += sizeof(netos_netctl_ingress_statistics_t);
     }
@@ -132,6 +135,11 @@ static void netos_netctl_run_show(netos_netctl_t *ctl, struct netctl_tokens *in_
     }
 }
 
+static void netos_netctl_exit(netos_netctl_t *ctl, struct netctl_tokens *in_tokens, uint32_t len)
+{
+    ctl->exit_netctl = true;
+}
+
 static struct {
     char *command;
     void (*callback)(netos_netctl_t *ctl, struct netctl_tokens *tokens, uint32_t len);
@@ -140,6 +148,10 @@ static struct {
         "show",
         netos_netctl_run_show
     },
+    {
+        "exit",
+        netos_netctl_exit,
+    }
 };
 
 static int netos_netctl_init(netos_netctl_t *ctl)
@@ -149,7 +161,16 @@ static int netos_netctl_init(netos_netctl_t *ctl)
         return -1;
     }
 
+    ctl->exit_netctl = false;
+
     return 0;
+}
+
+static void netos_netctl_deinit(netos_netctl_t *ctl)
+{
+    if (ctl->fd >= 0) {
+        netos_unix_intf_udp_close(ctl->fd, ctl->path);
+    }
 }
 
 static void netos_netctl_run(netos_netctl_t *ctl)
@@ -177,10 +198,14 @@ static void netos_netctl_run(netos_netctl_t *ctl)
         token_len = netos_netctl_parse_input(buf, len);
 
         for (i = 0; i < NETOS_SIZEOF_ARRAY(commands); i ++) {
-            if (strcmp(tokens[i].token, commands[i].command) == 0) {
+            if (strcmp(tokens[0].token, commands[i].command) == 0) {
                 commands[i].callback(ctl, tokens, token_len);
                 break;
             }
+        }
+
+        if (ctl->exit_netctl) {
+            break;
         }
     }
 }
@@ -229,6 +254,8 @@ int main(int argc, char **argv)
     }
 
     netos_netctl_run(&ctl);
+
+    netos_netctl_deinit(&ctl);
 
     return 0;
 }
