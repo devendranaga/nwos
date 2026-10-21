@@ -30,6 +30,7 @@ netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename)
         goto err;
     }
 
+    // map the entire file into the memory
     ctx->mapped_memory = mmap(NULL, st.st_size,
                               PROT_READ,
                               MAP_SHARED,
@@ -43,6 +44,7 @@ netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename)
     ctx->offset = 0;
     ctx->glob_hdr = (netos_pcap_global_header_t *)(ctx->mapped_memory);
 
+    // global header magic check
     if ((ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_BE_1) &&
         (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_BE_2) &&
         (ctx->glob_hdr->magic != NETOS_PCAP_MAGIC_NUMBER_LE_1) &&
@@ -50,6 +52,7 @@ netos_pcap_context_t *netos_pcap_open_file_to_read(const char *filename)
         goto err;
     }
 
+    // move to the start of the real packet bytes
     ctx->offset += sizeof(netos_pcap_global_header_t);
 
     return ctx;

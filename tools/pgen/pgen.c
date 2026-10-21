@@ -1387,6 +1387,11 @@ static void pgen_pcap_run()
         pkt_buffer_initialize(&pkt_buf);
         uint8_t *buffer = NULL;
 
+        // pcap not opened yet
+        if (!pgen.pcap_ctx) {
+            return;
+        }
+
         ret = netos_pcap_read_file_entry(pgen.pcap_ctx, &pkt_hdr, &buffer);
         if (ret != NETOS_STATUS_SUCCESS) {
             if (ret == NETOS_STATUS_PCAP_EOF) {
@@ -1416,7 +1421,12 @@ static void pgen_pcap_run()
         clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
     } while (1);
 
-    NETOS_PRINT_STD_GREEN_COLOR("Replay complete, sent %d frames over [%s]\n", n_replayed, pgen.ifname);
+    NETOS_PRINT_STD_GREEN_COLOR("Replay complete, sent %d frames over [%s]\n",
+                                n_replayed, pgen.ifname);
+
+    if (pgen.pcap_ctx) {
+        netos_pcap_close_file(pgen.pcap_ctx);
+    }
 }
 
 static void pgen_udp_run()

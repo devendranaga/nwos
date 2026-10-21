@@ -107,6 +107,9 @@ void netos_icmp6_deinit(void *ctx)
 
     icmp6_ctx = ctx;
     if (icmp6_ctx) {
+        if (icmp6_ctx->icmp6_pool) {
+            netos_buffer_pool_free(icmp6_ctx->icmp6_pool);
+        }
         if (icmp6_ctx->ndp_ctx) {
             netos_ndp_deinit(icmp6_ctx->ndp_ctx);
         }

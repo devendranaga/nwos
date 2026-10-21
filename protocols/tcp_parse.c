@@ -87,6 +87,9 @@ netos_status_t netos_tcp_decode(netos_tcp_hdr_t *tcp_hdr, pkt_buffer_t *pkt_buf)
     tcp_hdr->hdr_len    = (pkt_buf->buffer[pkt_buf->offset] & 0xF0) >> 4;
     // drop malformed TCP header length
     if ((tcp_hdr->hdr_len * 4) < NETOS_TCP_HDR_LEN_DEFAULT) {
+        NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
+                                   NETOS_EVENT_TYPE_DENY,
+                                   NETOS_EVENT_DESC_TCP_BAD_DATA_OFFSET);
         return NETOS_STATUS_TCP_MALFORMED_PKT;
     }
 

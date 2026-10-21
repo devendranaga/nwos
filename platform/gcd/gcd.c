@@ -28,17 +28,17 @@ netos_gcd_ctx_t *netos_gcd_ctx_init()
 
     gcd_ctx->signal_ctx.fd = -1;
 
-    gcd_ctx->epoll_fd = epoll_create1(0);
-    if (gcd_ctx->epoll_fd < 0) {
-        goto err;
-    }
-
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
     sigaddset(&mask, SIGTERM);
 
     ret = sigprocmask(SIG_BLOCK, &mask, NULL);
     if (ret != 0) {
+        goto err;
+    }
+
+    gcd_ctx->epoll_fd = epoll_create1(0);
+    if (gcd_ctx->epoll_fd < 0) {
         goto err;
     }
 
@@ -228,6 +228,22 @@ static netos_status_t netos_gcd_run_timers(netos_gcd_ctx_t *gcd_ctx, struct epol
     return NETOS_STATUS_GCD_TIMER_EVENT_UNHANDLED;
 }
 
+static void netos_gcd_cleanup_timers(netos_gcd_ctx_t *gcd_ctx)
+{
+    netos_gcd_timer_ctx_t *timer_ctx = &gcd_ctx->timer_ctx;
+    netos_gcd_timer_t *timer = timer_ctx->timers;
+    netos_gcd_timer_t *prev;
+
+    while (timer) {
+        prev = timer;
+        if (prev->fd >= 0) {
+            close(prev->fd);
+        }
+        timer = timer->next;
+        free(prev);
+    }
+}
+
 static netos_status_t netos_gcd_run_sockets(netos_gcd_ctx_t *gcd_ctx, struct epoll_event *event)
 {
     netos_gcd_socket_ctx_t *sock_ctx = &gcd_ctx->socket_ctx;
@@ -281,9 +297,7 @@ void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx)
 
         nfd = epoll_wait(gcd_ctx->epoll_fd, events, NETOS_GCD_EPOLL_MAX_EVENTS - 1, -1);
         if (nfd < 0) {
-            if (errno == EINTR) {
-                break;
-            }
+            break;
         }
         for (int i = 0; i < nfd; i ++) {
             if (events[i].events & EPOLLIN) {
@@ -311,6 +325,7 @@ void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx)
         if (gcd_ctx->epoll_fd >= 0) {
             close(gcd_ctx->epoll_fd);
         }
+        netos_gcd_cleanup_timers(gcd_ctx);
         free(gcd_ctx);
     }
 }

@@ -30,6 +30,13 @@ end:
     return NULL;
 }
 
+void netos_crypto_ctx_deinitialize(netos_crypto_ctx_t *ctx)
+{
+    if (ctx) {
+        free(ctx);
+    }
+}
+
 void *netos_crypto_init_gmac(netos_crypto_ctx_t *ctx)
 {
     const netos_crypto_intf_t *crypto_intf = ctx->crypto_intf;

@@ -179,6 +179,9 @@ target_link_libraries(netos_test_hash_table PRIVATE netos)
 add_test(NAME hash_table COMMAND netos_test_hash_table)
 set_tests_properties(hash_table PROPERTIES TIMEOUT 10)
 
+add_test(NAME pcapng COMMAND netos_pcapng_test ${CMAKE_SOURCE_DIR}/tests/fixtures/test_no_options.pcapng)
+set_tests_properties(pcapng PROPERTIES TIMEOUT 10)
+
 if(STATIC_BUILD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 elseif(DEBUG)

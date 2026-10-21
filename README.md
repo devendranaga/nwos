@@ -1,5 +1,9 @@
 # Nwos
 
+This project sole purpose is to educate on the Networking and software design / architectures.
+
+This project is not meant to be a real world usecase of a network stack.
+
 ## prerequisites
 
 ```bash
@@ -13,7 +17,6 @@ sudo apt install libxml2-dev libicu-dev
 ```
 
 Static build would most probably work on any 64 bit ARM and may not require any dependencies.
-Static build does not work in Github CI. Not sure.
 
 ## Build flags
 
@@ -52,6 +55,9 @@ cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on
 ```build
 cmake .. -DCOMPILER_ARM=on -DDEBUG=on
 ```
+
+For a valgrind check, disable `DDEBUG` option in cmake and use any compiler option above.
+In debug builds, the ASAN checkers are linked.
 
 ## Setting up
 
