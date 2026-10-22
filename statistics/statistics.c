@@ -102,6 +102,20 @@ void netos_statistics_inc_ipv6_ingress(void *stats_ptr)
     atomic_fetch_add_explicit(&stat->ingress.n_ipv6_rx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_inc_icmp_ingress(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_icmp_rx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_icmp_egress(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->egress.n_icmp_tx, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_arp_rx()
 {
     atomic_fetch_add_explicit(&glob_stats.arp.n_arp_rx, 1, memory_order_relaxed);
@@ -110,6 +124,16 @@ void netos_statistics_inc_arp_rx()
 void netos_statistics_inc_n_arp_fail()
 {
     atomic_fetch_add_explicit(&glob_stats.arp.n_arp_fail, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_n_icmp_tx()
+{
+    atomic_fetch_add_explicit(&glob_stats.icmp.n_icmp_tx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_n_icmp_rx()
+{
+    atomic_fetch_add_explicit(&glob_stats.icmp.n_icmp_rx, 1, memory_order_relaxed);
 }
 
 uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len)

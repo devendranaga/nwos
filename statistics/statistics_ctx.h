@@ -40,5 +40,13 @@ void netos_statistics_inc_n_arp_fail();
 
 uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len);
 
+void netos_statistics_inc_icmp_ingress(void *stats_ptr);
+
+void netos_statistics_inc_icmp_egress(void *stats_ptr);
+
+void netos_statistics_inc_n_icmp_tx();
+
+void netos_statistics_inc_n_icmp_rx();
+
 #endif
 
