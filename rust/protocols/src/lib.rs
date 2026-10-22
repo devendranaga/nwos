@@ -8,6 +8,7 @@ pub mod udp;
 pub mod tcp;
 pub mod icmp6;
 pub mod pkt_buffer;
+pub mod netos_status;
 
 #[cfg(test)]
 mod tests {
