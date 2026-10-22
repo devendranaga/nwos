@@ -46,6 +46,11 @@ typedef struct {
     netos_gcd_signal_ctx_t  signal_ctx;
 } netos_gcd_ctx_t;
 
+/**
+ * @brief - Initialize GCD context.
+ *
+ * @return pointer to netos_gcd_ctx_t.
+ */
 netos_gcd_ctx_t *netos_gcd_ctx_init();
 
 netos_status_t netos_gcd_socket_set_callback(netos_gcd_ctx_t *gcd_ctx,

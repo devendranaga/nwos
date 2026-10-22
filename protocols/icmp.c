@@ -6,6 +6,7 @@
 #include "icmp_hdr.h"
 #include "egress_controller.h"
 #include "icmp.h"
+#include "statistics_ctx.h"
 #include "event_info.h"
 
 void *netos_icmp_init(netos_config_t *config)
@@ -87,9 +88,13 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
 
     pkt_buffer_set_tx_len_default(tx_buf);
 
-    netos_egress_enque(pkt_buf->in_intf->egress_ctrl,
+    netos_egress_enque(pkt_buf->out_intf->egress_ctrl,
                        NETOS_EGRESS_ALG_SP,
                        tx_buf);
+
+    // increment per interface and aggregated statistics
+    netos_statistics_inc_icmp_egress(tx_buf->out_intf->stats_ctx);
+    netos_statistics_inc_n_icmp_tx();
 }
 
 void netos_icmp_rx(void *ctx,
@@ -106,6 +111,10 @@ void netos_icmp_rx(void *ctx,
         return;
     }
 
+    // increment per interface and global statistics of icmp rx
+    netos_statistics_inc_icmp_ingress(pkt_buf->in_intf->stats_ctx);
+    netos_statistics_inc_n_icmp_rx();
+
     icmp_h = &parsed_data->l4.icmp_hdr;
 
     // if its an ipv4 icmp echo request
@@ -120,6 +129,8 @@ void netos_icmp_rx(void *ctx,
         return;
     }
 
+    // the frame is an IPv4 echo request and that the
+    // target address match our ingress interface.
     if (NETOS_ICMP_IS_ECHO_REQ(icmp_h) &&
         NETOS_IS_IPV4_FRAME(parsed_data) &&
         (parsed_data->l3.ipv4_hdr.dst_ipaddr == pkt_buf->in_intf->ipaddr)) {

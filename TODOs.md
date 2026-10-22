@@ -78,7 +78,7 @@
 - [ ] global MIBs for all protocols
 - [ ] Tooling: CLI tool for statistics
 - [ ] Enable PCAP write mode
-- [ ] Event manager to write logs to a network or to a file
+- [ ] Event manager to write logs to a network
 - [ ] Gtest support
 - [ ] Signal handling
 - [ ] Tooling: Multiple interface transmit on pgen
@@ -189,5 +189,6 @@
 - [x] Tool ctl: to control or view the insides of the netos
 - [x] TCP flag validation
 - [x] support netctl interface to the statistics
+- [x] Event manager writes logs to the file
 
 
