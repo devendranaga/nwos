@@ -10,7 +10,6 @@
 - [ ] DRR egress scheduling
 - [ ] static ARP cache allocation strategy
 - [ ] select cpus statically based on the number of CPUs in the system
-- [ ] Handling Ctrl + C
 - [ ] Define event storage encryption
 - [ ] Define MACsec for massive scale usecase (128 SecY) - check what the SAI offers
 - [ ] CMAC PRF
@@ -190,5 +189,6 @@
 - [x] TCP flag validation
 - [x] support netctl interface to the statistics
 - [x] Event manager writes logs to the file
+- [x] Handling Ctrl + C
 
 

@@ -1263,6 +1263,7 @@ static void pgen_icmp_run()
 {
     uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
+    static uint16_t seq_no = 0;
 
     pkt_buffer_initialize(&pkt_buf);
 
@@ -1283,6 +1284,10 @@ static void pgen_icmp_run()
                               pgen.len;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
+    if (!seq_no) {
+        seq_no = pgen.icmp_hdr.echo_req.seq_no;
+    }
+
     if (pgen.len == 0) {
         pgen.icmp_hdr.echo_req.data = NULL;
         pgen.icmp_hdr.echo_req.data_len = 0;
@@ -1291,6 +1296,9 @@ static void pgen_icmp_run()
         pgen.len = pgen.data_bytes_len;
         pgen.icmp_hdr.echo_req.data_len = pgen.len;
     }
+    pgen.icmp_hdr.echo_req.seq_no = seq_no;
+
+    seq_no ++;
 
     if (pgen.icmp_hdr.checksum == 0) {
         pgen.icmp_hdr.gen_checksum = true;
