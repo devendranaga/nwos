@@ -244,6 +244,19 @@ static void netos_gcd_cleanup_timers(netos_gcd_ctx_t *gcd_ctx)
     }
 }
 
+static void netos_gcd_cleanup_sockets(netos_gcd_ctx_t *gcd_ctx)
+{
+    netos_gcd_socket_ctx_t *socket_ctx = &gcd_ctx->socket_ctx;
+    netos_gcd_socket_t *sock = socket_ctx->sockets;
+    netos_gcd_socket_t *prev;
+
+    while (sock) {
+        prev = sock;
+        sock = sock->next;
+        free(prev);
+    }
+}
+
 static netos_status_t netos_gcd_run_sockets(netos_gcd_ctx_t *gcd_ctx, struct epoll_event *event)
 {
     netos_gcd_socket_ctx_t *sock_ctx = &gcd_ctx->socket_ctx;
@@ -314,6 +327,8 @@ void netos_gcd_run(netos_gcd_ctx_t *gcd_ctx)
             }
         }
     }
+
+    free(events);
 }
 
 void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx)
@@ -325,6 +340,7 @@ void netos_gcd_deinit(netos_gcd_ctx_t *gcd_ctx)
         if (gcd_ctx->epoll_fd >= 0) {
             close(gcd_ctx->epoll_fd);
         }
+        netos_gcd_cleanup_sockets(gcd_ctx);
         netos_gcd_cleanup_timers(gcd_ctx);
         free(gcd_ctx);
     }

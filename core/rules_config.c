@@ -613,6 +613,21 @@ netos_status_t netos_rule_config_parse(const char *file, netos_rules_t *rules)
     return ret;
 }
 
+void netos_rule_config_free(netos_rules_t *rules)
+{
+    netos_rule_config_t *rule = rules->rules;
+    netos_rule_config_t *prev;
+
+    while (rule) {
+        prev = rule;
+        rule = rule->next;
+        if (prev->message) {
+            free(prev->message);
+        }
+        free(prev);
+    }
+}
+
 static const char *netos_get_rule_type_str(netos_rule_type_t rule_type)
 {
     const struct {

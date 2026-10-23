@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "ethertypes.h"
 #include "arp.h"
@@ -316,6 +317,9 @@ static void netos_deinitialize_interface(netos_intf_t *intf,
                                          netos_gcd_ctx_t *gcd_ctx)
 {
     if (intf) {
+        pthread_cancel(intf->rx_thread);
+        pthread_join(intf->rx_thread, NULL);
+
         if (intf->parser_thr) {
             if (intf->parser_thr->rx_pool) {
                 pthread_mutex_lock(&intf->parser_thr->parse_q_lock);
@@ -382,6 +386,8 @@ static netos_status_t netos_initialize_protocols(netos_config_t *config,
 static void netos_deinitialize_protocols(netos_gcd_ctx_t *gcd_ctx)
 {
     netos_ip_deinitialize();
+
+    netos_arp_protocol_deinit();
 }
 
 /**
@@ -532,6 +538,13 @@ int main(int argc, char **argv)
 
     // deinitialize the event manager
     netos_event_mgr_deinit();
+
+    // freeup rules after all the users of rules are stopped
+    netos_rule_config_free(&ctx->rules);
+
+    // make sure first all the users of the statistics
+    // are closed and then deinitialize statistics
+    netos_statistics_deinit();
 
     // deinitialize the GCD
     netos_gcd_deinit(ctx->gcd_ctx);

@@ -285,3 +285,13 @@ err:
     return ret;
 }
 
+void netos_arp_protocol_deinit()
+{
+    if (arp_protocol.arp_cache) {
+        netos_hash_table_deinit(arp_protocol.arp_cache, arp_cache_entry_invalidate);
+    }
+    if (arp_protocol.pool) {
+        netos_buffer_pool_free(arp_protocol.pool);
+    }
+}
+

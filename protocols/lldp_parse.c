@@ -46,8 +46,8 @@ static netos_status_t netos_lldp_parse_ttl(netos_lldp_hdr_t *lldp_hdr,
 }
 
 static netos_status_t netos_lldp_parse_system_name(netos_lldp_hdr_t *lldp_hdr,
-                                                       uint16_t len,
-                                                       pkt_buffer_t *pkt_buf)
+                                                   uint16_t len,
+                                                   pkt_buffer_t *pkt_buf)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
@@ -58,6 +58,21 @@ static netos_status_t netos_lldp_parse_system_name(netos_lldp_hdr_t *lldp_hdr,
 
     return ret;
 }
+
+static netos_status_t netos_lldp_parse_system_desc(netos_lldp_hdr_t *lldp_hdr,
+                                                   uint16_t len,
+                                                   pkt_buffer_t *pkt_buf)
+{
+    netos_status_t ret = NETOS_STATUS_SUCCESS;
+
+    if (len != 0) {
+        lldp_hdr->sys_desc.sys_desc = &pkt_buf->buffer[pkt_buf->offset];
+        lldp_hdr->sys_desc.sys_desc_len = len;
+    }
+
+    return ret;
+}
+
 
 const struct {
     netos_lldp_type_t type;
@@ -80,6 +95,10 @@ const struct {
     {
         NETOS_LLDP_TYPE_SYSNAME,
         netos_lldp_parse_system_name,
+    },
+    {
+        NETOS_LLDP_TYPE_SYSDESC,
+        netos_lldp_parse_system_desc
     }
 };
 

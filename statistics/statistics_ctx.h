@@ -14,6 +14,8 @@ typedef struct {
 
 netos_status_t netos_statistics_init();
 
+void netos_statistics_deinit();
+
 void *netos_statistics_add(const char *ifname);
 
 void netos_statistics_inc_rx(void *stat_ptr);

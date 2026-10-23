@@ -570,12 +570,13 @@ netos_config_logging_parse_enable_syslog(netos_config_t *config,
                                  doc, node);
 }
 
-static const struct {
+static struct {
     const char      *name;
+    bool            found;
     netos_status_t  (*callback_fn)(netos_config_t *config,
                                    xmlDocPtr doc, xmlNode *node);
 } logging_metadata[] = {
-    { "enable_syslog", netos_config_logging_parse_enable_syslog },
+    { "enable_syslog", false, netos_config_logging_parse_enable_syslog },
 };
 
 static netos_status_t netos_config_parse_logging(netos_config_t *config,
@@ -593,8 +594,15 @@ static netos_status_t netos_config_parse_logging(netos_config_t *config,
                     if (ret != NETOS_STATUS_SUCCESS) {
                         return ret;
                     }
+                    logging_metadata[i].found = true;
                 }
             }
+        }
+    }
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(logging_metadata); i ++) {
+        if (logging_metadata[i].found == false) {
+            return NETOS_STATUS_CONFIG_ITEM_NOT_FOUND;
         }
     }
 

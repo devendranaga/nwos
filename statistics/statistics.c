@@ -20,6 +20,25 @@ netos_status_t netos_statistics_init()
     return NETOS_STATUS_SUCCESS;
 }
 
+void netos_statistics_deinit()
+{
+    if (stats_ctx) {
+        netos_statistics_t *stat;
+        netos_statistics_t *prev;
+
+        stat = stats_ctx->stat_head;
+        while (stat) {
+            prev = stat;
+            stat = stat->next;
+            if (prev->ifname) {
+                free(prev->ifname);
+            }
+            free(prev);
+        }
+        free(stats_ctx);
+    }
+}
+
 void *netos_statistics_add(const char *ifname)
 {
     netos_statistics_t *stat;

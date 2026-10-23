@@ -40,6 +40,8 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 netos_status_t netos_arp_protocol_init(netos_config_t *config,
                                        netos_gcd_ctx_t *gcd_ctx);
 
+void netos_arp_protocol_deinit();
+
 void netos_arp_mib_in_arp_ok();
 
 void netos_arp_mib_in_arp_invalid();
