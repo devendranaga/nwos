@@ -21,7 +21,6 @@
 - [ ] Tooling to display ARP cache.
 - [ ] Tooling to support adding the static ARP entries.
 - [ ] IPv6 frame options parsing
-- [ ] LLDP frame parsing
 - [ ] ICMP6 frame serialization
 - [ ] Tooling: ICMP6 frame generation
 - [ ] Tooling: more descriptive help for each command
@@ -35,9 +34,7 @@
 - [ ] 6in4 tunnel frame parsing
 - [ ] 6in4 tunnel frame generation
 - [ ] IPv6 frame generation
-- [ ] Tooling: MACsec auto PN increment for every packet that is sent
 - [ ] Tooling: document the command usages
-- [ ] Tooling: when test finishes, reset the PN
 - [ ] Tooling: IPv4 over MACsec
 - [ ] Tooling: IPv6 frame generation
 - [ ] Tooling: UDP over IPv6
@@ -73,11 +70,9 @@
 - [ ] recvmsg and sendmsg support
 - [ ] PKT_MMAP or PF_RING support to receive and transmit frames
 - [ ] global MIBs for all protocols
-- [ ] Tooling: CLI tool for statistics
 - [ ] Enable PCAP write mode
 - [ ] Event manager to write logs to a network
 - [ ] Gtest support
-- [ ] Signal handling
 - [ ] Tooling: Multiple interface transmit on pgen
 - [ ] ATU implementation
 - [ ] ICMPv6: implement Multicast listener report v2 parsing
@@ -131,6 +126,9 @@
 - [ ] Convert pcapng to pcap
 - [ ] Convert pcap to pcapng
 - [ ] call `NETOS_PANIC` for all alloc failures
+- [ ] MQTT statemachine
+- [ ] MQTT connection management
+- [ ] print egress statistics on netctl
 
 ## Done
 
@@ -190,5 +188,8 @@
 - [x] Handling Ctrl + C
 - [x] Tooling: ICMP seq_no increment for every packet
 - [x] LLDP frame parsing
+- [x] Tooling: MACsec auto PN increment for every packet that is sent
+- [x] Tooling: CLI tool for statistics
+- [x] Signal handling
 
 
