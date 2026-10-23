@@ -1263,7 +1263,6 @@ static void pgen_icmp_run()
 {
     uint8_t *data_buf = pgen.data_bytes;
     pkt_buffer_t pkt_buf;
-    static uint16_t seq_no = 0;
 
     pkt_buffer_initialize(&pkt_buf);
 
@@ -1284,10 +1283,6 @@ static void pgen_icmp_run()
                               pgen.len;
     netos_ipv4_encode(&pgen.ipv4_hdr, &pkt_buf);
 
-    if (!seq_no) {
-        seq_no = pgen.icmp_hdr.echo_req.seq_no;
-    }
-
     if (pgen.len == 0) {
         pgen.icmp_hdr.echo_req.data = NULL;
         pgen.icmp_hdr.echo_req.data_len = 0;
@@ -1296,9 +1291,6 @@ static void pgen_icmp_run()
         pgen.len = pgen.data_bytes_len;
         pgen.icmp_hdr.echo_req.data_len = pgen.len;
     }
-    pgen.icmp_hdr.echo_req.seq_no = seq_no;
-
-    seq_no ++;
 
     if (pgen.icmp_hdr.checksum == 0) {
         pgen.icmp_hdr.gen_checksum = true;
@@ -1310,6 +1302,7 @@ static void pgen_icmp_run()
     pkt_buffer_set_tx_len_default(&pkt_buf);
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
     pgen.icmp_hdr.checksum = 0;
+    pgen.icmp_hdr.echo_req.seq_no ++;
 }
 
 static void pgen_macsec_run()
@@ -1382,6 +1375,11 @@ static void pgen_macsec_run()
 
     pkt_buffer_set_tx_len_default(&pkt_buf);
     netos_raw_socket_tx(pgen.raw, pkt_buf.buffer, pkt_buf.tx_len);
+
+    pgen.macsec_hdr.pn ++;
+    if (pgen.macsec_hdr.pn == 0) {
+        pgen.macsec_hdr.pn = 1;
+    }
 }
 
 static void pgen_pcap_run()

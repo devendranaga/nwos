@@ -24,10 +24,8 @@
 - [ ] LLDP frame parsing
 - [ ] ICMP6 frame serialization
 - [ ] Tooling: ICMP6 frame generation
-- [ ] Tooling: ICMP seq_no increment for every packet
 - [ ] Tooling: more descriptive help for each command
 - [ ] Tooling: ICMP6 Neighbor solicitations and advertisements generation
-- [ ] LLDP frame parsing
 - [ ] LLDP frame generation
 - [ ] NDP implementation
 - [ ] MKA frame parsing
@@ -190,5 +188,7 @@
 - [x] support netctl interface to the statistics
 - [x] Event manager writes logs to the file
 - [x] Handling Ctrl + C
+- [x] Tooling: ICMP seq_no increment for every packet
+- [x] LLDP frame parsing
 
 
