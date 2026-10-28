@@ -9,6 +9,7 @@
 #include "mqtt.h"
 #include "tcp_hdr.h"
 #include "tcp.h"
+#include "statistics_ctx.h"
 #include "netos_log.h"
 
 static struct {
@@ -152,6 +153,8 @@ void netos_tcp_rx_process(void *ctx,
     if (ret != NETOS_STATUS_SUCCESS) {
         return;
     }
+
+    netos_statistics_inc_tcp_ingress(pkt_buf->in_intf->stats_ctx);
 
     for (i = 0; i < NETOS_SIZEOF_ARRAY(application_callbacks); i ++) {
         if (application_callbacks[i].valid &&

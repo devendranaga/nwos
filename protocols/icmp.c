@@ -108,6 +108,7 @@ void netos_icmp_rx(void *ctx,
     /* The checksum for icmp already verified in the decode. */
     ret = netos_icmp_decode(&parsed_data->l4.icmp_hdr, pkt_buf);
     if (ret != NETOS_STATUS_SUCCESS) {
+        netos_statistics_inc_n_icmp_rx_dec_errors(pkt_buf->in_intf->stats_ctx);
         return;
     }
 

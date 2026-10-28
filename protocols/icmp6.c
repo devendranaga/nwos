@@ -6,6 +6,7 @@
 #include "icmp6_hdr.h"
 #include "egress_controller.h"
 #include "icmp6.h"
+#include "statistics_ctx.h"
 #include "ndp.h"
 #include "checksum_l4.h"
 #include "event_info.h"
@@ -79,6 +80,8 @@ void netos_icmp6_rx(void *ctx,
                                    NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED);
         return;
     }
+
+    netos_statistics_inc_icmp6_ingress(pkt_buf->in_intf->stats_ctx);
 
     if (NETOS_ICMP6_IS_ECHO_REQ(icmp6_h)) {
         netos_icmp6_do_reply(ctx, parsed_data, pkt_buf);

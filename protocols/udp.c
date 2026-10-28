@@ -10,6 +10,7 @@
 #include "checksum_l4.h"
 #include "event_info.h"
 #include "udp.h"
+#include "statistics_ctx.h"
 
 void *netos_udp_init(netos_config_t *config)
 {
@@ -62,6 +63,8 @@ void netos_udp_rx(void *ctx,
             return;
         }
     }
+
+    netos_statistics_inc_udp_ingress(pkt_buf->in_intf->stats_ctx);
 
     // verify the udp checksum
     ret = netos_do_checksum_l4(start_off,

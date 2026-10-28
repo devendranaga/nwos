@@ -18,6 +18,8 @@ void netos_statistics_deinit();
 
 void *netos_statistics_add(const char *ifname);
 
+void netos_statistics_inc_dropped_no_bufs(void *stat_ptr);
+
 void netos_statistics_inc_rx(void *stat_ptr);
 
 void netos_statistics_inc_tx(void *stat_ptr);
@@ -43,6 +45,14 @@ void netos_statistics_inc_n_arp_fail();
 uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len);
 
 void netos_statistics_inc_icmp_ingress(void *stats_ptr);
+
+void netos_statistics_inc_n_icmp_rx_dec_errors(void *stats_ptr);
+
+void netos_statistics_inc_tcp_ingress(void *stats_ptr);
+
+void netos_statistics_inc_udp_ingress(void *stats_ptr);
+
+void netos_statistics_inc_icmp6_ingress(void *stats_ptr);
 
 void netos_statistics_inc_icmp_egress(void *stats_ptr);
 

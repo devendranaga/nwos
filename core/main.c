@@ -54,6 +54,7 @@ static void *netos_intf_rx_callback(void *cbdata)
         pkt_buffer_t *rx_buf = netos_buffer_pool_get_buffer(intf->parser_thr->rx_pool);
         if (!rx_buf) {
             //netos_log_warn("Out of rx buffers.. retry\n");
+            netos_statistics_inc_dropped_no_bufs(intf->raw->stats_ctx);
             continue;
         }
 

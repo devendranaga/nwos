@@ -55,6 +55,13 @@ void *netos_statistics_add(const char *ifname)
     return stat;
 }
 
+void netos_statistics_inc_dropped_no_bufs(void *stat_ptr)
+{
+    netos_statistics_t *stat = stat_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_dropped_no_bufs, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_rx(void *stat_ptr)
 {
     netos_statistics_t *stat = stat_ptr;
@@ -128,7 +135,29 @@ void netos_statistics_inc_icmp_ingress(void *stats_ptr)
     atomic_fetch_add_explicit(&stat->ingress.n_icmp_rx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_inc_tcp_ingress(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_tcp_rx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_udp_ingress(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_udp_rx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_icmp6_ingress(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_icmp6_rx, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_icmp_egress(void *stats_ptr)
+
 {
     netos_statistics_t *stat = stats_ptr;
 
@@ -153,6 +182,13 @@ void netos_statistics_inc_n_icmp_tx()
 void netos_statistics_inc_n_icmp_rx()
 {
     atomic_fetch_add_explicit(&glob_stats.icmp.n_icmp_rx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_n_icmp_rx_dec_errors(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_icmp_rx_decode_errors, 1, memory_order_relaxed);
 }
 
 uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len)
