@@ -1096,9 +1096,22 @@ static void set_eth_ethertype(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void set_ipg_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("ipg <value in ns>\n");
+}
+
 static void set_ipg(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
+
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
+        set_ipg_help();
+        return;
+    }
+
 
     ret = netos_get_u64_from_str(tokens[1].name, &pgen.ipg_ns);
     if (ret != NETOS_STATUS_SUCCESS) {
@@ -1107,14 +1120,31 @@ static void set_ipg(struct pgen_token *tokens, uint32_t n_tokens)
     }
 }
 
+static void set_n_frames_help()
+{
+    NETOS_PRINT_STD_MAGENTA_COLOR("n_frames <number / unlimited>\n");
+    NETOS_PRINT_STD_MAGENTA_COLOR("if unlimited is provided the test runs forever\n");
+}
+
 static void set_n_frames(struct pgen_token *tokens, uint32_t n_tokens)
 {
     netos_status_t ret;
 
-    ret = netos_get_u32_from_str(tokens[1].name, &pgen.n_frames);
-    if (ret != NETOS_STATUS_SUCCESS) {
-        NETOS_PRINT_STD_ERROR_COLOR("invalid n_frames value <%s>\n", tokens[1].name);
+    if ((n_tokens == 1) ||
+        !strcmp(tokens[1].name, "help") ||
+        !strcmp(tokens[1].name, "?")) {
+        set_n_frames_help();
         return;
+    }
+
+    if (!strcmp(tokens[1].name, "unlimited")) {
+        pgen.n_frames = 0;
+    } else {
+        ret = netos_get_u32_from_str(tokens[1].name, &pgen.n_frames);
+        if (ret != NETOS_STATUS_SUCCESS) {
+            NETOS_PRINT_STD_ERROR_COLOR("invalid n_frames value <%s>\n", tokens[1].name);
+            return;
+        }
     }
 }
 
@@ -1528,7 +1558,12 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
     if (pgen_cb && pgen_cb->enable) {
         pgen_cb->callback();
     } else {
-        for (i = 0; i < pgen.n_frames; i ++) {
+        bool loop_forever = false;
+
+        if (pgen.n_frames == 0) {
+            loop_forever = true;
+        }
+        for (i = 0; loop_forever || (i < pgen.n_frames); i ++) {
 
             callback_ptr();
 
