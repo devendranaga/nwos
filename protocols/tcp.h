@@ -40,7 +40,7 @@ typedef struct netos_tcp_connection {
             uint8_t             dst_ip[NETOS_IPV6_ADDR_LEN];
         } v6;
     };
-    struct timeval              last_updated;
+    struct timespec             last_updated;
     uint32_t                    seq_no;
     uint32_t                    ack_no;
     uint16_t                    src_port;
