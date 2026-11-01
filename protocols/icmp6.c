@@ -78,6 +78,7 @@ void netos_icmp6_rx(void *ctx,
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_ICMP6_CHECKSUM_VERIFY_FAILED);
+        netos_statistics_inc_icmp6_checksum_fail(pkt_buf->in_intf->stats_ctx);
         return;
     }
 
