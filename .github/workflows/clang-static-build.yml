@@ -11,4 +11,4 @@ jobs:
         sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev
     - name: Compile
       run: |
-        mkdir build; cd build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; make -j;
+        mkdir build; cd build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; sudo make -j;

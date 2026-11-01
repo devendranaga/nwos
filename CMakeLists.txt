@@ -6,6 +6,8 @@ project(netos
 
 enable_testing()
 
+find_program(CARGO_EXECUTABLE cargo REQUIRED)
+
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(LINK_SEARCH_START_STATIC ON)
 set(LINK_SEARCH_END_STATIC ON)
@@ -244,4 +246,11 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
     ${CMAKE_SOURCE_DIR}/rust/protocols/target
     ${CMAKE_SOURCE_DIR}/rust/pktdump/target
     ${CMAKE_SOURCE_DIR}/rust/linux_abs/target)
+
+add_custom_target(cargo_test
+    COMMAND ${CARGO_EXECUTABLE} test --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
+    USES_TERMINAL
+    COMMENT "Running cargo library unit tests...")
+
+add_dependencies(linux_abs cargo_test)
 

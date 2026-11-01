@@ -55,8 +55,8 @@ impl net_ioctl {
         return Some(netos_error_codes::Netos_Error_No_Error);
     }
 
-    pub fn get_ifindex(ifname : String, fd : i32) -> Result<u32, netos_error_codes> {
-        let ifname_str = CString::new(ifname).unwrap();
+    pub fn get_ifindex(ifname : &String, fd : i32) -> Result<u32, netos_error_codes> {
+        let ifname_str = CString::new(ifname.as_bytes()).unwrap();
         let ifname_ptr = ifname_str.as_ptr();
 
         unsafe {
@@ -66,7 +66,41 @@ impl net_ioctl {
             }
             Ok(ifindex)
         }
+    }
 
+    pub fn get_mac_addr(ifname : &String, fd : i32, mac:  &mut [u8; 6]) -> Option<netos_error_codes> {
+        unsafe {
+            let mut ifr : libc::ifreq = std::mem::zeroed();
+            let name_bytes = ifname.as_bytes();
+
+            if name_bytes.len() > ifr.ifr_name.len() {
+                return Some(netos_error_codes::Netos_Error_Invalid_Ifname);
+            }
+
+            ifr.ifr_name.fill(0);
+
+            for (dest, &src) in ifr.ifr_name.iter_mut().zip(name_bytes) {
+                *dest = src as libc::c_char;
+            }
+
+            ifr.ifr_name[name_bytes.len()] = 0;
+
+            let ret = libc::ioctl(fd, libc::SIOCGIFHWADDR, &ifr);
+            if ret < 0 {
+                return Some(netos_error_codes::Netos_Error_Get_Mac_Failed);
+            }
+
+            let mac_addr = ifr.ifr_ifru.ifru_hwaddr.sa_data;
+
+            mac[0] = mac_addr[0] as u8;
+            mac[1] = mac_addr[1] as u8;
+            mac[2] = mac_addr[2] as u8;
+            mac[3] = mac_addr[3] as u8;
+            mac[4] = mac_addr[4] as u8;
+            mac[5] = mac_addr[5] as u8;
+        }
+
+        return Some(netos_error_codes::Netos_Error_No_Error);
     }
 }
 
