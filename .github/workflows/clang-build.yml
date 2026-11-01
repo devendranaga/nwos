@@ -9,6 +9,14 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev
+    - name: Install Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Standard Cargo Install
+      uses: marketplace/actions/cargo-install@v1
+      with:
+        crate: 'toml-cli'
+        version: 'latest'
     - name: Compile
       run: |
         mkdir build; cd build; cmake .. -DCOMPILER_CLANG=on -DDEBUG=on -DWITH_WOLFSSL=on; sudo make -j;
