@@ -156,6 +156,13 @@ void netos_statistics_inc_icmp6_ingress(void *stats_ptr)
     atomic_fetch_add_explicit(&stat->ingress.n_icmp6_rx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_inc_icmp6_checksum_fail(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_icmp6_checksum_fail, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_icmp_egress(void *stats_ptr)
 
 {
@@ -197,18 +204,24 @@ uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len)
     uint32_t off = 0;
     uint32_t count = 0;
 
-    while (stat && (off < buf_len)) {
+    while (stat && ((off + sizeof(netos_netctl_ingress_statistics_t)) < buf_len)) {
         netos_netctl_ingress_statistics_t *ingress_stats;
 
         ingress_stats = (netos_netctl_ingress_statistics_t *)(buf + off);
 
-        strncpy(ingress_stats->ifname, stat->ifname, sizeof(ingress_stats->ifname));
+        strncpy(ingress_stats->ifname,
+                stat->ifname, sizeof(ingress_stats->ifname));
 
-        ingress_stats->n_rx = atomic_load_explicit(&stat->ingress.n_rx, memory_order_relaxed);
-        ingress_stats->n_arp_rx = atomic_load_explicit(&stat->ingress.n_arp_rx, memory_order_relaxed);
-        ingress_stats->n_ipv4_rx = atomic_load_explicit(&stat->ingress.n_ipv4_rx, memory_order_relaxed);
-        ingress_stats->n_ipv6_rx = atomic_load_explicit(&stat->ingress.n_ipv6_rx, memory_order_relaxed);
-        ingress_stats->n_parse_failed = atomic_load_explicit(&stat->ingress.n_parse_failed, memory_order_relaxed);
+        ingress_stats->n_rx             = atomic_load_explicit(&stat->ingress.n_rx,
+                                                               memory_order_relaxed);
+        ingress_stats->n_arp_rx         = atomic_load_explicit(&stat->ingress.n_arp_rx,
+                                                               memory_order_relaxed);
+        ingress_stats->n_ipv4_rx        = atomic_load_explicit(&stat->ingress.n_ipv4_rx,
+                                                               memory_order_relaxed);
+        ingress_stats->n_ipv6_rx        = atomic_load_explicit(&stat->ingress.n_ipv6_rx,
+                                                               memory_order_relaxed);
+        ingress_stats->n_parse_failed   = atomic_load_explicit(&stat->ingress.n_parse_failed,
+                                                               memory_order_relaxed);
 
         off += sizeof(netos_netctl_ingress_statistics_t);
         stat = stat->next;
