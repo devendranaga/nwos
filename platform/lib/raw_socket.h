@@ -3,6 +3,7 @@
 
 #include "protocol_const.h"
 #include "virt_intf.h"
+#include "net_ioctl.h"
 #include "netos_status.h"
 
 /**
@@ -10,23 +11,25 @@
  */
 typedef struct {
     // raw file descriptor of the underling interface
-    int             fd;
+    int                 fd;
     // interface this fd belongs
-    char            *ifname;
+    char                *ifname;
     // mac address of the interface
-    uint8_t         mac[NETOS_MACADDR_LEN];
+    uint8_t             mac[NETOS_MACADDR_LEN];
     // ip address of this interface
-    uint32_t        ipaddr;
+    uint32_t            ipaddr;
+    // list of IPv6 addresses associated with this interface
+    netos_ctl_ip6addr_t *ip6addr_list;
     // interface index
-    int             ifindex;
+    int                 ifindex;
     // mtu size
-    uint32_t        mtu;
+    uint32_t            mtu;
     // egress controller pointer
-    void            *egress_ctrl;
+    void                *egress_ctrl;
     // statistics pointer
-    void            *stats_ctx;
+    void                *stats_ctx;
     // virtual interfaces linked to this socket
-    netos_virt_if_t *virt_if;
+    netos_virt_if_t     *virt_if;
 } netos_raw_socket_ctx_t;
 
 /**

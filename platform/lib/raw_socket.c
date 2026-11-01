@@ -79,6 +79,11 @@ netos_raw_socket_ctx_t *netos_raw_socket_init(const char *ifname)
         ret = NETOS_STATUS_SUCCESS;
     }
 
+    raw->ip6addr_list = netos_ioctl_get_ip6addrs();
+    if (ret != NETOS_STATUS_SUCCESS) {
+        goto err;
+    }
+
     // get the MTU
     ret = netos_ioctl_get_mtu(raw->fd, ifname, &raw->mtu);
     if (ret != NETOS_STATUS_SUCCESS) {
@@ -95,6 +100,7 @@ err:
         if (raw->ifname) {
             free(raw->ifname);
         }
+        netos_ioctl_free_ip6addrs(raw->ip6addr_list);
         free(raw);
     }
 
@@ -111,6 +117,7 @@ void netos_raw_socket_deinit(netos_raw_socket_ctx_t *raw)
         if (raw->ifname) {
             free(raw->ifname);
         }
+        netos_ioctl_free_ip6addrs(raw->ip6addr_list);
         free(raw);
     }
 }
