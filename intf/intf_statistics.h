@@ -17,6 +17,9 @@ typedef struct __attribute__ ((__packed__)) {
     uint64_t n_arp_rx;
     uint64_t n_ipv4_rx;
     uint64_t n_ipv6_rx;
+    uint64_t n_icmp_rx;
+    uint64_t n_tcp_rx;
+    uint64_t n_udp_rx;
     uint64_t n_parse_failed;
 } netos_netctl_ingress_statistics_t;
 

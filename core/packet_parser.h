@@ -58,6 +58,11 @@ typedef struct netos_packet_parser {
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
                                  netos_packet_parser_t *parsed_data);
 
+/**
+ * @brief - Initialize parsed frame structure.
+ *
+ * @param [in] parsed_data - parsed frame data.
+ */
 static inline void netos_parsed_frame_init(netos_packet_parser_t *parsed_data)
 {
     memset(parsed_data, 0, sizeof(netos_packet_parser_t));

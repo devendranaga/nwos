@@ -224,6 +224,19 @@ static netos_intf_t *netos_initialize_interface(network_if_config_t *intf_config
                    intf->raw->mac[2], intf->raw->mac[3],
                    intf->raw->mac[4], intf->raw->mac[5]);
     netos_log_info("\t ipaddr:  \t 0x%x\n", intf->raw->ipaddr);
+    netos_log_info("\t ip6addr: \n");
+    for (netos_ctl_ip6addr_t *ip6 = intf->raw->ip6addr_list; ip6; ip6 = ip6->next) {
+        netos_log_info("\t\t\t %02x%02x:%02x%02x:%02x%02x:%02x%02x"
+                       "%02x%02x:%02x%02x:%02x%02x:%02x%02x\n",
+                       ip6->ip6addr[0], ip6->ip6addr[1],
+                       ip6->ip6addr[2], ip6->ip6addr[3],
+                       ip6->ip6addr[4], ip6->ip6addr[5],
+                       ip6->ip6addr[6], ip6->ip6addr[7],
+                       ip6->ip6addr[8], ip6->ip6addr[9],
+                       ip6->ip6addr[10], ip6->ip6addr[11],
+                       ip6->ip6addr[12], ip6->ip6addr[13],
+                       ip6->ip6addr[14], ip6->ip6addr[15]);
+    }
     netos_log_info("\t ifindex: \t %d\n", intf->raw->ifindex);
     netos_log_info("\t MTU:     \t %d\n", intf->raw->mtu);
     netos_log_info("-------------------------------------\n");

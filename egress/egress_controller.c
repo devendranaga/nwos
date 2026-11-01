@@ -192,6 +192,8 @@ err:
         if (egress_ctrl->sp) {
             netos_egress_alg_sp_deinit(egress_ctrl);
         }
+
+        free(egress_ctrl);
     }
 
     return NULL;
