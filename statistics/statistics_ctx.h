@@ -48,6 +48,8 @@ void netos_statistics_inc_icmp_ingress(void *stats_ptr);
 
 void netos_statistics_inc_n_icmp_rx_dec_errors(void *stats_ptr);
 
+void netos_statistics_inc_icmp6_checksum_fail(void *stats_ptr);
+
 void netos_statistics_inc_tcp_ingress(void *stats_ptr);
 
 void netos_statistics_inc_udp_ingress(void *stats_ptr);
