@@ -254,3 +254,6 @@ add_custom_target(cargo_test
 
 add_dependencies(linux_abs cargo_test)
 
+execute_process(
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/gen_interfaces.py create dummy 1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

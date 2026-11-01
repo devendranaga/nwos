@@ -8,8 +8,8 @@ jobs:
     - name: Install System Packages
       run: |
         sudo apt update
-        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev cargo
+        sudo apt install -y liblzma-dev libicu-dev libwolfssl-dev libncurses-dev libreadline-dev
         rustup default stable
     - name: Compile
       run: |
-        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; sudo make -j;
+        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; sudo -E env "PATH=$PATH" make -j;
