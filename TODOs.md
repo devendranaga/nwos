@@ -1,3 +1,8 @@
+# Issues
+
+- [ ] IPv4 frame generation does not take the payload length into consideration and does not stuff the empty bytes.
+- [ ] clear the ipg to 0 so that the frames can be sent as fast as possible.
+
 # TODOs
 
 - [ ] WRR egress scheduling
@@ -129,6 +134,7 @@
 - [ ] MQTT statemachine
 - [ ] MQTT connection management
 - [ ] print egress statistics on netctl
+- [ ] ability to multi thread the transmission of the frames to maximize the throughput
 
 ## Done
 
