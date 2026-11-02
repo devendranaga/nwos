@@ -2,6 +2,8 @@
 
 - [ ] IPv4 frame generation does not take the payload length into consideration and does not stuff the empty bytes.
 - [ ] clear the ipg to 0 so that the frames can be sent as fast as possible.
+- [ ] If on the ipg being 0, the loop runs indefinitely but do not hang it. Let it run background and have program ability to send command to stop the simulation.
+- [ ] Tooling: VLAN over ipv4 does not work.
 
 # TODOs
 
@@ -135,6 +137,11 @@
 - [ ] MQTT connection management
 - [ ] print egress statistics on netctl
 - [ ] ability to multi thread the transmission of the frames to maximize the throughput
+- [ ] Tooling: burst mode transfer of frames. Example: 100 frames with few ns to sec gaps between the 100 frames
+- [ ] Tooling: Sending same frame across all interfaces
+- [ ] Tooling: Add scripts to run the tests automatically by parse and run the scripts
+- [ ] Dump the interface statistics upon stopping
+- [ ] support sending egress statistics over netctl
 
 ## Done
 
@@ -197,5 +204,6 @@
 - [x] Tooling: MACsec auto PN increment for every packet that is sent
 - [x] Tooling: CLI tool for statistics
 - [x] Signal handling
+- [x] Backtrace support 
 
 
