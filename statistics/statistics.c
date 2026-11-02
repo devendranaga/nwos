@@ -107,6 +107,13 @@ void netos_statistics_inc_bfifo_tx(void *stat_ptr)
     atomic_fetch_add_explicit(&stat->egress.n_bfifo_tx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_inc_pfifo_fast_tx(void *stat_ptr)
+{
+    netos_statistics_t *stat = stat_ptr;
+
+    atomic_fetch_add_explicit(&stat->egress.n_pfifo_fast_tx, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_arp_ingress(void *stats_ptr)
 {
     netos_statistics_t *stat = stats_ptr;

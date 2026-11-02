@@ -32,6 +32,8 @@ void netos_statistics_inc_pfifo_tx(void *stat_ptr);
 
 void netos_statistics_inc_bfifo_tx(void *stat_ptr);
 
+void netos_statistics_inc_pfifo_fast_tx(void *stat_ptr);
+
 void netos_statistics_inc_arp_ingress(void *stats_ptr);
 
 void netos_statistics_inc_ipv4_ingress(void *stats_ptr);
