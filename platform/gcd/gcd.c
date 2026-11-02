@@ -31,6 +31,7 @@ netos_gcd_ctx_t *netos_gcd_ctx_init()
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
     sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGSEGV);
 
     ret = sigprocmask(SIG_BLOCK, &mask, NULL);
     if (ret != 0) {

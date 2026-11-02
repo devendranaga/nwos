@@ -71,6 +71,7 @@ SET(PLATFORM_SRC
     ./platform/lib/virt_intf.c
     ./platform/lib/unix_intf.c
     ./platform/lib/unix_util.c
+    ./platform/lib/backtrace.c
     ./common/hash_tables.c
     ./common/pkt_buffer.c
     ./common/buffer_pool.c
@@ -217,22 +218,22 @@ else()
 endif()
 
 add_custom_target(pcapng_rust ALL
-    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pcapng/Cargo.toml
+    COMMAND ${CARGO_EXECUTABLE} build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pcapng/Cargo.toml
     COMMENT "Building Rust pcapng library")
 
 add_custom_target(protocols_rust ALL
-    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/protocols/Cargo.toml
+    COMMAND ${CARGO_EXECUTABLE} build --manifest-path ${CMAKE_SOURCE_DIR}/rust/protocols/Cargo.toml
     COMMENT "Build Rust Network Protocols library")
 
 add_custom_target(pktdump_rust ALL
-    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pktdump/Cargo.toml
+    COMMAND ${CARGO_EXECUTABLE} build --manifest-path ${CMAKE_SOURCE_DIR}/rust/pktdump/Cargo.toml
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     ${CMAKE_SOURCE_DIR}/rust/pktdump/target/debug/pktdump
     ${CMAKE_BINARY_DIR}/
     COMMENT "Build Rust Packet dump tool")
 
 add_custom_target(linux_abs ALL
-    COMMAND cargo build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
+    COMMAND ${CARGO_EXECUTABLE} build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
     COMMENT "Build rust Linux abstraction")
 
 add_custom_target(run_tests ALL

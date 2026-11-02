@@ -15,6 +15,9 @@
 #include "queue.h"
 #include "gcd.h"
 
+/**
+ * @brief - Defines command line arguments.
+ */
 typedef struct netos_cmdargs {
     char *config_file;
 } netos_cmdargs_t;

@@ -13,6 +13,7 @@
 #include "rules_config.h"
 #include "netos_config.h"
 #include "ctrl_intf.h"
+#include "backtrace.h"
 #include "cpu_affinity.h"
 #include "statistics_ctx.h"
 #include "perf_intf.h"
@@ -455,6 +456,10 @@ static void netos_deinitialize_interfaces(netos_ctx_t *ctx)
 static void netos_terminate_handler(int sig, void *handle)
 {
     netos_ctx_t *ctx = handle;
+
+    if (sig == SIGSEGV) {
+        netos_backtrace();
+    }
 
     netos_gcd_terminate(ctx->gcd_ctx);
 }
