@@ -236,25 +236,21 @@ add_custom_target(linux_abs ALL
     COMMAND ${CARGO_EXECUTABLE} build --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml
     COMMENT "Build rust Linux abstraction")
 
-add_custom_target(run_tests ALL
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS netos_test_hash_table netos_test_dll netos_test_queue
-    COMMENT "Running tests")
-
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
     ${CMAKE_SOURCE_DIR}/rust/pcapng/target
     ${CMAKE_SOURCE_DIR}/rust/protocols/target
     ${CMAKE_SOURCE_DIR}/rust/pktdump/target
     ${CMAKE_SOURCE_DIR}/rust/linux_abs/target)
 
-add_custom_target(cargo_test
-    COMMAND ${CARGO_EXECUTABLE} test --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml -- --nocapture
-    USES_TERMINAL
-    COMMENT "Running cargo library unit tests...")
+add_test(NAME dummy_iface_setup
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/gen_interfaces.py create dummy 1)
+set_tests_properties(dummy_iface_setup PROPERTIES FIXTURES_SETUP dummy_iface)
 
-add_dependencies(linux_abs cargo_test)
+add_test(NAME dummy_iface_cleanup
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/gen_interfaces.py delete dummy 1)
+set_tests_properties(dummy_iface_cleanup PROPERTIES FIXTURES_CLEANUP dummy_iface)
 
-execute_process(
-    COMMAND sudo python3 ${CMAKE_SOURCE_DIR}/scripts/gen_interfaces.py create dummy 1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+add_test(NAME rust_linux_abs
+    COMMAND ${CARGO_EXECUTABLE} test --manifest-path ${CMAKE_SOURCE_DIR}/rust/linux_abs/Cargo.toml -- --nocapture)
+set_tests_properties(rust_linux_abs PROPERTIES FIXTURES_REQUIRED dummy_iface)
+

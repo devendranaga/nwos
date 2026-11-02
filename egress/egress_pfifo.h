@@ -7,14 +7,23 @@
 #include "pthread_intf.h"
 #include "pkt_buffer.h"
 
+/**
+ * @brief - Defines the FIFO queue.
+ */
 typedef struct netos_egress_pfifo_queue {
     pkt_buffer_t        *pkt_buf;
     pkt_buffer_t        *pkt_buf_last;
 } netos_egress_pfifo_queue_t;
 
+/**
+ * @brief - Defines the PFIFO queue discipline.
+ */
 typedef struct netos_egress_pfifo_mgr {
+    // number of packets to be in the FIFO
     uint32_t                    n_pkts;
+    // number of ongoing packets being added in FIFO
     uint32_t                    in_pkts;
+    // FIFO queue buffer
     netos_egress_pfifo_queue_t  queue;
     bool                        thread_started;
     bool                        terminate_signal;

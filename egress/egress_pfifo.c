@@ -1,3 +1,21 @@
+/**
+ * @brief- Defines the PFIFO egress queueing discipine.
+ *
+ * Packets are queued first in until the configured buffer sizes from the config.xml.
+ *
+ * If the packets exceed the buffer space, they are dropped.
+ *
+ * Frames are queued from the process threads somewhere in the tx / rx paths.
+ *
+ * Upon the queueing, the tx thread wakes up to flush the packets to the underlying driver in a FIFO manner.
+ *
+ * This means that the callers need to handle the frames priority and sizes.
+ * A low priority frame can simply sit in front of a high priority frame in this queueing discipline.
+ * This Queueing discipline only serves for basic implementation and for management frames that does not
+ * need to transfer frames in high priority.
+ *
+ * For a better QoS other queueing discplines needs to be used.
+ */
 #include "buffer_pool.h"
 #include "statistics_ctx.h"
 #include "egress_pfifo.h"
@@ -88,6 +106,7 @@ void netos_egress_pfifo_enque(void *ctx,
 {
     netos_egress_pfifo_mgr_t *pfifo = ctx;
 
+    // drp the frames if the packets to send are exceeding the FIFO buffer.
     if (pfifo->in_pkts > pfifo->n_pkts) {
         netos_buffer_pool_put_buffer(pkt_buf->buffer_pool_ctx, pkt_buf);
         return;

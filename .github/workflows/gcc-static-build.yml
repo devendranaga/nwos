@@ -12,4 +12,4 @@ jobs:
         rustup default stable
     - name: Compile
       run: |
-        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; sudo -E env "PATH=$PATH" make -j;
+        mkdir build; cd build; cmake .. -DCOMPILER_GCC=on -DDEBUG=on -DWITH_WOLFSSL=on -DSTATIC_BUILD=on; make -j; sudo make test;
