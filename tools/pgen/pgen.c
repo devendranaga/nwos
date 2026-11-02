@@ -1449,12 +1449,14 @@ static void pgen_pcap_run()
 
         n_replayed ++;
 
-        struct timespec tp = {
-            .tv_sec  = 0,
-            .tv_nsec = pgen.ipg_ns,
-        };
+        if (pgen.ipg_ns != 0) {
+            struct timespec tp = {
+                .tv_sec  = 0,
+                .tv_nsec = pgen.ipg_ns,
+            };
 
-        clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+            clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+        }
     } while (1);
 
     NETOS_PRINT_STD_GREEN_COLOR("Replay complete, sent %d frames over [%s]\n",
@@ -1567,12 +1569,14 @@ static void pgen_run(struct pgen_token *tokens, uint32_t n_tokens)
 
             callback_ptr();
 
-            struct timespec tp = {
-                .tv_sec  = 0,
-                .tv_nsec = pgen.ipg_ns,
-            };
+            if (pgen.ipg_ns != 0) {
+                struct timespec tp = {
+                    .tv_sec  = 0,
+                    .tv_nsec = pgen.ipg_ns,
+                };
 
-            clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+                clock_nanosleep(CLOCK_REALTIME, 0, &tp, NULL);
+            }
         }
         NETOS_PRINT_STD_GREEN_COLOR("sent %d frames\n", pgen.n_frames);
     }
