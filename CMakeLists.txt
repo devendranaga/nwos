@@ -53,7 +53,8 @@ SET(PROTOCOL_SRC
     ./protocols/ripng_parse.c
     ./protocols/lldp_parse.c
     ./protocols/tftp_parse.c
-    ./protocols/ntp_parse.c)
+    ./protocols/ntp_parse.c
+    ./common/fnv_hash.c)
 
 SET(SWITCHING_SRC
     ./switching/atu.c

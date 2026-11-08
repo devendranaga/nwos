@@ -16,7 +16,10 @@
 
 #define NETOS_MAX_VLAN_TUNNELS 12
 
-typedef struct netos_packet_parser {
+/**
+ * @brief - Contains full packet contents after parsing.
+ */
+typedef struct netos_packet_data {
     char                    *ifname;
     void                    *this_thread;
     netos_raw_socket_ctx_t  *raw;
@@ -45,7 +48,7 @@ typedef struct netos_packet_parser {
         netos_icmp_hdr_t    icmp_hdr;
         netos_icmp6_hdr_t   icmp6_hdr;
     } l4;
-} netos_packet_parser_t;
+} netos_packet_data_t;
 
 /**
  * @brief - Parse frame.
@@ -56,16 +59,16 @@ typedef struct netos_packet_parser {
  * #return returns NETOS_STATUS_SUCCESS on success and error code on failure.
  */
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
-                                 netos_packet_parser_t *parsed_data);
+                                 netos_packet_data_t *parsed_data);
 
 /**
  * @brief - Initialize parsed frame structure.
  *
  * @param [in] parsed_data - parsed frame data.
  */
-static inline void netos_parsed_frame_init(netos_packet_parser_t *parsed_data)
+static inline void netos_parsed_frame_init(netos_packet_data_t *parsed_data)
 {
-    memset(parsed_data, 0, sizeof(netos_packet_parser_t));
+    memset(parsed_data, 0, sizeof(netos_packet_data_t));
 }
 
 #endif

@@ -83,7 +83,7 @@ typedef struct {
 void *netos_tcp_initialize(netos_config_t *config);
 
 void netos_tcp_rx_process(void *ctx,
-                          netos_packet_parser_t *pkt_parser,
+                          netos_packet_data_t *pkt_parser,
                           pkt_buffer_t *pkt_buf);
 
 void netos_tcp_tx_process(void *ctx,

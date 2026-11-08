@@ -14,7 +14,7 @@
 #include "event_info.h"
 
 netos_status_t netos_parse_frame(pkt_buffer_t *pkt_buf,
-                                 netos_packet_parser_t *parsed_data)
+                                 netos_packet_data_t *parsed_data)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
     uint16_t ethertype = 0;

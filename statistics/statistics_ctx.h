@@ -36,7 +36,11 @@ void netos_statistics_inc_pfifo_fast_tx(void *stat_ptr);
 
 void netos_statistics_inc_arp_ingress(void *stats_ptr);
 
+void netos_statistics_inc_arp_tx(void *stat_ptr);
+
 void netos_statistics_inc_ipv4_ingress(void *stats_ptr);
+
+void netos_statistics_inc_arp_unmatched_mac(void *stat_ptr);
 
 void netos_statistics_inc_ipv6_ingress(void *stats_ptr);
 

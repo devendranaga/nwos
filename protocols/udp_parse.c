@@ -19,7 +19,7 @@ netos_status_t netos_udp_decode(netos_udp_hdr_t *udp_hdr,
     pkt_buffer_decode_2_bytes(pkt_buf, &udp_hdr->length);
 
     // invalid length
-    if (udp_hdr->length == 0) {
+    if (udp_hdr->length <= NETOS_UDP_HDR_LEN) {
         NETOS_PKT_BUFFER_SET_EVENT(pkt_buf,
                                    NETOS_EVENT_TYPE_DENY,
                                    NETOS_EVENT_DESC_UDP_LEN_ZERO);

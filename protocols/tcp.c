@@ -18,7 +18,7 @@ static struct {
     void        *protocol_ctx;
     void        *(*init)(netos_config_t *config);
     void        (*rx)(void *ctx,
-                      netos_packet_parser_t *parsed_data,
+                      netos_packet_data_t *parsed_data,
                       pkt_buffer_t *pkt_buf);
     void        (*tx)(void *ctx,
                       pkt_buffer_t *pkt_buf);
@@ -114,7 +114,7 @@ err:
 }
 
 static netos_tcp_connection_t *netos_tcp_conn_add(netos_tcp_context_t *ctx,
-                                         netos_packet_parser_t *parsed_data,
+                                         netos_packet_data_t *parsed_data,
                                          netos_tcp_conn_key_t *key)
 {
     netos_tcp_connection_t *conn;
@@ -169,7 +169,7 @@ err:
 }
 
 static netos_tcp_state_t netos_tcp_state_init(netos_tcp_context_t *ctx,
-                                              netos_packet_parser_t *parsed_data,
+                                              netos_packet_data_t *parsed_data,
                                               pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_INIT;
@@ -177,7 +177,7 @@ static netos_tcp_state_t netos_tcp_state_init(netos_tcp_context_t *ctx,
 
 static netos_tcp_state_t netos_tcp_state_client_sent_syn(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_CLIENT_SENT_SYN;
@@ -185,7 +185,7 @@ static netos_tcp_state_t netos_tcp_state_client_sent_syn(
 
 static netos_tcp_state_t netos_tcp_state_server_sent_syn_ack(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_SERVER_SENT_SYN_ACK;
@@ -193,7 +193,7 @@ static netos_tcp_state_t netos_tcp_state_server_sent_syn_ack(
 
 static netos_tcp_state_t netos_tcp_state_conn_established(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_CONN_ESTABLISHED;
@@ -201,7 +201,7 @@ static netos_tcp_state_t netos_tcp_state_conn_established(
 
 static netos_tcp_state_t netos_tcp_state_fin_sent(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_FIN_SENT;
@@ -209,7 +209,7 @@ static netos_tcp_state_t netos_tcp_state_fin_sent(
 
 static netos_tcp_state_t netos_tcp_state_fin_ack_sent(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_FIN_ACK_SENT;
@@ -217,7 +217,7 @@ static netos_tcp_state_t netos_tcp_state_fin_ack_sent(
 
 static netos_tcp_state_t netos_tcp_state_conn_closed(
                                         netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf)
 {
     return NETOS_TCP_STATE_CLOSED;
@@ -226,7 +226,7 @@ static netos_tcp_state_t netos_tcp_state_conn_closed(
 static const struct {
     netos_tcp_state_t       state;
     netos_tcp_state_t       (*callback)(netos_tcp_context_t *ctx,
-                                        netos_packet_parser_t *parsed_data,
+                                        netos_packet_data_t *parsed_data,
                                         pkt_buffer_t *pkt_buf);
 } tcp_statemachine_callbacks[] = {
     {
@@ -269,7 +269,7 @@ static const struct {
  * @return NETOS_STATUS_SUCCESS on success and error code on failure.
  */
 static netos_status_t netos_tcp_state_machine(netos_tcp_context_t *ctx,
-                                              netos_packet_parser_t *parsed_data,
+                                              netos_packet_data_t *parsed_data,
                                               pkt_buffer_t *pkt_buf)
 {
     netos_tcp_conn_key_t key;
@@ -303,7 +303,7 @@ static netos_status_t netos_tcp_state_machine(netos_tcp_context_t *ctx,
 }
 
 static netos_status_t netos_tcp_rx_decode(void *ctx,
-                                          netos_packet_parser_t *parsed_data,
+                                          netos_packet_data_t *parsed_data,
                                           pkt_buffer_t *pkt_buf)
 {
     netos_status_t ret;
@@ -331,7 +331,7 @@ static netos_status_t netos_tcp_rx_decode(void *ctx,
 }
 
 void netos_tcp_rx_process(void *ctx,
-                          netos_packet_parser_t *pkt_parser,
+                          netos_packet_data_t *pkt_parser,
                           pkt_buffer_t *pkt_buf)
 {
     netos_status_t ret;

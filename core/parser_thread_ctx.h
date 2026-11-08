@@ -11,7 +11,7 @@
 #include "macsec.h"
 
 typedef struct netos_protocol_context {
-    netos_packet_parser_t       parsed_data;
+    netos_packet_data_t       parsed_data;
 } netos_protocol_context_t;
 
 typedef struct netos_parser_thread {

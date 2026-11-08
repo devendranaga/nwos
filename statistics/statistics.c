@@ -121,6 +121,20 @@ void netos_statistics_inc_arp_ingress(void *stats_ptr)
     atomic_fetch_add_explicit(&stat->ingress.n_arp_rx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_inc_arp_tx(void *stat_ptr)
+{
+    netos_statistics_t *stat = stat_ptr;
+
+    atomic_fetch_add_explicit(&stat->egress.arp_stats.n_arp_tx, 1, memory_order_relaxed);
+}
+
+void netos_statistics_inc_arp_unmatched_mac(void *stat_ptr)
+{
+    netos_statistics_t *stat = stat_ptr;
+
+    atomic_fetch_add_explicit(&stat->ingress.n_arp_unmatched_mac_, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_ipv4_ingress(void *stats_ptr)
 {
     netos_statistics_t *stat = stats_ptr;

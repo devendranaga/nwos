@@ -8,6 +8,7 @@ typedef struct netos_statistics_ingress {
     _Atomic uint64_t n_dropped_no_bufs;
     _Atomic uint64_t n_rx;
     _Atomic uint64_t n_arp_rx;
+    _Atomic uint64_t n_arp_unmatched_mac_;
     _Atomic uint64_t n_ipv4_rx;
     _Atomic uint64_t n_ipv6_rx;
     _Atomic uint64_t n_icmp_rx;
@@ -19,6 +20,10 @@ typedef struct netos_statistics_ingress {
     _Atomic uint64_t n_parse_failed;
 } netos_statistics_ingress_t;
 
+typedef struct netos_statistics_egress_arp_stats {
+    _Atomic uint64_t n_arp_tx;
+} netos_statistics_egress_arp_stats_t;
+
 typedef struct netos_statistics_egress {
     _Atomic uint64_t n_tx;
     _Atomic uint64_t n_sp_tx;
@@ -27,6 +32,7 @@ typedef struct netos_statistics_egress {
     _Atomic uint64_t n_bfifo_tx;
     _Atomic uint64_t n_pfifo_fast_tx;
     _Atomic uint64_t n_icmp_tx;
+    netos_statistics_egress_arp_stats_t arp_stats;
 } netos_statistics_egress_t;
 
 typedef struct netos_statistics {

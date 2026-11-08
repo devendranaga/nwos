@@ -251,7 +251,7 @@ netos_icmp_decode_source_quench(netos_icmp_hdr_t *icmp_hdr,
 
     pkt_buffer_decode_4_bytes(pkt_buf, &icmp_hdr->source_quench.unused);
 
-    if (pkt_buf->offset > pkt_buf->rx_len) {
+    if (pkt_buf->offset < pkt_buf->rx_len) {
         icmp_hdr->source_quench.data = &pkt_buf->buffer[pkt_buf->offset];
         icmp_hdr->source_quench.data_len = (pkt_buf->rx_len - pkt_buf->offset);
     } else {

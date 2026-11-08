@@ -16,7 +16,7 @@ typedef struct {
 void *netos_udp_init(netos_config_t *config);
 
 void netos_udp_rx(void *ctx,
-                  netos_packet_parser_t *parsed_data,
+                  netos_packet_data_t *parsed_data,
                   pkt_buffer_t *pkt_buf);
 
 void netos_udp_tx(void *ctx,

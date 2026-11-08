@@ -35,7 +35,7 @@ typedef struct netos_arp_protocol {
 } netos_arp_protocol_t;
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
-                                    netos_packet_parser_t *pkt_parser);
+                                    netos_packet_data_t *pkt_parser);
 
 netos_status_t netos_arp_protocol_init(netos_config_t *config,
                                        netos_gcd_ctx_t *gcd_ctx);

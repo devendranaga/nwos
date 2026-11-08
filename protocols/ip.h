@@ -23,7 +23,7 @@ netos_status_t netos_ip_initialize(netos_config_t *config);
  * @return NETOS_STATUS_SUCCESS on success and error on failure.
  */
 netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
-                                     netos_packet_parser_t *pkt_parser);
+                                     netos_packet_data_t *pkt_parser);
 
 /**
  * @brief - Process IPv6 frames.
@@ -34,7 +34,7 @@ netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
  * @return NETOS_STATUS_SUCCESS on success and error on failure.
  */
 netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
-                                     netos_packet_parser_t *pkt_parser);
+                                     netos_packet_data_t *pkt_parser);
 
 /**
  * @brief - Deinitialize the IP interface.

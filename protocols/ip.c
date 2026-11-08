@@ -22,7 +22,7 @@ static struct {
     void            *(*init)(netos_config_t *config);
 
     void            (*rx)(void *ctx,
-                          netos_packet_parser_t *parsed_data,
+                          netos_packet_data_t *parsed_data,
                           pkt_buffer_t *pkt_buf);
 
     void            (*tx)(void *ctx,
@@ -95,7 +95,7 @@ netos_status_t netos_ip_initialize(netos_config_t *config)
 }
 
 netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
-                                     netos_packet_parser_t *pkt_parser)
+                                     netos_packet_data_t *pkt_parser)
 {
     uint8_t protocol = pkt_parser->protocol;
     uint32_t i;
@@ -112,7 +112,7 @@ netos_status_t netos_ipv4_rx_process(pkt_buffer_t *pkt_buf,
 }
 
 netos_status_t netos_ipv6_rx_process(pkt_buffer_t *pkt_buf,
-                                     netos_packet_parser_t *pkt_parser)
+                                     netos_packet_data_t *pkt_parser)
 {
     uint8_t protocol = pkt_parser->protocol;
     netos_status_t ret;

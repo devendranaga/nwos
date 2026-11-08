@@ -36,7 +36,7 @@ err:
 }
 
 static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
-                                netos_packet_parser_t *parsed_data,
+                                netos_packet_data_t *parsed_data,
                                 pkt_buffer_t *pkt_buf)
 {
     netos_icmp_hdr_t *icmp_h;
@@ -45,11 +45,19 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
     netos_ipv4_hdr_t ipv4_h;
     pkt_buffer_t *tx_buf;
 
+    // invalid in_intf and drop the frame
+    if (!pkt_buf->in_intf) {
+        return;
+    }
+
     // get the tx buffer from the buffer pool
     tx_buf = netos_buffer_pool_get_buffer(icmp_ctx->icmp_pool);
     if (!tx_buf) {
         return;
     }
+
+    // increment ref count on the acquired pool buffer
+    pkt_buffer_ref_count_up(tx_buf);
 
     pkt_buffer_reset(tx_buf);
     tx_buf->out_intf = pkt_buf->in_intf;
@@ -98,7 +106,7 @@ static void netos_icmp_do_reply(netos_icmp_ctx_t *icmp_ctx,
 }
 
 void netos_icmp_rx(void *ctx,
-                   netos_packet_parser_t *parsed_data,
+                   netos_packet_data_t *parsed_data,
                    pkt_buffer_t *pkt_buf)
 {
     netos_icmp_ctx_t *icmp_ctx = ctx;

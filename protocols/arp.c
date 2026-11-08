@@ -11,47 +11,66 @@
 #include "ethertypes.h"
 #include "common.h"
 #include "egress_controller.h"
+#include "fnv_hash.h"
+#include "statistics_ctx.h"
+#include "parser_thread_ctx.h"
 #include "netos_config.h"
 
 static netos_arp_protocol_t arp_protocol;
 
 static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
-                                           netos_packet_parser_t *pkt_parser)
+                                           netos_packet_data_t *pkt_parser)
 {
     netos_arp_hdr_t arp_h;
     netos_eth_hdr_t eth_h;
+    pkt_buffer_t *tx_buf;
 
+    // get the buffer memory from the allocated pool pointer
+    tx_buf = netos_buffer_pool_get_buffer(arp_protocol.pool);
+    if (!tx_buf) {
+        return NETOS_STATUS_BUFFER_POOL_OUT_OF_BUFFERS;
+    }
+
+    // increment the ref count for the pulled buffer
+    pkt_buffer_ref_count_up(tx_buf);
+
+    // clear out buffer descriptors
+    pkt_buffer_reset(tx_buf);
+
+    // assign the outward interface pointer
+    tx_buf->out_intf = pkt_buf->in_intf;
+
+    // fill in the ethernet header
     NETOS_ETH_DEFAULTS(eth_h,
                        pkt_parser->eh.src,
                        pkt_buf->in_intf->mac,
                        NETOS_ETHERTYPE_ARP);
 
+    // fill in the arp header
     NETOS_ARP_REPLY_DEFAULTS((&arp_h),
                              pkt_buf->in_intf->mac,
                              pkt_buf->in_intf->ipaddr,
                              pkt_parser->arp_hdr.sender_hwaddr,
                              pkt_parser->arp_hdr.sender_protocol_addr);
 
-    pkt_buf->offset = 0;
-    pkt_buf->rx_len = 0;
-    pkt_buf->tx_len = 0;
+    netos_eth_encode(&eth_h, tx_buf);
+    netos_arp_encode(&arp_h, tx_buf);
 
-    pkt_buffer_set_egress_intf_self(pkt_buf);
+    // set the transmit length
+    pkt_buffer_set_tx_len_default(tx_buf);
 
-    netos_eth_encode(&eth_h, pkt_buf);
-    netos_arp_encode(&arp_h, pkt_buf);
+    netos_statistics_inc_arp_tx(NETOS_GET_STATS_PTR(pkt_parser));
 
-    pkt_buffer_set_tx_len_default(pkt_buf);
-
-    netos_egress_enque(pkt_buf->out_intf->egress_ctrl,
+    // pass the buffer to the egress scheduler
+    netos_egress_enque(tx_buf->out_intf->egress_ctrl,
                        NETOS_EGRESS_ALG_SP,
-                       pkt_buf);
+                       tx_buf);
 
     return NETOS_STATUS_SUCCESS;
 }
 
 static netos_status_t netos_arp_rx_process_request(pkt_buffer_t *pkt_buf,
-                                                   netos_packet_parser_t *pkt_parser)
+                                                   netos_packet_data_t *pkt_parser)
 {
     netos_status_t ret;
 
@@ -68,7 +87,7 @@ static netos_status_t netos_arp_rx_process_request(pkt_buffer_t *pkt_buf,
 }
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
-                                    netos_packet_parser_t *pkt_parser)
+                                    netos_packet_data_t *pkt_parser)
 {
     netos_status_t ret = NETOS_STATUS_SUCCESS;
 
@@ -91,10 +110,9 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
     if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REQUEST) {
         ret = netos_arp_rx_process_request(pkt_buf, pkt_parser);
         if (ret != NETOS_STATUS_SUCCESS) {
+            netos_statistics_inc_arp_unmatched_mac(NETOS_GET_STATS_PTR(pkt_parser));
             goto unlock;
         }
-    } else if (pkt_parser->arp_hdr.op == NETOS_ARP_OP_REPLY) {
-        // check if packet destination mac and address is us.
     }
 
     // if sender's protocol address is known, add it. be it ARP request or reply
@@ -118,6 +136,7 @@ netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
 
             *sender_protocol_addr = pkt_parser->arp_hdr.sender_protocol_addr;
 
+            // create the entry into the ARP cache
             if (pkt_parser->arp_hdr.sender_protocol_addr != 0) {
                 memcpy(entry->mac, pkt_parser->eh.src, NETOS_MACADDR_LEN);
                 entry->in_intf = pkt_buf->in_intf;
@@ -140,17 +159,16 @@ unlock:
     return ret;
 }
 
+/**
+ * @brief - Run the hash on the sender ipaddr.
+ *
+ * @param [in] key - ipaddress pointer.
+ *
+ * @return hash value of the ipaddr.
+ */
 static uint32_t netos_arp_entry_hash(void *key)
 {
-    uint32_t *ipaddr = key;
-    uint32_t hash_val;
-
-    hash_val = (((*ipaddr) & 0xFF000000) >> 24) +
-               (((*ipaddr) & 0x00FF0000) >> 16) +
-               (((*ipaddr) & 0x0000FF00) >> 8) +
-               ((*ipaddr) & 0x000000FF);
-
-    return hash_val;
+    return netos_hash_fnv1a(key, sizeof(uint32_t));
 }
 
 static bool netos_arp_entry_compare(void *key1, void *key2)
@@ -169,6 +187,11 @@ static bool arp_cache_entry_invalidate(void *key, void *val)
     return true;
 }
 
+/**
+ * @brief - perform an ARP request.
+ *
+ * @param [in] entry - ARP entry.
+ */
 static void arp_do_request(netos_arp_entry_t *entry)
 {
     netos_eth_hdr_t eh;
@@ -250,6 +273,7 @@ netos_status_t netos_arp_protocol_init(netos_config_t *config,
         goto err;
     }
 
+    // allocate ARP cache
     arp_protocol.arp_cache = netos_hash_table_init(
                                         config->protocol_config.arp_config.arp_cache_size,
                                         netos_arp_entry_hash,
@@ -261,6 +285,7 @@ netos_status_t netos_arp_protocol_init(netos_config_t *config,
 
     netos_log_info("create arp cache ok\n");
 
+    // setup arp cache invalidation timer
     netos_gcd_timer_set_callback(gcd_ctx,
                                  10,
                                  0,

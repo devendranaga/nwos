@@ -12,6 +12,10 @@ int netos_unix_intf_udp_server_socket_init(const char *path)
     int fd;
     int ret;
 
+    if (!path) {
+        return -1;
+    }
+
     fd = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (fd < 0) {
         return -1;
@@ -44,6 +48,10 @@ int netos_unix_intf_udp_send(int fd,
 {
     struct sockaddr_un sender_info;
 
+    if ((fd < 0) || !path || !msg || (msg_len == 0)) {
+        return -1;
+    }
+
     memset(&sender_info, 0, sizeof(sender_info));
     sender_info.sun_family = AF_UNIX;
     strncpy(sender_info.sun_path, path, sizeof(sender_info.sun_path) - 1);
@@ -63,7 +71,7 @@ int netos_unix_intf_udp_recv(int fd,
     size_t n = 0;
     int ret;
 
-    if (!path || (path_len == 0)) {
+    if (!path || !msg || (path_len == 0) || (msg_len == 0)) {
         return -1;
     }
 

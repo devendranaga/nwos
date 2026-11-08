@@ -116,6 +116,8 @@ typedef enum {
 
     NETOS_STATUS_TCP_APPLICATION_INIT_FAILURE       = 0x00001200,
 
+    NETOS_STATUS_BUFFER_POOL_OUT_OF_BUFFERS         = 0x00001300,
+
     NETOS_STATUS_GENERIC_ERROR                      = 0xFAFAFAFA,
 
     NETOS_STATUS_ERROR_UNUSED                       = 0xFFFFFFFF, // fake value to explicitly make enum as uint32_t

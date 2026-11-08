@@ -42,7 +42,9 @@ struct netos_rule_token {
     char token[1024];
 };
 
-static struct netos_rule_token tokens[20];
+#define NETOS_TOKENS_LEN_MAX            20
+
+static struct netos_rule_token tokens[NETOS_TOKENS_LEN_MAX];
 
 static uint32_t netos_rule_tokenize(const char *buf)
 {
@@ -50,7 +52,7 @@ static uint32_t netos_rule_tokenize(const char *buf)
     uint32_t j = 0;
     uint32_t i = 0;
 
-    while (buf[i] != '\0') {
+    while ((buf[i] != '\0') && (count < NETOS_TOKENS_LEN_MAX)) {
         if (buf[i] == ',') {
             tokens[count].token[j] = '\0';
             j = 0;
@@ -564,6 +566,7 @@ static netos_rule_config_t *netos_rule_parse(const char *buf)
                     if (netos_rule_metdata[i].config[j].callback) {
                         netos_rule_metdata[i].config[j].callback(rule, i);
                         found = true;
+                        break;
                     }
                 }
             }

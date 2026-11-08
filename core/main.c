@@ -92,7 +92,7 @@ static void *netos_intf_rx_callback(void *cbdata)
 
 static void netos_update_rx_event(const netos_parser_thread_t *parse_thr, pkt_buffer_t *pkt_buf)
 {
-    const netos_packet_parser_t *parse_data = &parse_thr->protocol_ctx.parsed_data;
+    const netos_packet_data_t *parse_data = &parse_thr->protocol_ctx.parsed_data;
     netos_event_info_t *evt_info;
 
     if ((pkt_buf->event_type == NETOS_EVENT_TYPE_INVAL) ||
