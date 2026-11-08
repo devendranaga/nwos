@@ -39,10 +39,28 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
          * In this case, the count is used to count up or flag that there are still **some**
          * items in the queue and that the scheduler must repeat and look for the entry and
          * send out on the egress.
+         *
+         * -----------+---+---+
+         *       |    |   |   |   Q1
+         *       |    +---+---+
+         *       |
+         *       |----+---+---+---+---+---+
+         *       |    |   |   |   |   |   | Q2
+         *       |    +---+---+---+---+---+
+         *       |
+         *       | ...
+         *       |
+         *       |----+---+---+
+         *            |   |   | Q8
+         *            +---+---+
+         *
          */
         uint32_t count = 0;
         do {
             count = 0;
+
+            //
+            // for each rr queue item, transmit the packet.
             for (int i = NETOS_EGRESS_RR_MAX - 1; i >= 0; i --) {
                 netos_egress_rr_t *rr_item = &rr->rr[i];
 
