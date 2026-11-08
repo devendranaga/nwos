@@ -51,8 +51,8 @@ typedef struct {
     uint16_t    payload_len;
     uint8_t     nh;
     uint8_t     hop_limit;
-    uint8_t     src_ipaddr[NETOS_IPV6_ADDR_LEN];
-    uint8_t     dst_ipaddr[NETOS_IPV6_ADDR_LEN];
+    uint8_t     src_ipaddr[NETOS_IPV6_ADDR_LEN] __attribute__ ((aligned(4)));
+    uint8_t     dst_ipaddr[NETOS_IPV6_ADDR_LEN] __attribute__ ((aligned(4)));
 
     struct {
         uint32_t                    valid_options;

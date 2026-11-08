@@ -38,6 +38,10 @@ netos_mmap_file_io_t *netos_mmap_open_file(const char *filename, uint32_t file_s
     netos_mmap_file_io_t *fileio;
     int ret;
 
+    if (!filename || (file_size == 0)) {
+        return NULL;
+    }
+
     fileio = calloc(1, sizeof(netos_mmap_file_io_t));
     if (!fileio) {
         return NULL;
@@ -81,6 +85,10 @@ netos_mmap_file_io_t *netos_mmap_open_file_read(const char *filename)
     netos_mmap_file_io_t *fileio;
     struct stat st;
     int ret;
+
+    if (!filename) {
+        return NULL;
+    }
 
     ret = stat(filename, &st);
     if (ret != 0) {

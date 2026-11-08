@@ -4,6 +4,7 @@
 #include "common.h"
 #include "event_info.h"
 #include "checksum_l4.h"
+#include "fnv_hash.h"
 #include "port_numbers.h"
 #include "packet_parser.h"
 #include "mqtt.h"
@@ -37,26 +38,37 @@ static struct {
 
 static uint32_t netos_tcp_hash_easy(netos_tcp_conn_key_t *conn_key)
 {
-    uint32_t hash;
-    uint32_t i;
+    uint8_t key[128];
+    uint32_t key_len = 0;
 
-    hash = conn_key->protocol;
+    //
+    // |----------|-----------------------|-------------------------|--------------|--------------|
+    // | protocol |   src ipaddr (4/16)   |  dst ipaddr (4/16)      | src port (2) | dst port (2) |
+    // |----------|-----------------------|-------------------------|--------------|--------------|
+    //
+    // for v4 = 13
+    // for v6 = 37
+    key[0] = conn_key->protocol;
 
     if (conn_key->is_ipv4) {
-        hash += conn_key->v4.src_ip + conn_key->v4.dst_ip;
+        memcpy(&key[1], &conn_key->v4.src_ip, sizeof(uint32_t));
+        memcpy(&key[5], &conn_key->v4.dst_ip, sizeof(uint32_t));
+        key_len = 9;
     } else {
-        for (i = 0; i < NETOS_IPV6_ADDR_LEN / 4; i ++) {
-            hash += *(uint32_t *)(conn_key->v6.src_ip + i);
-        }
-        for (i = 0; i < NETOS_IPV6_ADDR_LEN / 4; i ++) {
-            hash += *(uint32_t *)(conn_key->v6.dst_ip + i);
-        }
+        memcpy(&key[1], conn_key->v6.src_ip, NETOS_IPV6_ADDR_LEN);
+        memcpy(&key[17], conn_key->v6.dst_ip, NETOS_IPV6_ADDR_LEN);
+        key_len = 33;
     }
 
-    hash += conn_key->src_port;
-    hash += conn_key->dst_port;
+    key[key_len]        = (conn_key->src_port >> 8) & 0x00FF;
+    key[key_len + 1]    = (conn_key->src_port & 0x00FF);
 
-    return hash;
+    key[key_len + 2]    = (conn_key->dst_port >> 8) & 0x00FF;
+    key[key_len + 3]    = (conn_key->dst_port & 0x00FF);
+
+    key_len += 4;
+
+    return netos_hash_fnv1a(key, key_len);
 }
 
 static uint32_t netos_tcp_hash(void *key)

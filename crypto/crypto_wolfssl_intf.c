@@ -191,6 +191,7 @@ static void netos_wolfssl_deinit_gcm(void *ctx)
     Aes *aes = ctx;
 
     if (aes) {
+        wc_AesFree(aes);
         free(aes);
     }
 }

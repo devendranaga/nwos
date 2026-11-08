@@ -1787,14 +1787,17 @@ static void pgen_sub_command_help(uint32_t cmd_idx)
  *
  * @return returns number of tokens parsed in the buffer.
  */
-static uint32_t pgen_tokenize(const char *buf, uint32_t len, struct pgen_token *tokens)
+static uint32_t pgen_tokenize(const char *buf,
+                              uint32_t len,
+                              struct pgen_token *tokens,
+                              uint32_t token_len)
 {
     char tmp[128];
     uint32_t i = 0;
     uint32_t j = 0;
     uint32_t token_idx = 0;
 
-    while (buf[i] != '\0') {
+    while ((buf[i] != '\0') && (token_idx < token_len)) {
         if (buf[i] == ' ') {
             tmp[j] = '\0';
             strcpy(tokens[token_idx].name, tmp);
@@ -1811,6 +1814,11 @@ static uint32_t pgen_tokenize(const char *buf, uint32_t len, struct pgen_token *
             j ++;
             i ++;
         }
+    }
+
+    // validate the out of bounds
+    if (token_idx >= token_len) {
+        return 0;
     }
 
     tmp[j] = '\0';
@@ -1875,7 +1883,7 @@ int main(int argc, char **argv)
         uint32_t n_tokens;
 
         memset(tokens, 0, sizeof(tokens));
-        n_tokens = pgen_tokenize(buf, len, tokens);
+        n_tokens = pgen_tokenize(buf, len, tokens, NETOS_SIZEOF_ARRAY(tokens));
         if (n_tokens != 0) {
             uint32_t i;
             bool valid_cmd = false;
