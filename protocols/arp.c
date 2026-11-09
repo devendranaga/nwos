@@ -28,6 +28,7 @@ static netos_status_t netos_arp_send_reply(pkt_buffer_t *pkt_buf,
     // get the buffer memory from the allocated pool pointer
     tx_buf = netos_buffer_pool_get_buffer(arp_protocol.pool);
     if (!tx_buf) {
+        netos_statistics_buffer_stat_inc_arp_oom(NETOS_GET_STATS_PTR(pkt_parser));
         return NETOS_STATUS_BUFFER_POOL_OUT_OF_BUFFERS;
     }
 
@@ -86,6 +87,19 @@ static netos_status_t netos_arp_rx_process_request(pkt_buffer_t *pkt_buf,
     return NETOS_STATUS_SUCCESS;
 }
 
+/**
+ * @brief - interface to the rx path which then perform the following.
+ *
+ *          1. if the arp query mac and ip matched, the reply is then created.
+ *          2. do a query in the arp cache,
+ *              2.1. if the arp entry exist, update the ARP entry.
+ *              2.2. if the arp entry does not exist, create an entry and add it to the cache.
+ *
+ * @param [in] pkt_buf - packet buffer.
+ * @param [inout] pkt_parser - parsed packet.
+ *
+ * @return NETOS_STATUS_SUCCESS on success and error code failure.
+ */
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
                                     netos_packet_data_t *pkt_parser)
 {
@@ -317,6 +331,50 @@ void netos_arp_protocol_deinit()
     }
     if (arp_protocol.pool) {
         netos_buffer_pool_free(arp_protocol.pool);
+    }
+}
+
+static void netos_arp_do_request_query(netos_raw_socket_ctx_t *out_intf, uint32_t ipaddr)
+{
+    // 1. create a one shot timer that can repeatedly perform queries.
+    // 2. if a query is performed and result appear in arp request, call the notification callback.
+}
+
+netos_status_t netos_arp_api_register_notification(arp_query_cb query_cb)
+{
+    netos_arp_notifier_t *notify;
+
+    notify = calloc(1, sizeof(netos_arp_notifier_t));
+    if (!notify) {
+        return NETOS_STATUS_MEMORY_ALLOC_FAILURE;
+    }
+
+    notify->next = arp_protocol.notifier_list;
+    arp_protocol.notifier_list = notify;
+
+    return NETOS_STATUS_SUCCESS;
+}
+
+static void netos_arp_notify_macaddr(uint32_t ipaddr, uint8_t *macaddr)
+{
+    netos_arp_notifier_t *notify;
+
+    for (notify = arp_protocol.notifier_list; notify; notify = notify->next) {
+        if (notify->query_cb) {
+            notify->query_cb(ipaddr, macaddr);
+        }
+    }
+}
+
+void netos_arp_api_query_ipaddr(netos_raw_socket_ctx_t *out_intf, uint32_t ipaddr)
+{
+    netos_arp_entry_t *entry;
+
+    entry = netos_hash_item_find(arp_protocol.arp_cache, &ipaddr);
+    if (!entry) {
+        netos_arp_do_request_query(out_intf, ipaddr);
+    } else {
+        netos_arp_notify_macaddr(ipaddr, entry->mac);
     }
 }
 

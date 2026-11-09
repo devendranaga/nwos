@@ -17,9 +17,13 @@ extern "C" {
 #include "pkt_buffer.h"
 #include "gcd.h"
 #include "arp_hdr.h"
+#include "arp_api.h"
 #include "packet_parser.h"
 #include "hash_tables.h"
 
+/**
+ * @brief - Defines an ARP entry.
+ */
 typedef struct netos_arp_entry {
     uint8_t                 mac[NETOS_MACADDR_LEN];
     netos_raw_socket_ctx_t  *in_intf; // where this entry reside on
@@ -27,11 +31,15 @@ typedef struct netos_arp_entry {
     struct timespec         last_updated;
 } netos_arp_entry_t;
 
+/**
+ * @brief - Defines ARP protocol context.
+ */
 typedef struct netos_arp_protocol {
     netos_config_t          *config;
     netos_hash_table_t      *arp_cache;
     pthread_mutex_t         lock;
     netos_buffer_pool_t     *pool;
+    netos_arp_notifier_t    *notifier_list;
 } netos_arp_protocol_t;
 
 netos_status_t netos_arp_rx_process(pkt_buffer_t *pkt_buf,
@@ -41,10 +49,6 @@ netos_status_t netos_arp_protocol_init(netos_config_t *config,
                                        netos_gcd_ctx_t *gcd_ctx);
 
 void netos_arp_protocol_deinit();
-
-void netos_arp_mib_in_arp_ok();
-
-void netos_arp_mib_in_arp_invalid();
 
 #if defined(__cplusplus)
 }

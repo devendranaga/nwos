@@ -121,6 +121,13 @@ void netos_statistics_inc_arp_ingress(void *stats_ptr)
     atomic_fetch_add_explicit(&stat->ingress.n_arp_rx, 1, memory_order_relaxed);
 }
 
+void netos_statistics_buffer_stat_inc_arp_oom(void *stats_ptr)
+{
+    netos_statistics_t *stat = stats_ptr;
+
+    atomic_fetch_add_explicit(&stat->buffers.pool_oom_arp, 1, memory_order_relaxed);
+}
+
 void netos_statistics_inc_arp_tx(void *stat_ptr)
 {
     netos_statistics_t *stat = stat_ptr;
@@ -245,6 +252,40 @@ uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len)
                                                                memory_order_relaxed);
 
         off += sizeof(netos_netctl_ingress_statistics_t);
+        stat = stat->next;
+
+        count ++;
+    }
+
+    return count;
+}
+
+uint32_t netos_statistics_get_egress_stats(uint8_t *buf, uint32_t buf_len)
+{
+    netos_statistics_t *stat = stats_ctx->stat_head;
+    uint32_t off = 0;
+    uint32_t count = 0;
+
+    while (stat && ((off + sizeof(netos_netctl_egress_statistics_t)) < buf_len)) {
+        netos_netctl_egress_statistics_t *egress_stats;
+
+        egress_stats = (netos_netctl_egress_statistics_t *)(buf + off);
+
+        strncpy(egress_stats->ifname,
+                stat->ifname, sizeof(egress_stats->ifname));
+
+        egress_stats->n_tx = atomic_load_explicit(&stat->egress.n_tx,
+                                                  memory_order_relaxed);
+        egress_stats->n_sp_tx = atomic_load_explicit(&stat->egress.n_sp_tx,
+                                                     memory_order_relaxed);
+        egress_stats->n_rr_tx = atomic_load_explicit(&stat->egress.n_rr_tx,
+                                                     memory_order_relaxed);
+        egress_stats->n_pfifo_tx = atomic_load_explicit(&stat->egress.n_pfifo_tx,
+                                                        memory_order_relaxed);
+        egress_stats->n_bfifo_tx = atomic_load_explicit(&stat->egress.n_bfifo_tx,
+                                                        memory_order_relaxed);
+
+        off += sizeof(netos_netctl_egress_statistics_t);
         stat = stat->next;
 
         count ++;

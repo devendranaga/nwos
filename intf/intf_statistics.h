@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 typedef struct __attribute__ ((__packed__)) {
+    char     ifname[12];
     uint64_t n_tx;
     uint64_t n_sp_tx;
     uint64_t n_rr_tx;

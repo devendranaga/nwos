@@ -57,6 +57,7 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
             uint32_t count;
             uint32_t total_send_len;
 
+            // validate the input length for GET_INGRESS_STATS
             if (ret != sizeof(netos_netctl_intf_t)) {
                 netos_ctrl_intf_send_error_resp(intf_msg,
                                                 fd,
@@ -87,6 +88,35 @@ static void netos_ctrl_intf_rx_command(int fd, void *user_ctx)
 
             netos_unix_intf_udp_send(fd, path, buf, total_send_len);
 
+        } break;
+        case NETOS_NETCTL_GET_EGRESS_STATS: {
+            uint32_t count;
+            uint32_t total_send_len;
+
+            if (ret != sizeof(netos_netctl_intf_t)) {
+                netos_ctrl_intf_send_error_resp(intf_msg,
+                                                fd,
+                                                NETOS_NETCTL_INVAL_LEN,
+                                                path,
+                                                buf);
+                return;
+            }
+
+            count = netos_statistics_get_egress_stats(buf + sizeof(netos_netctl_intf_t),
+                                                      sizeof(buf) - sizeof(netos_netctl_intf_t));
+#if defined(NETOS_DEBUG)
+            if (count != 0) {
+                netos_netctl_ingress_statistics_t *egress_stats;
+
+                egress_stats = (netos_netctl_egress_statistics_t *)(buf + sizeof(netos_netctl_egress_statistics_t));
+                netos_log_info("n_tx    %lu\n", egress_stats->n_tx);
+                netos_log_info("n_sp_tx %lu\n", egress_stats->n_sp_tx);
+            }
+#endif
+
+            total_send_len = sizeof(netos_netctl_intf_t) + sizeof(netos_netctl_egress_statistics_t) * count;
+
+            netos_unix_intf_udp_send(fd, path, buf, total_send_len);
         } break;
         default:
             netos_ctrl_intf_send_error_resp(intf_msg,

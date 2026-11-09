@@ -35,12 +35,20 @@ typedef struct netos_statistics_egress {
     netos_statistics_egress_arp_stats_t arp_stats;
 } netos_statistics_egress_t;
 
-typedef struct netos_statistics {
-    char                        *ifname;
-    netos_statistics_ingress_t  ingress;
-    netos_statistics_egress_t   egress;
+typedef struct netos_statistics_buffer_stats {
+    _Atomic uint64_t pool_oom_arp;
+} netos_statistics_buffer_stats_t;
 
-    struct netos_statistics     *next;
+/**
+ * @brief - Contains the statistics structure.
+ */
+typedef struct netos_statistics {
+    char                            *ifname;
+    netos_statistics_ingress_t      ingress;
+    netos_statistics_egress_t       egress;
+    netos_statistics_buffer_stats_t buffers;
+
+    struct netos_statistics         *next;
 } netos_statistics_t;
 
 typedef struct netos_arp_statistics {

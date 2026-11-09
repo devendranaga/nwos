@@ -100,6 +100,52 @@ static void netos_netctl_rx_show_ingress_stats(netos_netctl_t *ctl, uint32_t com
     }
 }
 
+static void netos_netctl_rx_show_egress_stats(netos_netctl_t *ctl, uint32_t command)
+{
+    char path[128];
+    uint8_t rx_msg[2048];
+    netos_netctl_intf_t *intf_msg = (netos_netctl_intf_t *)rx_msg;
+    int remaining_len = 0;
+    uint8_t *start_data;
+    int ret;
+
+    ret = netos_unix_intf_udp_recv(ctl->fd, path, sizeof(path), rx_msg, sizeof(rx_msg));
+    if (ret < 0) {
+        NETOS_PRINT_STD_ERROR_COLOR("failed to read response fom the netosd\n");
+        return;
+    }
+
+    // validate short length
+    if ((uint32_t)ret <= sizeof(netos_netctl_intf_t)) {
+        NETOS_PRINT_STD_ERROR_COLOR("no valid response from the netosd\n");
+        return;
+    }
+
+    ret -= sizeof(netos_netctl_intf_t);
+
+    if (intf_msg->version != NETOS_NETCTL_VERSION) {
+        NETOS_PRINT_STD_ERROR_COLOR("invalid interface version\n");
+        return;
+    }
+
+    start_data = rx_msg + sizeof(netos_netctl_intf_t);
+
+    netos_log_info("Egress_Stats:\n");
+
+    while (remaining_len < ret) {
+        netos_netctl_egress_statistics_t *egress_stats =
+                    (netos_netctl_egress_statistics_t *)(start_data + remaining_len);
+
+        netos_log_info("\t n_tx: %d\n", egress_stats->n_tx);
+        netos_log_info("\t n_sp_tx: %d\n", egress_stats->n_sp_tx);
+        netos_log_info("\t n_rr_tx: %d\n", egress_stats->n_rr_tx);
+        netos_log_info("\t n_pfifo_tx: %d\n", egress_stats->n_pfifo_tx);
+        netos_log_info("\t n_bfifo_tx: %d\n", egress_stats->n_bfifo_tx);
+
+        remaining_len += sizeof(netos_netctl_egress_statistics_t);
+    }
+}
+
 static struct netos_netctl_sub_commands {
     char *cmd_str;
     uint32_t cmd;
@@ -107,7 +153,7 @@ static struct netos_netctl_sub_commands {
 } show_sub_commands[] = {
     {"interfaces",      NETOS_NETCTL_GET_INTERFACES,    NULL},
     {"ingress_stats",   NETOS_NETCTL_GET_INGRESS_STATS, netos_netctl_rx_show_ingress_stats},
-    {"egress_stats",    NETOS_NETCTL_GET_EGRESS_STATS,  NULL}
+    {"egress_stats",    NETOS_NETCTL_GET_EGRESS_STATS,  netos_netctl_rx_show_egress_stats},
 };
 
 static void netos_netctl_send_req(netos_netctl_t *ctl, uint32_t command)

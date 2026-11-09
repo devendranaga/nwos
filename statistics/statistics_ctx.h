@@ -36,6 +36,8 @@ void netos_statistics_inc_pfifo_fast_tx(void *stat_ptr);
 
 void netos_statistics_inc_arp_ingress(void *stats_ptr);
 
+void netos_statistics_buffer_stat_inc_arp_oom(void *stats_ptr);
+
 void netos_statistics_inc_arp_tx(void *stat_ptr);
 
 void netos_statistics_inc_ipv4_ingress(void *stats_ptr);
@@ -47,8 +49,6 @@ void netos_statistics_inc_ipv6_ingress(void *stats_ptr);
 void netos_statistics_inc_arp_rx();
 
 void netos_statistics_inc_n_arp_fail();
-
-uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len);
 
 void netos_statistics_inc_icmp_ingress(void *stats_ptr);
 
@@ -67,6 +67,10 @@ void netos_statistics_inc_icmp_egress(void *stats_ptr);
 void netos_statistics_inc_n_icmp_tx();
 
 void netos_statistics_inc_n_icmp_rx();
+
+uint32_t netos_statistics_get_ingress_stats(uint8_t *buf, uint32_t buf_len);
+
+uint32_t netos_statistics_get_egress_stats(uint8_t *buf, uint32_t buf_len);
 
 #endif
 
