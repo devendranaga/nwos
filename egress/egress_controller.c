@@ -7,6 +7,7 @@
 #include "egress_rr.h"
 #include "egress_controller.h"
 #include "buffer_pool.h"
+#include "common.h"
 #include "netos_log.h"
 
 static netos_status_t netos_egress_alg_sp_init(netos_egress_controller_t *egress_ctrl)
@@ -41,7 +42,8 @@ static void netos_egress_alg_sp_deinit(netos_egress_controller_t *egress_ctrl)
     egress_ctrl->sp = NULL;
 }
 
-static netos_status_t netos_egress_alg_rr_init(netos_egress_controller_t *egress_ctrl)
+static netos_status_t netos_egress_alg_rr_init(netos_egress_controller_t *egress_ctrl,
+                                               netos_config_t *config)
 {
     netos_status_t ret;
 
@@ -50,7 +52,9 @@ static netos_status_t netos_egress_alg_rr_init(netos_egress_controller_t *egress
         goto err;
     }
 
-    ret = netos_egress_rr_init(egress_ctrl->rr);
+    ret = netos_egress_rr_init(egress_ctrl->rr,
+                               config->egress_ctrl.rr.weights,
+                               NETOS_SIZEOF_ARRAY(config->egress_ctrl.rr.weights));
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }
@@ -161,7 +165,7 @@ netos_egress_controller_init(netos_raw_socket_ctx_t *raw,
         goto err;
     }
 
-    ret = netos_egress_alg_rr_init(egress_ctrl);
+    ret = netos_egress_alg_rr_init(egress_ctrl, config);
     if (ret != NETOS_STATUS_SUCCESS) {
         goto err;
     }

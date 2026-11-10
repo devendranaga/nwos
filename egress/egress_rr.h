@@ -13,6 +13,7 @@
 typedef struct netos_egress_rr {
     pkt_buffer_t        *pkt_buf;
     pkt_buffer_t        *pkt_buf_last;
+    uint32_t            weight;
 } netos_egress_rr_t;
 
 typedef struct netos_egress_rr_mgr {
@@ -25,7 +26,9 @@ typedef struct netos_egress_rr_mgr {
     pthread_cond_t      rr_cond;
 } netos_egress_rr_mgr_t;
 
-netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *sp);
+netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *sp,
+                                    uint8_t *weights,
+                                    uint32_t len);
 
 void netos_egress_rr_enque(void *ctx,
                            pkt_buffer_t *pkt_buf);

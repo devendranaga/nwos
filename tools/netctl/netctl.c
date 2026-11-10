@@ -26,6 +26,8 @@ static int netos_netctl_parse_input(char *input_stream, uint32_t input_stream_le
     uint32_t j = 0;
     uint32_t token_idx = 0;
 
+    memset(tmp, 0, sizeof(tmp));
+
     while (input_stream[i] != '\0') {
         if (input_stream[i] == ' ') {
             tmp[j] = '\0';
@@ -146,6 +148,17 @@ static void netos_netctl_rx_show_egress_stats(netos_netctl_t *ctl, uint32_t comm
     }
 }
 
+static void netos_netctl_help_show()
+{
+    netos_log_info("\t ingress_stats\t shows ingress statistics on all interfaces\n");
+    netos_log_info("\t egress_stats\t shows egress statistics on all interfaces\n");
+}
+
+static void netos_netctl_help_exit()
+{
+    netos_log_info("\t exit this shell\n");
+}
+
 static struct netos_netctl_sub_commands {
     char *cmd_str;
     uint32_t cmd;
@@ -189,16 +202,31 @@ static void netos_netctl_exit(netos_netctl_t *ctl, struct netctl_tokens *in_toke
 static struct {
     char *command;
     void (*callback)(netos_netctl_t *ctl, struct netctl_tokens *tokens, uint32_t len);
+    void (*help)(void);
 } commands[] = {
     {
         "show",
-        netos_netctl_run_show
+        netos_netctl_run_show,
+        netos_netctl_help_show,
     },
     {
         "exit",
         netos_netctl_exit,
+        netos_netctl_help_exit,
     }
 };
+
+static void netos_netctl_help()
+{
+    uint32_t i;
+
+    for (i = 0; i < NETOS_SIZEOF_ARRAY(commands); i ++) {
+        netos_log_info("%s\n", commands[i].command);
+        if (commands[i].help) {
+            commands[i].help();
+        }
+    }
+}
 
 static int netos_netctl_init(netos_netctl_t *ctl)
 {
@@ -226,6 +254,7 @@ static void netos_netctl_run(netos_netctl_t *ctl)
 
     while (1) {
         char *buf = readline("netctl> ");
+        bool cmd_found = false;
 
         if (!buf) {
             break;
@@ -242,12 +271,31 @@ static void netos_netctl_run(netos_netctl_t *ctl)
         add_history(buf);
 
         token_len = netos_netctl_parse_input(buf, len);
+        if (!token_len) {
+            netos_log_info("invalid command <%s>\n", buf);
+            free(buf);
+            continue;
+        }
+
+        if (!strcmp(tokens[0].token, "help") ||
+            !strcmp(tokens[0].token, "?")) {
+            netos_netctl_help();
+            free(buf);
+            continue;
+        }
 
         for (i = 0; i < NETOS_SIZEOF_ARRAY(commands); i ++) {
             if (strcmp(tokens[0].token, commands[i].command) == 0) {
+                cmd_found = true;
                 commands[i].callback(ctl, tokens, token_len);
+                free(buf);
                 break;
             }
+        }
+
+        if (!cmd_found) {
+            netos_log_info("Unknown command option <%s>\n", buf);
+            free(buf);
         }
 
         if (ctl->exit_netctl) {
@@ -267,6 +315,9 @@ static int netos_netctl_parse_cmdargs(netos_netctl_t *ctl,
 {
     int ret;
 
+    ctl->path       = NULL;
+    ctl->serv_path  = NULL;
+
     while ((ret = getopt(argc, argv, "p:s:")) != -1) {
         switch (ret) {
             case 'p':
@@ -279,6 +330,11 @@ static int netos_netctl_parse_cmdargs(netos_netctl_t *ctl,
                 usage(argv[0]);
                 exit(1);
         }
+    }
+
+    if (!ctl->serv_path || !ctl->path) {
+        usage(argv[0]);
+        exit(1);
     }
 
     return 0;
@@ -302,6 +358,13 @@ int main(int argc, char **argv)
     netos_netctl_run(&ctl);
 
     netos_netctl_deinit(&ctl);
+
+    if (ctl.path) {
+        free(ctl.path);
+    }
+    if (ctl.serv_path) {
+        free(ctl.serv_path);
+    }
 
     return 0;
 }

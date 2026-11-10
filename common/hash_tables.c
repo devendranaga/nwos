@@ -142,6 +142,10 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
     index = hash_table->hash(key) % hash_table->n_items;
     item = hash_table->items[index];
 
+    if (!item) {
+        return;
+    }
+
     if (hash_table->cmp(key, item->key)) {
         hash_table->items[index] = item->next;
         if (del && del(item->key, item->val)) {
@@ -151,15 +155,18 @@ void netos_hash_item_del(netos_hash_table_t *hash_table, void *key, del_fn del)
     } else {
         netos_hash_item_t *entry;
 
+        entry = item;
+        item = item->next;
+
         while (item) {
-            entry = item;
-            if (hash_table->cmp(key, entry->key)) {
+            if (hash_table->cmp(key, item->key)) {
                 entry->next = item->next;
                 if (del && del(item->key, item->val)) {
                     free(item);
                     return;
                 }
             }
+            entry = item;
             item = item->next;
         }
     }

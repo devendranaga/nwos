@@ -89,14 +89,20 @@ void *netos_egress_rr_tx_queue_thread(void *ctx)
     return NULL;
 }
 
-netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *rr)
+netos_status_t netos_egress_rr_init(netos_egress_rr_mgr_t *rr, uint8_t *weights, uint32_t len)
 {
     uint32_t i;
+    uint32_t j = 0;
     netos_status_t ret;
 
-    for (i = 0; i < NETOS_EGRESS_RR_MAX; i ++) {
+    for (i = 0; i < NETOS_EGRESS_RR_MAX; i ++, j ++) {
         rr->rr[i].pkt_buf       = NULL;
         rr->rr[i].pkt_buf_last  = NULL;
+
+        // setup weights
+        if (j >= len) { j = len - 1; }
+
+        rr->rr[i].weight        = weights[j];
     }
 
     // initialize queue lock and the condition variable

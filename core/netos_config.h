@@ -58,9 +58,14 @@ typedef struct netos_egress_bfifo {
     uint32_t max_bytes;
 } netos_egress_bfifo_t;
 
+typedef struct netos_egress_rr_config {
+    uint8_t weights[8];
+} netos_egress_rr_config_t;
+
 typedef struct netos_egress_control {
-    netos_egress_pfifo_t pfifo;
-    netos_egress_bfifo_t bfifo;
+    netos_egress_pfifo_t        pfifo;
+    netos_egress_bfifo_t        bfifo;
+    netos_egress_rr_config_t    rr;
 } netos_egress_control_t;
 
 typedef struct netos_vlan_entry {
